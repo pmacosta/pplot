@@ -1,0 +1,42 @@
+# MANIFEST.in
+# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# See LICENSE for details
+include AUTHORS.rst
+include CHANGELOG.rst
+include LICENSE
+include Makefile
+include MANIFEST.in
+include README.rst
+include setup.cfg
+include setup.py
+include TODO.rst
+include tox.ini
+include .travis.yml
+include .pylintrc
+recursive-include data *
+include docs/make.bat
+include docs/Makefile
+include docs/conf.py
+include docs/__init__.py
+recursive-include docs *.rst
+recursive-include docs/support *.py
+recursive-include docs/support *.csv
+recursive-include docs/support *.png
+recursive-include docs/support *.odg
+include tests/pytest.ini
+recursive-include tests *.py
+recursive-include tests/support *.py
+recursive-include tests/support/ref_images_1 *.png
+recursive-include tests/support/ref_images_2 *.png
+recursive-include tests/support/ref_images_3 *.png
+recursive-include tests/support/ref_images_4 *.png
+recursive-include tests/support/ref_images_5 *.png
+recursive-include tests/support/ref_images_6 *.png
+recursive-include tests/support/ref_images_7 *.png
+recursive-include tests/support/ref_images_8 *.png
+recursive-include tests/support/ref_images_9 *.png
+recursive-include tests/support/ref_images_10 *.png
+recursive-include tests/support/ref_images_11 *.png
+recursive-include sbin *.sh
+recursive-include sbin *.py
+recursive-include requirements *

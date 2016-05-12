@@ -1,0 +1,23 @@
+#!/bin/bash
+
+rm -rf ref_images/panel_filter_axis_series_in_primary_axis.png
+rm -rf ref_images/series_marker_false_interp_cubic_line_style_dash-dot.png
+rm -rf ref_images/series_marker_false_interp_cubic_line_style_dashed.png
+rm -rf ref_images/series_marker_false_interp_cubic_line_style_dot.png
+rm -rf ref_images/series_marker_false_interp_cubic_line_style_none.png
+rm -rf ref_images/series_marker_false_interp_cubic_line_style_solid.png
+rm -rf ref_images/series_marker_false_interp_linreg_line_style_dash-dot.png
+rm -rf ref_images/series_marker_false_interp_linreg_line_style_dashed.png
+rm -rf ref_images/series_marker_false_interp_linreg_line_style_dot.png
+rm -rf ref_images/series_marker_false_interp_linreg_line_style_none.png
+rm -rf ref_images/series_marker_false_interp_linreg_line_style_solid.png
+rm -rf ref_images/series_marker_false_interp_step_line_style_dash-dot.png
+rm -rf ref_images/series_marker_false_interp_step_line_style_dashed.png
+rm -rf ref_images/series_marker_false_interp_step_line_style_dot.png
+rm -rf ref_images/series_marker_false_interp_step_line_style_none.png
+rm -rf ref_images/series_marker_false_interp_step_line_style_solid.png
+rm -rf ref_images/series_marker_false_interp_straight_line_style_dash-dot.png
+rm -rf ref_images/series_marker_false_interp_straight_line_style_dashed.png
+rm -rf ref_images/series_marker_false_interp_straight_line_style_dot.png
+rm -rf ref_images/series_marker_false_interp_straight_line_style_none.png
+rm -rf ref_images/series_marker_false_interp_straight_line_style_solid.png
