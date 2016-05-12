@@ -1,22 +1,10 @@
 # plot_example_1.py
 # Copyright (c) 2013-2016 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0413,W0613
+# pylint: disable=C0111,C0410,C0413,W0613
 
 from __future__ import print_function
-import os
-import sys
-import matplotlib
-import numpy
-
-# Default to non-interactive PNG to avoid any
-# matplotlib back-end misconfiguration. Has to be
-# placed before matplotlib.pyplot import, which
-# happens in pplot
-matplotlib.rcParams['backend'] = 'Agg'
-matplotlib.use('Agg')
-
-import pplot
+import os, sys, numpy, pplot
 
 def main(fname, no_print):
     """

@@ -119,7 +119,6 @@ def main(argv):
     )
     conf_file = []
     conf_file.append(os.path.join(source_dir, 'conftest.py'))
-    conf_file.append(os.path.join(source_dir, 'plot', 'conftest.py'))
     if mode_flag == '1':
         lines = []
         lines.append(
@@ -195,6 +194,8 @@ def main(argv):
         skip_file = (
             "# pylint: disable=E0012,C0103,C0111,C0411\n"
             "import sys\n"
+            "import matplotlib\n"
+            "matplotlib.rcParams['backend'] = 'Agg'\n"
             "collect_ignore = []\n"
             "if sys.hexversion < 0x03000000:\n"
             "    collect_ignore.append('compat3.py')\n"

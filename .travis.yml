@@ -177,7 +177,10 @@ script:
   ###
   - ${PYTHONCMD} ${EXTRA_DIR}/sbin/coveragerc_manager.py 'ci' 1 ${INTERP} ${PYTHON_SITE_PACKAGES}
   - cat ${COV_FILE}
+  - ${PYTHONCMD} -c "from __future__ import print_function; import os; import matplotlib; print(os.path.realpath(matplotlib.matplotlib_fname()))"
+  - ${EXTRA_DIR}/sbin/set-matplotlib-backend.sh ${EXTRA_DIR}/tests
   - ${EXTRA_DIR}/sbin/set-matplotlib-backend.sh ${EXTRA_DIR}/docs
+  - ${EXTRA_DIR}/sbin/set-matplotlib-backend.sh ${EXTRA_DIR}/docs/support
   - if [ "${INTERP}" == "py26" ]; then
         ${EXTRA_DIR}/sbin/patch_pylint.py ${PYTHON_SITE_PACKAGES};
     fi

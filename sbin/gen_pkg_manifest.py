@@ -7,7 +7,7 @@
 # Standard library imports
 from __future__ import print_function
 import sys
-# Putil imports
+# Intra-package imports
 import sbin.functions
 
 

@@ -13,7 +13,7 @@ import os
 import shutil
 import stat
 import sys
-# Putil imports
+# Intra-package imports
 import sbin.functions
 
 

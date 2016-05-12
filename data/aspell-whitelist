@@ -209,6 +209,7 @@ CsvDataFilter
 CsvFile
 CsvFilter
 CsvFiltered
+csvrowfilter
 CsvRowFilter
 csvsource
 CsvSource
@@ -566,6 +567,7 @@ imread
 iname
 incfile
 Incongruent
+increasingrealnumpyvector
 IncreasingRealNumpyVector
 indep
 Indep
@@ -1082,6 +1084,7 @@ ReadTheDocs
 realnum
 RealNum
 RealNumber
+realnumpyvector
 RealNumpyVector
 rebase
 Rebase

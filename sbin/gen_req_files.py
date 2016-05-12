@@ -9,7 +9,7 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-# Putil imports
+# Intra-package imports
 from sbin.functions import SUPPORTED_VERS, json_load
 
 

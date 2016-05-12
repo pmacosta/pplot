@@ -13,7 +13,7 @@ import sys
 import numpy
 import scipy
 import scipy.misc
-# Putil imports
+# Intra-package imports
 import sbin.functions
 
 
