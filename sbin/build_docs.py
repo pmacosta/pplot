@@ -365,13 +365,18 @@ def generate_top_level_readme(pkg_dir):
     ret = []
     autofunction = False
     literalinclude = False
+    remove_block = False
     for line in lines:
         match1 = ref1_regexp.match(line)
         match2 = ref2_regexp.match(line)
         match3 = ref3_regexp.match(line)
         match4 = ref4_regexp.match(line)
         match5 = ref5_regexp.match(line)
-        if autofunction:
+        if line.lstrip().startswith('.. [REMOVE STOP]'):
+            remove_block = False
+        elif remove_block:
+            continue
+        elif autofunction:
             match = indent_regexp.match(line)
             if (not match) or (match and len(match.group(1)) == 0):
                 autofunction = False
@@ -467,6 +472,8 @@ def generate_top_level_readme(pkg_dir):
             # Remove auto-functions, PyPI reStructuredText parser
             # does not appear to like it
             autofunction = True
+        elif line.lstrip().startswith('.. [REMOVE START]'):
+            remove_block = True
         else:
             ret.append(line)
     fname = os.path.join(pkg_dir, 'README.rst')
