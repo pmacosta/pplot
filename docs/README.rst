@@ -161,13 +161,13 @@ Example
 
 |
 
+.. [REMOVE START]
 .. csv-table:: data.csv file
    :file: ./support/data.csv
    :header-rows: 1
 
 |
 
-.. [REMOVE START]
 .. figure:: ./support/plot_example_1.png
    :scale: 100%
 

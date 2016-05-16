@@ -262,12 +262,6 @@ Example
 
 |
 
-.. csv-table:: data.csv file
-   :file: ./docs/support/data.csv
-   :header-rows: 1
-
-|
-
 
 Interpreter
 ===========

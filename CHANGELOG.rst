@@ -5,6 +5,8 @@
 Changelog
 =========
 
+* 1.0.2 [2016-05-16]: PyPI front page fixes
+
 * 1.0.1 [2016-05-16]: Documentation build fixes to display README information
   correctly in repositories and PyPI
 
