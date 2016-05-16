@@ -426,8 +426,8 @@ class DataSource(object):
     minimal implementation of a data source class:
 
     .. =[=cog
-    .. import docs.support.incfile
-    .. docs.support.incfile.incfile('plot_example_2.py', cog.out)
+    .. import pmisc
+    .. pmisc.incfile('plot_example_2.py', cog.out)
     .. =]=
     .. code-block:: python
 

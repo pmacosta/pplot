@@ -237,8 +237,8 @@ class Panel(object):
         example:
 
         .. =[=cog
-        .. import docs.support.incfile
-        .. docs.support.incfile.incfile('plot_example_6.py', cog.out)
+        .. import pmisc.incfile
+        .. pmisc.incfile('plot_example_6.py', cog.out)
         .. =]=
         .. code-block:: python
 

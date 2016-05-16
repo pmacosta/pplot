@@ -3,6 +3,7 @@
 # See LICENSE for details
 
 PKG_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+PWD := $(shell pwd)
 
 asort:
 	@echo "Sorting Aspell whitelist"
@@ -35,7 +36,7 @@ distro: docs clean sdist wheel
 	@rm -rf build pplot.egg-info
 
 docs: FORCE
-	@$(PKG_DIR)/sbin/build_docs.py $(ARGS)
+	@cd $(PKG_DIR)/sbin; ./build_docs.py $(ARGS); cd $(PWD)
 
 default:
 	@echo "No default action"

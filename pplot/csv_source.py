@@ -231,8 +231,8 @@ class CsvSource(DataSource):
         Prints source information. For example:
 
         .. =[=cog
-        .. import docs.support.incfile
-        .. docs.support.incfile.incfile('plot_example_3.py', cog.out)
+        .. import pmisc.incfile
+        .. pmisc.incfile('plot_example_3.py', cog.out)
         .. =]=
         .. code-block:: python
 
@@ -863,8 +863,8 @@ class CsvSource(DataSource):
     function could be:
 
     .. =[=cog
-    .. import docs.support.incfile
-    .. docs.support.incfile.incfile('plot_example_3.py', cog.out, '19-26')
+    .. import pmisc.incfile
+    .. pmisc.incfile('plot_example_3.py', cog.out, '19-26')
     .. =]=
     .. code-block:: python
 
@@ -979,8 +979,8 @@ class CsvSource(DataSource):
     For example:
 
     .. =[=cog
-    .. import docs.support.incfile
-    .. docs.support.incfile.incfile('plot_example_5.py', cog.out)
+    .. import pmisc.incfile
+    .. pmisc.incfile('plot_example_5.py', cog.out)
     .. =]=
     .. code-block:: python
 

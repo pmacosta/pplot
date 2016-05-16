@@ -111,8 +111,8 @@ class BasicSource(DataSource):
         Prints source information. For example:
 
         .. =[=cog
-        .. import docs.support.incfile
-        .. docs.support.incfile.incfile('plot_example_4.py', cog.out)
+        .. import pmisc
+        .. pmisc.incfile('plot_example_4.py', cog.out)
         .. =]=
         .. code-block:: python
 

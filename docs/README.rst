@@ -48,13 +48,11 @@ Description
 	:language: bash
 
 .. [[[cog
-.. import os, sys
-.. from docs.support.term_echo import ste
-.. file_name = sys.modules['docs.support.term_echo'].__file__
-.. mdir = os.path.realpath(
-..     os.path.dirname(os.path.dirname(os.path.dirname(file_name)))
+.. import os, sys, pmisc, docs.support.requirements_to_rst
+.. file_name = sys.modules['docs.support.requirements_to_rst'].__file__
+.. mdir = os.path.join(os.path.realpath(
+..    os.path.dirname(os.path.dirname(os.path.dirname(file_name)))), 'sbin'
 .. )
-.. import docs.support.requirements_to_rst
 .. docs.support.requirements_to_rst.def_links(cog)
 .. ]]]
 .. _Astroid: https://bitbucket.org/logilab/astroid
@@ -158,7 +156,7 @@ Example
 .. literalinclude:: ./support/plot_example_1.py
     :language: python
     :tab-width: 4
-    :lines: 1,6-10,19-119
+    :lines: 1,6-107
 
 |
 
@@ -236,7 +234,6 @@ Contributing
 5. Install the dependencies (if needed, done automatically by pip):
 
     .. [[[cog
-    .. import docs.support.requirements_to_rst
     .. docs.support.requirements_to_rst.proc_requirements(cog)
     .. ]]]
 
@@ -272,7 +269,7 @@ Contributing
 
     * `Pillow`_ (2.6.1 or newer)
 
-    * `Pmisc`_ (1.0.0 or newer)
+    * `Pmisc`_ (1.1.0 or newer)
 
     * `Py.test`_ (2.7.0 or newer)
 
@@ -411,11 +408,11 @@ Contributing
    :bash:`${PPLOT_DIR}/sbin/build_docs.py` re-builds the whole package
    documentation (re-generates images, cogs source files, etc.):
 
-	.. [[[cog ste('build_docs.py -h', 0, mdir, cog.out) ]]]
+	.. [[[cog pmisc.ste('build_docs.py -h', 0, mdir, cog.out) ]]]
 
 	.. code-block:: bash
 
-	    $ ${PUTIL_DIR}/sbin/build_docs.py -h
+	    $ ${PKG_BIN_DIR}/build_docs.py -h
 	    usage: build_docs.py [-h] [-d DIRECTORY] [-r]
 	                         [-n NUM_CPUS] [-t]
 
@@ -440,21 +437,6 @@ Contributing
 
 
 	.. [[[end]]]
-
-    Output of shell commands can be automatically included in reStructuredText
-    source files with the help of Cog_ and the :code:`docs.support.term_echo` module.
-
-    .. autofunction:: docs.support.term_echo.ste
-        :noindex:
-
-    .. autofunction:: docs.support.term_echo.term_echo
-        :noindex:
-
-    Similarly Python files can be included in docstrings with the help of Cog_
-    and the :code:`docs.support.incfile` module
-
-    .. autofunction:: docs.support.incfile.incfile
-        :noindex:
 
 .. rubric:: Footnotes
 

@@ -47,7 +47,6 @@ install:
   - set MAIN_REQUIREMENTS_FILE=%REPO_DIR%\requirements\main_%INTERP%.pip
   - set TESTS_REQUIREMENTS_FILE=%REPO_DIR%\requirements\tests_%INTERP%.pip
   - set CITMP=%REPO_DIR%\CITMP
-  - set PYTHONWARNINGS="ignore:a true SSLContext object"
   - if not exist "%CITMP%" mkdir %CITMP%
   - echo "PYTHONCMD=%PYTHONCMD%"
   - echo "PIPCMD=%PIPCMD%"
