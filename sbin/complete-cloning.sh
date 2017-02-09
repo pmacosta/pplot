@@ -1,6 +1,6 @@
 #!/bin/bash
 # complete-cloning.sh
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
 
 source $(dirname "${BASH_SOURCE[0]}")/functions.sh
@@ -50,4 +50,4 @@ else
 fi
 
 # Build documentation
-${bin_dir}/build_docs.py
+tox -e py27-repl -- "${bin_dir}/build_docs.py"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # gen_req_files.py
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0111
 
@@ -63,10 +63,11 @@ def gen_req_files(freeze_ver=False):
     """ Generate requirements files """
     fdict = json_load(os.path.join('data', 'requirements.json'))
     pyvers = ['py{0}'.format(item.replace('.', '')) for item in SUPPORTED_VERS]
-    odict = {'docs':[], 'rtd':[]}
+    odict = {'rtd':[]}
     for pyver in pyvers:
         odict['main_{0}'.format(pyver)] = []
         odict['tests_{0}'.format(pyver)] = []
+        odict['docs_{0}'.format(pyver)] = []
     for pkg_name, pkg_dict in fdict.items():
         pkg_dict['cat'] = (
             pkg_dict['cat']
@@ -76,18 +77,19 @@ def gen_req_files(freeze_ver=False):
         for cat in pkg_dict['cat']:
             if cat not in ['main', 'tests', 'docs', 'rtd']:
                 raise RuntimeError('Category {0} not recognized'.format(cat))
-            if cat in ['docs', 'rtd']:
+            if cat == 'rtd':
                 ver = pkg_dict['ver']
-                if not isinstance(pkg_dict['ver'], str):
-                    ver = list(set(pkg_dict['ver'].values()))
-                    if len(ver) > 1:
-                        raise RuntimeError(
-                            (
-                                'Multi-interpreter versions '
-                                'not supported for category {0}'.format(cat)
-                            )
+                if ((not isinstance(pkg_dict['ver'], str)) and
+                    ('py27' not in pkg_dict['ver'])):
+                    raise RuntimeError(
+                        (
+                            'Multi-interpreter versions does not'
+                            'include Python 2.7for category {0}'.format(cat)
                         )
-                    ver = ver[0]
+                    )
+                elif not isinstance(pkg_dict['ver'], str):
+                    # ReadTheDocs build environment is Python 2.7
+                    ver = pkg_dict['ver']['py27']
                 insert_element(
                     odict[cat],
                     '{pkg_name}{ver}'.format(pkg_name=pkg_name, ver=ver),
@@ -121,7 +123,7 @@ def gen_req_files(freeze_ver=False):
     pkgdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     reqdir = os.path.join(pkgdir, 'requirements')
     fnames = []
-    for cat in sorted(odict.keys()):
+    for cat in sorted(odict):
         odict[cat] = [item for item in odict[cat] if item]
         fname = os.path.join(reqdir, '{0}.pip'.format(cat))
         fnames.append(fname)

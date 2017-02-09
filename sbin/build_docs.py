@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # build_docs.py
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,F0401,R0912,R0914,R0915,W0141
+# pylint: disable=C0111,C0411,C0413,F0401,R0912,R0914,R0915,W0141
 
 # Standard library imports
 from __future__ import print_function
@@ -18,18 +18,28 @@ import sys
 # PyPI imports
 from cogapp import Cog
 # Intra-package imports
-import sbin.refresh_moddb
-import sbin.build_moddb
 import sbin.functions
+try:
+    from sbin.refresh_moddb import refresh_moddb
+except ImportError:
+    def refresh_moddb():
+        pass
+try:
+    from sbin.build_moddb import build_moddb
+except ImportError:
+    def build_moddb():
+        pass
+
 
 ###
 # Global variables
 ###
-PPLOT_SUBMODULES = [
+PKG_NAME = 'peng'
+VALID_MODULES = [PKG_NAME]
+PKG_SUBMODULES = [
     'basic_source', 'constants', 'csv_source', 'figure', 'functions', 'panel',
     'ptypes', 'series'
 ]
-VALID_MODULES = ['pplot']
 
 
 ###
@@ -66,7 +76,7 @@ def build_pkg_docs(args):
             )
         )
     if rebuild or test:
-        sbin.refresh_moddb.refresh_moddb()
+        refresh_moddb()
         print_cyan(
             'Rebuilding exceptions documentation{0}'.format(
                 ' (test mode)' if test else ''
@@ -83,7 +93,7 @@ def build_pkg_docs(args):
                 elapsed_time_string(start_time, stop_time)
             )
         )
-        sbin.build_moddb.build_moddb()
+        build_moddb()
     generate_top_level_readme(pkg_dir)
     print('Inserting files into docstrings')
     insert_files_in_rsts(pkg_dir, cog_exe)
@@ -309,7 +319,7 @@ def rebuild_module_doc(test, src_dir, tracer_dir, cog_exe, debug):
     # pylint: disable=R0913
     retcode = 0
     pkl_dir = tracer_dir
-    submodules = PPLOT_SUBMODULES
+    submodules = PKG_SUBMODULES
     for submodule in submodules:
         smf = os.path.join(src_dir, submodule+'.py')
         pkl_file = os.path.join(pkl_dir, submodule+'.pkl')
@@ -355,8 +365,8 @@ def generate_top_level_readme(pkg_dir):
     print('Generating top-level README.rst file')
     with open(fname, 'r') as fobj:
         lines = [item.rstrip() for item in fobj.readlines()]
-    ref1_regexp = re.compile('.*:py:mod:`(.+) <pplot.(.+)>`.*')
-    ref2_regexp = re.compile('.*:py:mod:`pplot.(.+)`.*')
+    ref1_regexp = re.compile('.*:py:mod:`(.+) <'+PKG_NAME+'.(.+)>`.*')
+    ref2_regexp = re.compile('.*:py:mod:`'+PKG_NAME+'.(.+)`.*')
     ref3_regexp = re.compile(r'.*:ref:`(.+?)(\s+<.+>)*`.*')
     ref4_regexp = re.compile(r'.*:py:class:`(.+?)`.*')
     ref5_regexp = re.compile(r'.*:py:data:`(.+?)`.*')
@@ -404,9 +414,8 @@ def generate_top_level_readme(pkg_dir):
             label = match1.group(1)
             mname = match1.group(2)
             line = line.replace(
-                ':py:mod:`{label} <pplot.{mname}>`'.format(
-                    label=label, mname=mname
-                ),
+                ':py:mod:`{label} <'.format(label=label)+
+                PKG_NAME+'.{mname}>`'.format(mname=mname),
                 label
             )
             ret.append(line)
@@ -414,7 +423,7 @@ def generate_top_level_readme(pkg_dir):
             # Remove cross-references
             mname = match2.group(1)
             line = line.replace(
-                ':py:mod:`pplot.{mname}`'.format(mname=mname), mname
+                ':py:mod:`'+PKG_NAME+'.{mname}`'.format(mname=mname), mname
             )
             ret.append(line)
         elif match3:
@@ -536,14 +545,14 @@ if __name__ == "__main__":
     # pylint: disable=E0602
     PKG_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PARSER = argparse.ArgumentParser(
-        description='Build pplot package documentation'
+        description='Build '+PKG_NAME+' package documentation'
     )
     PARSER.add_argument(
         '-d', '--directory',
-        help='specify source file directory (default ../pplot)',
+        help='specify source file directory (default ../'+PKG_NAME+')',
         type=valid_dir,
         nargs=1,
-        default=[os.path.join(PKG_DIR, 'pplot')]
+        default=[os.path.join(PKG_DIR, PKG_NAME)]
     )
     PARSER.add_argument(
         '-r', '--rebuild',

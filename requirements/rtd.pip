@@ -4,9 +4,9 @@ mock>=1.0.1
 pycontracts>=1.7.2,!=1.7.7
 pytest>=2.7.0
 six>=1.4.0
-sphinx>=1.2.3
+sphinx>=1.5
 sphinxcontrib-inlinesyntaxhighlight>=0.2
-pmisc>=1.1.0
-pexdoc>=1.0.0
-peng>=1.0.0
-pcsv>=1.0.0
+pmisc>=1.2.1
+pexdoc>=1.0.8
+peng>=1.0.5
+pcsv>=1.0.4
