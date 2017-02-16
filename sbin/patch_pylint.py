@@ -18,9 +18,13 @@ def main(pkg_dir):
     ret = []
     with open(fname, 'r') as fobj:
         lines = fobj.readlines()
-    for num, line in enumerate([item.rstrip() for item in lines]):
-        if num == 241:
+    in_func = False
+    for line in [item.rstrip() for item in lines]:
+        if (not in_func) and line.startswith('def six_moves_transform'):
+            in_func = True
+        if in_func and line.strip() == '{}':
             ret.append('    {0}')
+            in_func = False
         else:
             ret.append(line)
     with open(fname, 'w') as fobj:

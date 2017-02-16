@@ -219,7 +219,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_width is None
         obj = pplot.Figure(panels=default_panel)
-        comp_num(obj.fig_width, 6.71 if MVER == 1 else [6.74, 6.75])
+        comp_num(obj.fig_width, [6.08, 6.71] if MVER == 1 else [6.74, 6.75])
         obj.fig_width = 5
         assert obj.fig_width == 5
 
