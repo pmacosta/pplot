@@ -1,5 +1,5 @@
 # functions.py
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0103,C0111,R0201,R0903,W0621
 
@@ -14,6 +14,15 @@ import pplot
 # Global variables
 ###
 FOBJ = pplot.parameterized_color_space
+
+
+###
+# Helper functions
+###
+def comp_num(act, ref, prec=1E-10):
+    """ Test number equality within a given precision """
+    if abs(act-ref) > prec:
+        assert False, 'Expected {0}, got {1}'.format(ref, act)
 
 
 ###

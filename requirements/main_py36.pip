@@ -5,7 +5,7 @@ pillow>=2.6.1
 pycontracts>=1.7.2,!=1.7.7
 scipy>=0.13.3
 six>=1.4.0
-pmisc>=1.2.1
-pexdoc>=1.0.8
-peng>=1.0.5
-pcsv>=1.0.4
+pmisc>=1.2.2
+pexdoc>=1.0.9
+peng>=1.0.6
+pcsv>=1.0.5

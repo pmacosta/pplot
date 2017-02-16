@@ -1,12 +1,11 @@
 # figure.py
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0103,C0111,E0611,E1129,F0401,R0201,W0212,W0621
+# pylint: disable=C0103,C0111,C0411,C0413,E0611,E1129,F0401,R0201,W0212,W0621
 
 # Standard library imports
 from __future__ import print_function
 import os
-import re
 import sys
 if sys.hexversion >= 0x03000000:
     import unittest.mock as mock
@@ -21,6 +20,7 @@ import matplotlib
 # Intra-package imports
 import pplot
 from .fixtures import compare_image_set
+from .functions import comp_num
 sys.path.append('..')
 from tests.gen_ref_images import unittest_figure_images
 
@@ -29,6 +29,7 @@ from tests.gen_ref_images import unittest_figure_images
 # Global variables
 ###
 FOBJ = pplot.Figure
+MVER = int(matplotlib.__version__.split('.')[0])
 
 
 ###
@@ -120,19 +121,21 @@ class TestFigure(object):
             'Independent variable units: Amps\n'
             'Logarithmic independent axis: False\n'
             'Title: My graph\n'
-            'Figure width: (6\\.08|6\\.71|6\\.67).*\n'
-            'Figure height: 4.99.*\n'
+            'Figure width: (6\\.08|6\\.71|6\\.67|\\.74).*\n'
+            'Figure height: (4.99|5.06).*\n'
         )
         actual = str(obj)
         ref_invariant = '\n'.join(ref.split('\n')[:-3])
         actual_invariant = '\n'.join(actual.split('\n')[:-3])
         assert ref_invariant == actual_invariant
-        regexp = re.compile('\n'.join(ref.split('\n')[-3:]))
-        actual = '\n'.join(actual.split('\n')[-3:])
-        comp = regexp.match(actual)
-        if not comp:
-            print(actual)
-        assert comp
+        act_width = float(actual.split('\n')[-3][14:])
+        act_height = float(actual.split('\n')[-2][15:])
+        ref_widths = [6.08, 6.71, 6.67, 6.74]
+        ref_heights = [4.99, 5.06]
+        if act_width not in ref_widths:
+            assert False, '{0} not in {1}'.format(act_width, ref_widths)
+        if act_height not in ref_heights:
+            assert False, '{0} not in {1}'.format(act_height, ref_heights)
 
     ### Public methods
     def test_save(self, default_panel):
@@ -216,9 +219,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_width is None
         obj = pplot.Figure(panels=default_panel)
-        assert (
-            (obj.fig_width-6.71 < 1e-10)
-        )
+        comp_num(obj.fig_width, 6.71 if MVER == 1 else 6.74)
         obj.fig_width = 5
         assert obj.fig_width == 5
 
@@ -232,7 +233,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_height is None
         obj = pplot.Figure(panels=default_panel)
-        assert obj.fig_height-4.31 < 1e-10
+        comp_num(obj.fig_height, 4.31 if MVER == 1 else 4.37)
         obj.fig_height = 5
         assert obj.fig_height == 5
 

@@ -69,7 +69,14 @@
 		"optional":false,
 		"url":"http://matplotlib.org",
 		"cat":["main"],
-		"ver":">=1.4.1",
+		"ver":{
+			"py26":">=1.4.1,<2.0",
+			"py27":">=1.4.1",
+			"py33":">=1.4.1,<2.0",
+			"py34":">=1.4.1",
+			"py35":">=1.4.1",
+			"py36":">=1.4.1"
+		},
 		"pos":7
 	},
 	"mock":{
@@ -103,7 +110,15 @@
 		"optional":false,
 		"url":"https://python-pillow.github.io",
 		"cat":["main"],
-		"ver":">=2.6.1",
+		"cat":["main"],
+		"ver":{
+			"py26":">=2.6.1,<4.0",
+			"py27":">=2.6.1",
+			"py33":">=2.6.1",
+			"py34":">=2.6.1",
+			"py35":">=2.6.1",
+			"py36":">=2.6.1"
+		},
 		"pos":9
 	},
 	"pycontracts":{
@@ -236,7 +251,7 @@
 		"optional":false,
 		"url":"http://pmisc.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.2.1",
+		"ver":">=1.2.2",
 		"pos":23
 	},
 	"pexdoc":{
@@ -244,7 +259,7 @@
 		"optional":false,
 		"url":"http://pexdoc.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.0.8",
+		"ver":">=1.0.9",
 		"pos":24
 	},
 	"peng":{
@@ -252,7 +267,7 @@
 		"optional":false,
 		"url":"http://peng.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.0.5",
+		"ver":">=1.0.6",
 		"pos":25
 	},
 	"pcsv":{
@@ -260,7 +275,7 @@
 		"optional":false,
 		"url":"http://pcsv.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.0.4",
+		"ver":">=1.0.5",
 		"pos":26
 	}
 }

@@ -1,5 +1,5 @@
 # test_doccode.py
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0111,C0302,E1129,R0914,R0915,W0212,W0640
 
@@ -73,7 +73,7 @@ def test_plot_doccode(capsys):
     )
     stdout, stderr = proc.communicate()
     test_fname = output_file
-    nimages = 15
+    nimages = 16
     ref_names = [
         'plot_example_1_{0}.png'.format(item) for item in range(1, nimages+1)
     ]

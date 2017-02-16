@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # check_files_compliance.py
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0103,C0111,R0912,R0914
 
@@ -121,7 +121,7 @@ def check_header(sdir, mdir, files, no_print=False):
     olist = []
     errors = False
     year = datetime.datetime.now().year
-    for fname in pkg_files(sdir, mdir, files, list(fdict.keys())):
+    for fname in pkg_files(sdir, mdir, files, list(fdict)):
         basename = os.path.basename(fname)
         extension = os.path.splitext(fname)[1]
         comment = fdict[extension]

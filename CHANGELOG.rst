@@ -1,9 +1,11 @@
 .. CHANGELOG.rst
-.. Copyright (c) 2013-2016 Pablo Acosta-Serafini
+.. Copyright (c) 2013-2017 Pablo Acosta-Serafini
 .. See LICENSE for details
 
 Changelog
 =========
+
+* 1.0.3 [2016-05-16]: Python 3.6 support
 
 * 1.0.2 [2016-05-16]: PyPI front page fixes
 

@@ -1,7 +1,7 @@
 # panel.py
-# Copyright (c) 2013-2016 Pablo Acosta-Serafini
+# Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,F0401,R0915,W0212
+# pylint: disable=C0111,C0411,C0413,F0401,R0915,W0212
 
 # Standard library imports
 from __future__ import print_function
