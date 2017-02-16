@@ -78,6 +78,7 @@ install:
 ###
 - set PATH=C:\\Miniconda-x64;C:\\Miniconda-x64\\Scripts;%PATH%
 - conda update -y conda
+- conda env remove -y --name %INTERP%
 - conda create -y --name %INTERP% python=%PYVER% numpy scipy matplotlib
 - activate %INTERP%
 - which python
@@ -170,7 +171,7 @@ build_script:
 ###
 - python %SBIN_DIR%\coveragerc_manager.py 'ci' 1 %INTERP% %PYTHON_SITE_PACKAGES%
 - type %COV_FILE%
-# - if "%INTERP%" == "py26" python %SBIN_DIR%\patch_pylint.py %PYTHON_SITE_PACKAGES%
+- if "%INTERP%" == "py26" python %SBIN_DIR%\patch_pylint.py %PYTHON_SITE_PACKAGES%
 ###
 # Change to tests sub-directory to mimic Tox conditions
 ###
@@ -200,6 +201,6 @@ test_script:
 # - python %SBIN_DIR%\build_docs.py -r -t -d %SOURCE_DIR%
 
 on_failure:
-  - 7z a %EXTRA_DIR%\artifacts.zip %EXTRA_DIR%\artifacts\*.*
-  - appveyor PushArtifact %EXTRA_DIR%\artifacts.zip
+- 7z a %EXTRA_DIR%\artifacts.zip %EXTRA_DIR%\artifacts\*.*
+- appveyor PushArtifact %EXTRA_DIR%\artifacts.zip
 #[[[end]]]
