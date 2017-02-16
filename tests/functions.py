@@ -21,8 +21,9 @@ FOBJ = pplot.parameterized_color_space
 ###
 def comp_num(act, ref, prec=1E-10):
     """ Test number equality within a given precision """
-    if abs(act-ref) > prec:
-        assert False, 'Expected {0}, got {1}'.format(ref, act)
+    ref_list = ref if isinstance(ref, list) else [ref]
+    if not any(abs(act-item) < prec for item in ref_list):
+        assert False, '{0} not in {1}'.format(act, ref_list)
 
 
 ###

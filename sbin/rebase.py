@@ -2,7 +2,7 @@
 # rebase.py
 # Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,F0401,R0914,W0141
+# pylint: disable=C0111,C0411,F0401,R0914,W0141
 
 
 # Standard library imports

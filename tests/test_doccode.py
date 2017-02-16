@@ -73,7 +73,7 @@ def test_plot_doccode(capsys):
     )
     stdout, stderr = proc.communicate()
     test_fname = output_file
-    nimages = 16
+    nimages = 17
     ref_names = [
         'plot_example_1_{0}.png'.format(item) for item in range(1, nimages+1)
     ]

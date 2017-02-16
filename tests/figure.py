@@ -130,7 +130,7 @@ class TestFigure(object):
         assert ref_invariant == actual_invariant
         act_width = float(actual.split('\n')[-3][14:])
         act_height = float(actual.split('\n')[-2][15:])
-        ref_widths = [6.08, 6.71, 6.67, 6.74]
+        ref_widths = [6.08, 6.71, 6.67, 6.74, 6.75]
         ref_heights = [4.99, 5.06]
         if act_width not in ref_widths:
             assert False, '{0} not in {1}'.format(act_width, ref_widths)
@@ -219,7 +219,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_width is None
         obj = pplot.Figure(panels=default_panel)
-        comp_num(obj.fig_width, 6.71 if MVER == 1 else 6.74)
+        comp_num(obj.fig_width, 6.71 if MVER == 1 else [6.74, 6.75])
         obj.fig_width = 5
         assert obj.fig_width == 5
 

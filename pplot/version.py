@@ -10,7 +10,7 @@ from __future__ import print_function
 ###
 # Global variables
 ###
-VERSION_INFO = (1, 0, 3, 'candidate', 0)
+VERSION_INFO = (1, 0, 3, 'candidate', 2)
 
 
 ###
