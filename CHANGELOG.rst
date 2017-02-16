@@ -5,7 +5,7 @@
 Changelog
 =========
 
-* 1.0.3 [2016-05-16]: Python 3.6 support
+* 1.0.3 [2017-02-16]: Python 3.6 support
 
 * 1.0.2 [2016-05-16]: PyPI front page fixes
 
