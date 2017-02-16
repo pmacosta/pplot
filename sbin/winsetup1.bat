@@ -36,7 +36,6 @@ REM # Install tools and dependencies of package dependencies
 REM ###
 set PATH=C:\\Miniconda-x64;C:\\Miniconda-x64\\Scripts;%PATH%
 conda update -y conda
-conda env remove -y --name %INTERP%
 conda create -y --name %INTERP% python=%PYVER% numpy scipy matplotlib
 activate %INTERP%
 which python
