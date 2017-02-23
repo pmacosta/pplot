@@ -75,7 +75,7 @@ def compare_image_set(tmpdir, images_dict_list, section):
                 compare_images(ref_file_name, test_file_name)
             )
         result = any(partial_result)
-        global_result = global_result and partial_result
+        global_result = global_result and result
         if not result:
             print('Images do not match')
             export_image(test_file_name)

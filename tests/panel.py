@@ -273,29 +273,35 @@ class TestPanel(object):
             'G'
         )
         # print obj
-        # 16
-        # Scaling, delta as reference
-        vector = numpy.array(
-            [
-                10.1e6, 20e6, 30e6, 40e6, 50e6, 60e6,
-                70e6, 80e6, 90e6, 100e6, 20.22e9
-            ]
-        )
-        obj = fut(vector, min(vector), max(vector), tight=True)
-        assert peng.round_mantissa(numpy.array(obj[0]), 7).tolist() == [
-            0.0101, 2.2556444, 4.5011889, 6.7467333, 8.9922778, 11.237822,
-            13.483367, 15.728911, 17.974456, 20.22
-        ]
-        assert obj[1:] == (
-            [
-                '0.01', '2.3', '4.5', '6.7', '9.0',
-                '11.2', '13.5', '15.7', '18.0', '20.2'
-            ],
-            0.0101,
-            20.220,
-            1e9,
-            'G'
-        )
+        # # 16
+        # # Scaling, delta as reference
+        # # No example where the axis delta between minimum and maximum would
+        # # result in fewer characters that either the minimum or maximum being
+        # # used as a delta were found. Code left because as constructed it
+        # # does not affect coverage metrics and in the event that for some
+        # # corner cases the delta does produce fewer characters
+        # vector = numpy.array(
+        #     [
+        #         10.1e6, 20e6, 30e6, 40e6, 50e6, 60e6,
+        #         70e6, 80e6, 90e6, 100e6, 20.22e9
+        #     ]
+        # )
+        # obj = fut(vector, min(vector), max(vector), tight=True)
+        # print(peng.round_mantissa(numpy.array(obj[0]), 7).tolist())
+        # assert peng.round_mantissa(numpy.array(obj[0]), 7).tolist() == [
+        #     0.0101, 2.2556444, 4.5011889, 6.7467333, 8.9922778, 11.237822,
+        #     13.483367, 15.728911, 17.974456, 20.22
+        # ]
+        # assert obj[1:] == (
+        #     [
+        #         '0.01', '2.26', '4.50', '6.75', '8.99',
+        #         '11.24', '13.48', '15.73', '17.97', '20.22'
+        #     ],
+        #     0.0101,
+        #     20.220,
+        #     1e9,
+        #     'G'
+        # )
         # print obj
         # 17
         # Scaling, maximum as reference
@@ -385,6 +391,45 @@ class TestPanel(object):
             'M'
         )
         pplot.PRECISION = oprec
+        # print obj
+        # 23
+        # User-override: numbers between 0 and 1 and higher than 1 in
+        # absolute values
+        vector = numpy.array(
+            [
+                0.84159584, 0.88231522, 0.9230346, 0.96375399, 1.00447337,
+                1.04519276, 1.08591214, 1.12663153, 1.16735091, 1.2080703,
+                1.24878968, 1.28950906
+            ]
+        )
+        user_vector = numpy.array(
+            [
+                0.842, 0.882, 0.923, 0.964, 1.004, 1.044,
+                1.086, 1.127, 1.167, 1.208, 1.249, 1.289
+            ]
+        )
+        obj = fut(
+            vector,
+            min(vector),
+            max(vector),
+            tight=False,
+            log_axis=False,
+            tick_list=user_vector
+        )
+        assert obj == (
+            [
+                0.842, 0.882, 0.923, 0.964, 1.004, 1.044,
+                1.086, 1.127, 1.167, 1.208, 1.249, 1.289
+            ],
+            [
+                '0.84', '0.88', '0.92', '0.96', '1.00', '1.04', '1.09',
+                '1.13', '1.17', '1.21', '1.25', '1.29'
+            ],
+            0.842,
+            1.289,
+            1,
+            ' '
+        )
 
     def test_legend_position_validation(self):
         """ Tests _legend_position_validation method """

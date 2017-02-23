@@ -214,18 +214,24 @@ def _process_ticks(locs, min_lim, max_lim, mant):
     """
     Returns pretty-printed tick locations that are within the given bound
     """
-    locs = [float(loc) for loc in locs]
+    templ = lambda x: '{0:'+str(x+(3 if x < 0 else 2))+'.'+str(x)+'f}'
+    int_locs = [float(loc) for loc in locs]
     bounded_locs = [
         loc
-        for loc in locs
+        for loc in int_locs
         if ((loc >= min_lim) or (abs(loc-min_lim) <= 1e-14)) and
            ((loc <= max_lim) or (abs(loc-max_lim) <= 1e-14))
     ]
+    #template = '{0:'+str(mant+2)+'.'+str(mant)+'f}'
     raw_labels = [
         peng.peng(float(loc), mant, rjust=False)
         if ((abs(loc) >= 1) or (loc == 0)) else
-        str(peng.round_mantissa(loc, mant))
+        templ(mant).format(round(float(loc), mant))
         for loc in bounded_locs
+    ]
+    raw_labels = [
+        item[1:] if item == '-0.'+('0'*mant) else item
+        for item in raw_labels
     ]
     return (
         bounded_locs,
@@ -241,11 +247,7 @@ def _scale_ticks(tick_list, mode):
     tick_min = tick_list[0]
     tick_max = tick_list[-1]
     tick_delta = tick_max-tick_min
-    tick_ref = (
-        tick_min
-        if mode == 'MIN' else
-        (tick_max if mode == 'MAX' else tick_delta)
-    )
+    tick_ref = dict(MIN=tick_min, MAX=tick_max, DELTA=tick_delta)[mode]
     (unit, scale) = peng.peng_power(peng.peng(tick_ref, 3))
     # Move one engineering unit back if there are more ticks
     # below 1.0 than above it
@@ -253,7 +255,7 @@ def _scale_ticks(tick_list, mode):
     below_1k_sum = sum((tick_list/scale) < 1000)
     last_tick_below_10k = tick_list[-1]/scale < 10000
     rollback = (above_1k_sum > below_1k_sum) and last_tick_below_10k
-    scale = 1 if rollback else scale
+    scale = float(scale)*1E-3 if rollback else scale
     unit = peng.peng_suffix_math(unit, +1) if rollback else unit
     tick_list = numpy.array(
         [
@@ -279,47 +281,15 @@ def _scale_ticks(tick_list, mode):
 def _uniquify_tick_labels(tick_list, tmin, tmax):
     """ Calculate minimum tick mantissa given tick spacing """
     # If minimum or maximum has a mantissa, at least preserve one digit
-    mant_min = (
+    mant = (
         1
         if any([float(item) != float(int(item)) for item in tick_list]) else
         0
     )
-    # Step 1: Look at two contiguous ticks and lower mantissa digits till
-    # they are no more right zeros
-    mant = 10
-    for mant in range(10, mant_min-1, -1):
-        ldig = str(
-            peng.peng_frac(peng.peng(tick_list[-1], mant))
-        )[-1]
-        nldig = str(
-            peng.peng_frac(peng.peng(tick_list[-2], mant))
-        )[-1]
-        if (ldig != '0') or (nldig != '0'):
-            break
-    # Step 2: Confirm labels are unique
-    #unique_mant_found = False
-    while mant >= mant_min:
+    loc, labels = _process_ticks(tick_list, tmin, tmax, mant)
+    while (mant < 11) and (len(set(labels)) != len(labels)):
+        mant += 1
         loc, labels = _process_ticks(tick_list, tmin, tmax, mant)
-        sum1 = sum(
-            [
-                1 if labels[index] != labels[index+1] else 0
-                for index in range(0, len(labels[:-1]))
-            ]
-        )
-        sum2 = sum(
-            [
-                1 if (peng.peng_float(label) != 0) or
-                     ((peng.peng_float(label) == 0) and (num == 0)) else
-                0
-                for num, label in zip(tick_list, labels)
-            ]
-        )
-        if (sum1 == len(labels)-1) and (sum2 == len(labels)):
-            mant -= 1
-        else:
-            mant += 1
-            loc, labels = _process_ticks(tick_list, tmin, tmax, mant)
-            break
     return (
         [peng.round_mantissa(element, PRECISION) for element in loc],
         labels

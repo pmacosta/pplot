@@ -5,6 +5,7 @@
 
 # Standard library imports
 from __future__ import print_function
+import glob
 import os
 import shutil
 import subprocess
@@ -73,11 +74,7 @@ def test_plot_doccode(capsys):
     )
     stdout, stderr = proc.communicate()
     test_fname = output_file
-    nimages = 17
-    ref_names = [
-        'plot_example_1_{0}.png'.format(item) for item in range(1, nimages+1)
-    ]
-    ref_fnames = [os.path.join(script_dir, item) for item in ref_names]
+    ref_fnames = glob.glob(os.path.join(script_dir, 'plot_example_1_*.png'))
     result = []
     for ref_fname in ref_fnames:
         try:

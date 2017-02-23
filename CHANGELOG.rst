@@ -5,6 +5,9 @@
 Changelog
 =========
 
+* 1.0.4 [2017-02-25]: Fixed tick marks labels in the [0, 1] range. Closed image
+  tests escapes
+
 * 1.0.3 [2017-02-16]: Python 3.6 support
 
 * 1.0.2 [2016-05-16]: PyPI front page fixes
