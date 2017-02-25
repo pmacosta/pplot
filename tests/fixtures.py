@@ -128,17 +128,14 @@ def default_panel(default_series):
 
 
 def export_image(fname, method=True):
-    tdir = os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))
-        )
-    )
+    tdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     artifact_dir = os.path.join(tdir, 'artifacts')
     if not os.path.exists(artifact_dir):
         os.makedirs(artifact_dir)
     if method:
         src = fname
         dst = os.path.join(artifact_dir, os.path.basename(fname))
+        print('Copying image to {0}'.format(dst))
         shutil.copyfile(src, dst)
     else:
         if os.environ.get('APPVEYOR', None):

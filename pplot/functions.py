@@ -214,7 +214,7 @@ def _process_ticks(locs, min_lim, max_lim, mant):
     """
     Returns pretty-printed tick locations that are within the given bound
     """
-    templ = lambda x: '{0:'+str(x+(3 if x < 0 else 2))+'.'+str(x)+'f}'
+    template = lambda x: '{0:'+str(x+(3 if x < 0 else 2))+'.'+str(x)+'f}'
     int_locs = [float(loc) for loc in locs]
     bounded_locs = [
         loc
@@ -222,11 +222,10 @@ def _process_ticks(locs, min_lim, max_lim, mant):
         if ((loc >= min_lim) or (abs(loc-min_lim) <= 1e-14)) and
            ((loc <= max_lim) or (abs(loc-max_lim) <= 1e-14))
     ]
-    #template = '{0:'+str(mant+2)+'.'+str(mant)+'f}'
     raw_labels = [
         peng.peng(float(loc), mant, rjust=False)
         if ((abs(loc) >= 1) or (loc == 0)) else
-        templ(mant).format(round(float(loc), mant))
+        template(mant).format(round(float(loc), mant))
         for loc in bounded_locs
     ]
     raw_labels = [
