@@ -39,6 +39,11 @@
 	{"dir":"tests/support/ref_images_13", "file":"*.png"},
 	{"dir":"tests/support/ref_images_14", "file":"*.png"},
 	{"dir":"tests/support/ref_images_15", "file":"*.png"},
+	{"dir":"tests/support/ref_images_16", "file":"*.png"},
+	{"dir":"tests/support/ref_images_17", "file":"*.png"},
+	{"dir":"tests/support/ref_images_18", "file":"*.png"},
+	{"dir":"tests/support/ref_images_19", "file":"*.png"},
+	{"dir":"tests/support/ref_images_20", "file":"*.png"},
 	{"dir":"sbin", "file":"*.sh"},
 	{"dir":"sbin", "file":"*.py"},
 	{"dir":"requirements", "file":"*"}

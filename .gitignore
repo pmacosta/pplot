@@ -37,6 +37,15 @@ build/
 !tests/support/ref_images_9/*.png
 !tests/support/ref_images_10/*.png
 !tests/support/ref_images_11/*.png
+!tests/support/ref_images_12/*.png
+!tests/support/ref_images_13/*.png
+!tests/support/ref_images_14/*.png
+!tests/support/ref_images_15/*.png
+!tests/support/ref_images_16/*.png
+!tests/support/ref_images_17/*.png
+!tests/support/ref_images_18/*.png
+!tests/support/ref_images_19/*.png
+!tests/support/ref_images_20/*.png
 !docs/support/*.png
 !data/requirements.json
 !data/data_files.json
