@@ -63,7 +63,7 @@ def _intelligent_ticks(series, series_min, series_max,
     """
     Calculates ticks 'intelligently', trying to calculate sane tick spacing
     """
-    # pylint: disable=E1103,R0204,R0912,R0913,R0915
+    # pylint: disable=C1801,E1103,R0204,R0912,R0913,R0915
     if tick_list is not None:
         tick_list = numpy.sort(numpy.asarray(tick_list))
     elif len(series) == 1:

@@ -267,7 +267,7 @@ class Series(object):
         )
         # RGB or RGBA tuple
         check_list.append(
-            (isinstance(self.color, list) or isinstance(self.color, tuple)) and
+            isinstance(self.color, (list, tuple)) and
             (len(self.color) in [3, 4]) and
             ((numpy.array([
                 pmisc.isreal(comp) and (0.0 <= comp <= 1.0)

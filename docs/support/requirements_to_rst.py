@@ -84,8 +84,7 @@ def op_to_words(item):
                 return suffix+item[2:]
             elif prefix in ['>', '<']:
                 return suffix+item[1:]
-            else:
-                return item[2:]+suffix
+            return item[2:]+suffix
     raise RuntimeError('Inequality not supported')
 
 
@@ -118,8 +117,7 @@ def ops_to_words(item):
             +' '+
             op_to_words(tokens[-1])
         )
-    else:
-        return ' and '.join([op_to_words(token) for token in tokens])
+    return ' and '.join([op_to_words(token) for token in tokens])
 
 
 def proc_requirements(mobj):

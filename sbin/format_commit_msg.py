@@ -24,7 +24,7 @@ def format_msg():
     """ Wrap commit message in 72-character lines """
     msg = sys.stdin.read()
     bullet_regexp = re.compile(r'^(\s*[\*|\+]\s+)\W*')
-    if len(msg) > 0:
+    if msg:
         lines = msg.split('\n')
         olines = []
         stack = [0]

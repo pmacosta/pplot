@@ -186,14 +186,13 @@ def elapsed_time_string(start_time, stop_time):
             plural='s' if num > 1 else ''
         ) for num, desc in token_iter if num > 0
     ]
-    if len(ret_list) == 0:
+    if not ret_list:
         return 'None'
     elif len(ret_list) == 1:
         return ret_list[0]
     elif len(ret_list) == 2:
         return ret_list[0]+' and '+ret_list[1]
-    else:
-        return (', '.join(ret_list[0:-1]))+' and '+ret_list[-1]
+    return (', '.join(ret_list[0:-1]))+' and '+ret_list[-1]
 
 
 def insert_files_in_rsts(pkg_dir, cog_exe):
@@ -388,7 +387,7 @@ def generate_top_level_readme(pkg_dir):
             continue
         elif autofunction:
             match = indent_regexp.match(line)
-            if (not match) or (match and len(match.group(1)) == 0):
+            if (not match) or (match and (not match.group(1))):
                 autofunction = False
                 ret.append(line)
         elif literalinclude:

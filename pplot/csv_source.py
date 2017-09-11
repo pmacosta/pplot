@@ -323,6 +323,7 @@ class CsvSource(DataSource):
 
     def _apply_rfilter(self):
         """ Apply row filters to loaded data """
+        # pylint: disable=C1801
         self._check_rfilter()
         if _C(self.rfilter, self._csv_obj) and len(self.rfilter):
             self._csv_obj.rfilter = self.rfilter
@@ -523,7 +524,7 @@ class CsvSource(DataSource):
                 )
             )
         invalid_ret_ex(
-            not (isinstance(ret, list) or isinstance(ret, tuple)),
+            not isinstance(ret, (list, tuple)),
             _MF('func_name', self.fproc.__name__)
         )
         illegal_ret_ex(len(ret) != 2, _MF('func_name', self.fproc.__name__))

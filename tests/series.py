@@ -260,9 +260,11 @@ class TestSeries(object):
             obj = pplot.Series(
                 data_source=default_source, label='test', interp=item
             )
-            assert (obj.interp_indep_var, obj.interp_dep_var) != (None, None)
+            assert obj.interp_indep_var is not None
+            assert obj.interp_dep_var is not None
         obj = pplot.Series(data_source=default_source, label='test')
-        assert (obj.interp_indep_var, obj.interp_dep_var) != (None, None)
+        assert obj.interp_indep_var is not None
+        assert obj.interp_dep_var is not None
 
     def test_scale_indep_var(self, default_source):
         """ Test that independent variable scaling works """

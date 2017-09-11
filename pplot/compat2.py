@@ -29,8 +29,7 @@ def _unicode_to_ascii(obj):  # pragma: no cover
         return [_unicode_to_ascii(element) for element in obj]
     elif isinstance(obj, unicode):
         return obj.encode('utf-8')
-    else:
-        return obj
+    return obj
 
 
 def _write(fobj, data):

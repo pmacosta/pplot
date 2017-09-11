@@ -1,7 +1,7 @@
 # plot_example_2.py
 # Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0413,R0903
+# pylint: disable=C0111,C0413,R0903,W0235
 
 import pplot
 

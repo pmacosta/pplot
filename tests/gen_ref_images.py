@@ -473,7 +473,7 @@ def unittest_figure_images(mode=None, test_dir=None):
 
 def main(argv):
     """ Main function, generate images """
-    if len(argv) == 0:
+    if argv:
         unittest_series_images(mode='ref')
         unittest_panel_images(mode='ref')
         unittest_figure_images(mode='ref')

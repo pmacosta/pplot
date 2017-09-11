@@ -41,7 +41,7 @@ exobj_plot = trace_ex_plot_figure.trace_module(no_print=True)
 ###
 # Functions
 ###
-_IS_NUMBER = lambda x: isinstance(x, int) or isinstance(x, float)
+_IS_NUMBER = lambda x: isinstance(x, (int, float))
 
 
 def _first_label(label_list):
@@ -388,6 +388,7 @@ class Figure(object):
             Figure height: ...
             <BLANKLINE>
         """
+        # pylint: disable=C1801
         ret = ''
         if (self.panels is None) or (len(self.panels) == 0):
             ret += 'Panels: None\n'
