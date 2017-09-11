@@ -10,7 +10,7 @@ import sys
 if sys.hexversion >= 0x03000000:
     import unittest.mock as mock
 # PyPI imports
-import numpy
+import numpy as np
 import pytest
 if sys.hexversion < 0x03000000:
     import mock
@@ -55,8 +55,8 @@ class TestFigure(object):
     def test_iter(self, default_panel):
         """ Test __iter__ method behavior """
         ds1_obj = pplot.BasicSource(
-            indep_var=numpy.array([100, 200, 300, 400]),
-            dep_var=numpy.array([1, 2, 3, 4])
+            indep_var=np.array([100, 200, 300, 400]),
+            dep_var=np.array([1, 2, 3, 4])
         )
         series1_obj = pplot.Series(
             data_source=ds1_obj, label='series 1', interp=None
@@ -121,8 +121,8 @@ class TestFigure(object):
             'Independent variable units: Amps\n'
             'Logarithmic independent axis: False\n'
             'Title: My graph\n'
-            'Figure width: (6\\.08|6\\.71|6\\.67|\\.74).*\n'
-            'Figure height: (4.99|5.06).*\n'
+            'Figure width: (6\\.08|6\\.55|6\\.71|6\\.67|\\.74).*\n'
+            'Figure height: (4\\.99|5\\.06|5\\.29).*\n'
         )
         actual = str(obj)
         ref_invariant = '\n'.join(ref.split('\n')[:-3])
@@ -130,8 +130,8 @@ class TestFigure(object):
         assert ref_invariant == actual_invariant
         act_width = float(actual.split('\n')[-3][14:])
         act_height = float(actual.split('\n')[-2][15:])
-        ref_widths = [6.08, 6.71, 6.67, 6.74, 6.75]
-        ref_heights = [4.99, 5.06]
+        ref_widths = [6.08, 6.4, 6.55, 6.71, 6.67, 6.74, 6.75]
+        ref_heights = [4.8, 4.99, 5.06, 5.29]
         if act_width not in ref_widths:
             assert False, '{0} not in {1}'.format(act_width, ref_widths)
         if act_height not in ref_heights:
@@ -219,9 +219,12 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_width is None
         obj = pplot.Figure(panels=default_panel)
-        comp_num(obj.fig_width, [6.08, 6.71] if MVER == 1 else [6.74, 6.75])
-        obj.fig_width = 5
-        assert obj.fig_width == 5
+        comp_num(
+            obj.fig_width,
+            [6.08, 6.71] if MVER == 1 else [6.4, 6.55, 6.74, 6.75]
+        )
+        obj.fig_width = 7
+        assert obj.fig_width == 7
 
     @pytest.mark.figure
     def test_fig_width_exceptions(self, default_panel):
@@ -233,7 +236,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_height is None
         obj = pplot.Figure(panels=default_panel)
-        comp_num(obj.fig_height, 4.31 if MVER == 1 else 4.37)
+        comp_num(obj.fig_height, 4.31 if MVER == 1 else [4.37, 4.65, 4.8])
         obj.fig_height = 5
         assert obj.fig_height == 5
 
@@ -253,12 +256,12 @@ class TestFigure(object):
         """ Test indep_axis_ticks property behavior """
         obj = pplot.Figure(
             panels=default_panel,
-            indep_axis_ticks=[1000, 2000, 3000, 3500]
+            indep_axis_ticks=np.array([1000, 2000, 3000, 3500])
         )
-        assert obj.indep_axis_ticks == [1.0, 2.0, 3.0, 3.5]
+        assert (obj.indep_axis_ticks == np.array([1.0, 2.0, 3.0, 3.5])).all()
         obj = pplot.Figure(
             panels=default_panel,
-            indep_axis_ticks=numpy.array([1E6, 2E6, 3E6, 3.5E6])
+            indep_axis_ticks=np.array([1E6, 2E6, 3E6, 3.5E6])
         )
         assert obj.indep_axis_ticks == [1.0, 2.0, 3.0, 3.5]
         # Logarithmic independent axis tick marks
@@ -266,7 +269,7 @@ class TestFigure(object):
         obj = pplot.Figure(
             panels=default_panel,
             log_indep_axis=True,
-            indep_axis_ticks=numpy.array([1E6, 2E6, 3E6, 3.5E6])
+            indep_axis_ticks=np.array([1E6, 2E6, 3E6, 3.5E6])
         )
         assert obj.indep_axis_ticks == [1.0, 10.0]
 
@@ -276,6 +279,39 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.indep_axis_ticks is None
         AI(FOBJ, 'indep_axis_ticks', default_panel, indep_axis_ticks=5)
+
+    def test_indep_axis_tick_labels(self, default_panel):
+        """ Test indep_axis_tick_labels property behavior """
+        obj = pplot.Figure(
+            panels=default_panel,
+            indep_axis_ticks=np.array([1000, 2000, 3000, 3500]),
+            indep_axis_tick_labels=['a', 'b', 'c', 'd']
+        )
+        assert obj.indep_axis_tick_labels == ['a', 'b', 'c', 'd']
+        obj = pplot.Figure(
+            panels=default_panel,
+            indep_axis_ticks=np.array([1000, 2000, 3000, 3500]),
+        )
+        assert obj.indep_axis_tick_labels == ['1.0', '2.0', '3.0', '3.5']
+
+    @pytest.mark.figure
+    def test_indep_axis_tick_labels_exceptions(self, default_panel):
+        """ Test indep_axis_tick_labels property exceptions """
+        AI(
+            FOBJ,
+            'indep_axis_tick_labels',
+            panels=default_panel,
+            indep_axis_tick_labels='a'
+        )
+        AI(
+            FOBJ,
+            'indep_axis_tick_labels',
+            panels=default_panel,
+            indep_axis_tick_labels=[1, 2, 3]
+        )
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        AE(FOBJ, RE, exmsg, panels=default_panel, indep_axis_tick_labels=[])
+        AE(FOBJ, RE, exmsg, panels=default_panel, indep_axis_tick_labels=['a'])
 
     def test_indep_var_label(self, default_panel):
         """ Test indep_var_label property behavior """
@@ -315,8 +351,8 @@ class TestFigure(object):
         """ Test log_indep_axis property exceptions """
         AI(FOBJ, 'log_indep_axis', default_panel, log_indep_axis=5)
         negative_data_source = pplot.BasicSource(
-            indep_var=numpy.array([-5, 6, 7, 8]),
-            dep_var=numpy.array([0.1, 10, 5, 4])
+            indep_var=np.array([-5, 6, 7, 8]),
+            dep_var=np.array([0.1, 10, 5, 4])
         )
         negative_series = pplot.Series(
             data_source=negative_data_source, label='negative data series'

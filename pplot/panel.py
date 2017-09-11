@@ -333,10 +333,10 @@ class Panel(object):
         if self.series is not None:
             self._validate_series()
             self._panel_has_primary_axis = any(
-                [not series_obj.secondary_axis for series_obj in self.series]
+                not series_obj.secondary_axis for series_obj in self.series
             )
             self._panel_has_secondary_axis = any(
-                [series_obj.secondary_axis for series_obj in self.series]
+                series_obj.secondary_axis for series_obj in self.series
             )
             comp_prim_dep_var = (
                 (not self.log_dep_axis) and self._panel_has_primary_axis
@@ -862,7 +862,7 @@ class Panel(object):
             yflist
         )
         # Process
-        fgrid(True, 'both')
+        fgrid(True, which='both')
         flim((dep_min, dep_max), emit=True, auto=False)
         fticks(tick_locs)
         axis_obj.tick_params(
@@ -889,7 +889,7 @@ class Panel(object):
                 fontdict={'fontsize':AXIS_LABEL_FONT_SIZE}
             )
 
-    def _draw_panel(self, axarr_prim, indep_axis_dict, print_indep_axis):
+    def _draw(self, axarr_prim, indep_axis_dict, print_indep_axis):
         """ Draw panel series """
         # pylint: disable=W0612
         axarr_sec = (
@@ -897,12 +897,31 @@ class Panel(object):
             if self._panel_has_secondary_axis else
             None
         )
+        #if self._panel_has_primary_axis:
+        #    axarr_prim.set_axisbelow(True)
+        #    axarr_prim.xaxis.grid(True, which='both')
+        #    axarr_prim.yaxis.grid(True, which='both')
+        #if self._panel_has_secondary_axis:
+        #    axarr_sec.set_axisbelow(True)
+        #    axarr_sec.xaxis.grid(True, which='both')
+        #    axarr_sec.yaxis.grid(True, which='both')
         # Place data series in their appropriate axis (primary or secondary)
+        prim_log_axis = sec_log_axis = False
         for series_obj in self.series:
-            series_obj._draw_series(
+            series_obj._draw(
                 axarr_prim if not series_obj.secondary_axis else axarr_sec,
                 indep_axis_dict['log_indep'],
-                self.log_dep_axis
+                self.log_dep_axis,
+            )
+            prim_log_axis = (
+                prim_log_axis
+                if prim_log_axis else
+                (not series_obj.secondary_axis) and self.log_dep_axis
+            )
+            sec_log_axis = (
+                sec_log_axis
+                if sec_log_axis else
+                series_obj.secondary_axis and self.log_dep_axis
             )
         # Set up tick labels and axis labels
         if self._panel_has_primary_axis:
@@ -961,15 +980,12 @@ class Panel(object):
                     if series_obj._check_series_is_plottable()
                 ]
                 legend_axis = (
-                    axarr_prim
-                    if self._panel_has_primary_axis else
-                    axarr_sec
+                    axarr_prim if self._panel_has_primary_axis else axarr_sec
                 )
                 loc_key = self._legend_pos_list.index(
                             self.legend_props['pos'].lower()
                             if 'pos' in self.legend_props else 'lower left'
                 )
-
                 legend_axis.legend(
                     leg_artist,
                     labels,
@@ -1020,6 +1036,7 @@ class Panel(object):
                not print_indep_axis else
             indep_axis_dict['indep_axis_unit_scale'].strip()
         )
+        indep_axis = axarr_prim if self._panel_has_primary_axis else axarr_sec
         self._setup_axis(
             'INDEP',
             axarr_prim,
@@ -1032,6 +1049,14 @@ class Panel(object):
             indep_axis_unit_scale
         )
         plt.setp(axarr_prim.get_xticklabels(), visible=print_indep_axis)
+        # This is necessary because if there is no primary axis but there
+        # is a secondary axis, then the independent axis bounding boxes
+        # are all stacked up in the same spot
+        axarr_prim.yaxis.log_axis = prim_log_axis
+        axarr_prim.xaxis.log_axis = indep_axis_dict['log_indep']
+        if self._panel_has_secondary_axis:
+            axarr_sec.xaxis = axarr_prim.xaxis
+            axarr_sec.yaxis.log_axis = sec_log_axis
         return {
             'primary':(
                 None

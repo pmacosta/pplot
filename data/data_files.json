@@ -47,6 +47,8 @@
 	{"dir":"tests/support/ref_images_21", "file":"*.png"},
 	{"dir":"tests/support/ref_images_22", "file":"*.png"},
 	{"dir":"tests/support/ref_images_23", "file":"*.png"},
+	{"dir":"tests/support/ref_images_24", "file":"*.png"},
+	{"dir":"tests/support/ref_images_25", "file":"*.png"},
 	{"dir":"sbin", "file":"*.sh"},
 	{"dir":"sbin", "file":"*.py"},
 	{"dir":"requirements", "file":"*"}

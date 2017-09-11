@@ -1,15 +1,20 @@
 # figure.py
 # Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,R0201,R0914,W0105,W0212
+# pylint: disable=C0111,C0302,R0201,R0914,R0915,W0105,W0212
 
 # Standard library imports
 from __future__ import print_function
+from functools import partial
+import math
 import os
+import sys
+import warnings
 # PyPI imports
 import numpy
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.transforms import Bbox
 import pmisc
 import pexdoc.exh
 import pexdoc.pcontracts
@@ -39,59 +44,27 @@ exobj_plot = trace_ex_plot_figure.trace_module(no_print=True)
 
 
 ###
+# Global variables
+###
+INF = sys.float_info.max
+NULL_BBOX = Bbox([[0, 0], [0, 0]])
+SPACER = 0.2 # in inches
+
+
+###
 # Functions
 ###
-_IS_NUMBER = lambda x: isinstance(x, (int, float))
+def _lmax(*args):
+    return _lmm(max, 0, *args)
 
 
-def _first_label(label_list):
-    """ Find first non-blank label """
-    llist = [lobj.get_text().strip() for lobj in label_list]
-    for label_index, label_text in enumerate(llist):
-        if label_text not in [None, '']:
-            return label_index
+def _lmin(*args):
+    return _lmm(min, INF, *args)
 
 
-def _get_text_prop(fig, text_obj):
-    """ Return length of text in pixels """
-    renderer = fig.canvas.get_renderer()
-    bbox = text_obj.get_window_extent(renderer=renderer).transformed(
-        fig.dpi_scale_trans.inverted()
-    )
-    return {'width':bbox.width*fig.dpi, 'height':bbox.height*fig.dpi}
-
-
-def _get_yaxis_size(fig_obj, tick_labels, axis_label):
-    """ Compute Y axis height and width """
-    # Minimum of one line spacing between vertical ticks
-    get_prop = lambda x, y: _get_text_prop(fig_obj, x)[y]
-    axis_height = axis_width = 0
-    label_index = _first_label(tick_labels)
-    if label_index is not None:
-        label_height = get_prop(tick_labels[label_index], 'height')
-        axis_height = (2*len(tick_labels)-1)*label_height
-        raw_axis_width = [get_prop(tick, 'width') for tick in tick_labels]
-        axis_width = max([num for num in raw_axis_width if _IS_NUMBER(num)])
-    # axis_label is a Text object, which is never None, it has the x, y
-    # coordinates and axis label text, even if is = ''
-    axis_height = max(axis_height, get_prop(axis_label, 'height'))
-    axis_width = axis_width+(1.5*get_prop(axis_label, 'width'))
-    return axis_height, axis_width
-
-
-def _get_xaxis_size(fig_obj, tick_labels, axis_label):
-    """ Compute Y axis height and width """
-    # Minimum of one smallest label separation between horizontal ticks
-    get_prop = lambda x, y: _get_text_prop(fig_obj, x)[y]
-    raw_axis_width = [get_prop(tick, 'width') for tick in tick_labels]
-    label_width_list = [num for num in raw_axis_width if _IS_NUMBER(num)]
-    min_label_width = min(label_width_list)
-    axis_width = ((len(tick_labels)-1)*min_label_width)+sum(label_width_list)
-    # axis_label is a Text object, which is never None, it has the x, y
-    # coordinates and axis label text, even if is = ''
-    axis_height = 1.5*get_prop(axis_label, 'height')
-    axis_width = max(axis_width, get_prop(axis_label, 'width'))
-    return axis_height, axis_width
+def _lmm(fpointer, limit, *args):
+    ret = [item for item in pmisc.flatten_list(args) if item is not None]
+    return fpointer(ret) if ret else limit
 
 
 ###
@@ -118,6 +91,12 @@ class Figure(object):
                              axis
     :type  indep_axis_ticks: list, Numpy vector or None
 
+    :param indep_axis_tick_labels: Independent axis tick labels. If not None
+                                   overrides ticks automatically generated
+                                   or as given by the **indep_axis_ticks**
+                                   argument
+    :type  indep_axis_tick_labels: list of strings or None
+
     :param fig_width: Hard copy plot width in inches. If None the width is
                       automatically calculated so that there is no horizontal
                       overlap between any two text elements in the figure
@@ -137,11 +116,16 @@ class Figure(object):
                            axis is linear (False) or logarithmic (True)
     :type  log_indep_axis: boolean
 
+    :param dpi: Dots per inch to be used while showing or displaying figure
+    :type  dpi: positive number
+
     .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.__init__
 
     :raises:
+     * RuntimeError (Argument \`dpi\` is not valid)
+
      * RuntimeError (Argument \`fig_height\` is not valid)
 
      * RuntimeError (Argument \`fig_width\` is not valid)
@@ -149,6 +133,8 @@ class Figure(object):
      * RuntimeError (Argument \`indep_axis_ticks\` is not valid)
 
      * RuntimeError (Argument \`indep_var_label\` is not valid)
+
+     * RuntimeError (Argument \`indep_axis_tick_labels\` is not valid)
 
      * RuntimeError (Argument \`indep_var_units\` is not valid)
 
@@ -163,6 +149,9 @@ class Figure(object):
      * RuntimeError (Figure size is too small: minimum width *[min_width]*,
        minimum height *[min_height]*)
 
+     * RuntimeError (Number of tick locations and number of tick labels
+       mismatch)
+
      * TypeError (Panel *[panel_num]* is not fully specified)
 
      * ValueError (Figure cannot be plotted with a logarithmic independent
@@ -173,8 +162,8 @@ class Figure(object):
     """
     # pylint: disable=R0902,R0913
     def __init__(self, panels=None, indep_var_label='', indep_var_units='',
-        indep_axis_ticks=None, fig_width=None, fig_height=None, title='',
-        log_indep_axis=False):
+        indep_axis_tick_labels=None, indep_axis_ticks=None, fig_width=None,
+        fig_height=None, title='', log_indep_axis=False, dpi=100.0):
         pexdoc.exh.addai(
             'indep_axis_ticks',
             (indep_axis_ticks is not None) and (
@@ -182,8 +171,23 @@ class Figure(object):
                 (not isinstance(indep_axis_ticks, numpy.ndarray))
             )
         )
+        pexdoc.exh.addai(
+            'indep_axis_tick_labels',
+            (indep_axis_tick_labels is not None) and
+            ((not isinstance(indep_axis_tick_labels, list)) or
+            (isinstance(indep_axis_tick_labels, list) and
+            (indep_axis_ticks is not None) and
+            (len(indep_axis_tick_labels) != len(indep_axis_ticks))))
+        )
+        # Private attributes
+        self._need_redraw = False
+        self._min_fig_width = None
+        self._min_fig_height = None
+        self._size_given = False
         # Public attributes
+        self._dpi = None
         self._indep_axis_ticks = None
+        self._indep_axis_tick_labels = None
         self._fig = None
         self._panels = None
         self._indep_var_label = None
@@ -195,16 +199,22 @@ class Figure(object):
         self._indep_var_div = None
         self._axes_list = []
         # Assignment of arguments to attributes
+        self._set_dpi(dpi)
         self._set_indep_var_label(indep_var_label)
         self._set_indep_var_units(indep_var_units)
         self._set_title(title)
         self._set_log_indep_axis(log_indep_axis)
-        self._indep_axis_ticks = (
+        self._set_indep_axis_ticks(
             indep_axis_ticks if not self.log_indep_axis else None
         )
+        self._set_indep_axis_tick_labels(indep_axis_tick_labels)
         self._set_fig_width(fig_width)
         self._set_fig_height(fig_height)
         self._set_panels(panels)
+        if self._complete:
+            self._create_figure()
+            self._check_figure_spec(self._fig_width, self._fig_height)
+
 
     def __bool__(self): # pragma: no cover
         """
@@ -213,6 +223,7 @@ class Figure(object):
 
         .. note:: This method applies to Python 3.x
         """
+        self._create_figure()
         return self._panels is not None
 
     def __iter__(self):
@@ -324,6 +335,7 @@ class Figure(object):
                pos: BEST
             <BLANKLINE>
         """
+        self._create_figure()
         return iter(self._panels)
 
     def __nonzero__(self):  # pragma: no cover
@@ -333,6 +345,7 @@ class Figure(object):
 
         .. note:: This method applies to Python 2.x
         """
+        self._create_figure()
         return self._panels is not None
 
     def __str__(self):
@@ -389,6 +402,8 @@ class Figure(object):
             <BLANKLINE>
         """
         # pylint: disable=C1801
+        self._create_figure()
+        fig_width, fig_height = self._fig_dims()
         ret = ''
         if (self.panels is None) or (len(self.panels) == 0):
             ret += 'Panels: None\n'
@@ -415,64 +430,528 @@ class Figure(object):
         ret += 'Title: {0}\n'.format(
             self.title if self.title not in ['', None] else 'not specified'
         )
-        ret += 'Figure width: {0}\n'.format(self.fig_width)
-        ret += 'Figure height: {0}\n'.format(self.fig_height)
+        ret += 'Figure width: {0}\n'.format(fig_width)
+        ret += 'Figure height: {0}\n'.format(fig_height)
         return ret
 
+    def _axis_box_dim(self, axis, axis_type='x'):
+        """ Returns minimum axis box size given label width """
+        xaxis = axis_type.lower() == 'x'
+        sep = (1.5 if xaxis else 1.0)*SPACER
+        dim = 'width' if xaxis else 'height'
+        locs = self._indep_axis_ticks if xaxis else axis.get_ticklocs()
+        tlabels = axis.get_ticklabels()
+        tlabels = [label for label in tlabels if label.get_text().strip()]
+        if not tlabels:
+            # X axis in a panel that is configured to not display the
+            # independent axis, for example
+            return
+        bboxes = [self._bbox(label) for label in tlabels]
+        mult = 3 if axis.log_axis else 1
+        label_half_dim = [(getattr(bbox, dim)+mult*sep)/2.0 for bbox in bboxes]
+        if axis.log_axis:
+            return max(label_half_dim)*(len(label_half_dim)-1)
+        tick_ratios = numpy.diff(numpy.array(locs))
+        curr_label, prev_label = label_half_dim[1:], label_half_dim[:-1]
+        sep_dim = [curr+prev for curr, prev in zip(curr_label, prev_label)]
+        axis_box_dim = (locs[-1]-locs[0])*max(sep_dim/tick_ratios)
+        return axis_box_dim
+
+    def _axis_side_dim(self, axis, axis_type='indep', axis_box_edge=0):
+        """ Returns minimum space required by axis label and tick marks """
+        indep = axis_type.lower() == 'indep'
+        primary = axis_type.lower() == 'primary'
+        sign = +1 if indep or primary else -1
+        func = _lmin if indep or primary else _lmax
+        dim = 'ymin' if indep else ('xmin' if primary else 'xmax')
+        label = axis.get_label().get_text().strip()
+        label_dim = getattr(self._bbox(axis.get_label()), dim) if label else 0
+        tick_bbox = self._axis_ticks_bbox(axis)
+        tick_edge = func([getattr(bbox, dim) for bbox in tick_bbox])
+        tick_dim = sign*(axis_box_edge-tick_edge) if tick_bbox else 0
+        edge = tick_edge if tick_bbox else axis_box_edge
+        label_plus_padding = sign*(edge-label_dim) if label else 0
+        return label_plus_padding, tick_dim
+
+    def _axis_ticks_bbox(self, axis):
+        """ Get bounding box of non-empty axis ticks """
+        return [
+            self._bbox(tick)
+            for tick in axis.get_ticklabels() if tick.get_text().strip()
+        ]
+
+    def _axis_ticks_dim(self, axis, dim):
+        """ Returns requested dimension of non-empty axis tick labels """
+        return [getattr(item, dim) for item in self._axis_ticks_bbox(axis)]
+
+    def _axis_ticks_xmax(self, axis):
+        """ Returns xmax dimension of ticks bounding box """
+        return self._axis_ticks_dim(axis, 'xmax')
+
+    def _axis_ticks_xmin(self, axis):
+        """ Returns xmin dimension of ticks bounding box """
+        return self._axis_ticks_dim(axis, 'xmin')
+
+    def _axis_ticks_ymax(self, axis):
+        """ Returns ymax dimension of ticks bounding box """
+        return self._axis_ticks_dim(axis, 'ymax')
+
+    def _axis_ticks_ymin(self, axis):
+        """ Returns ymin dimension of ticks bounding box """
+        return self._axis_ticks_dim(axis, 'ymin')
+
+    def _bbox(self, obj):
+        """ Returns bounding box of an object """
+        renderer = self._fig.canvas.get_renderer()
+        return obj.get_window_extent(renderer=renderer).transformed(
+            self._fig.dpi_scale_trans.inverted()
+        )
+
+    def _calculate_figure_bbox(self):
+        """ Returns bounding box of figure """
+        top = self._fig_top()
+        bottom = self._fig_bottom()
+        right = max(self._panel_edge(obj, 'right') for obj in self._axes_list)
+        left = min(self._panel_edge(obj, 'left') for obj in self._axes_list)
+        fig_bbox = Bbox([[left, bottom], [right, top]])
+        return fig_bbox
+
+    def _calculate_min_figure_size(self):
+        """ Calculates minimum panel and figure size """
+        dround = lambda x: round(x/self._dpi, 2)
+        sep = 10*SPACER
+        title_height = title_width = 0
+        top_panel = self._axes_list[0]
+        axes = (top_panel['primary'], top_panel['secondary'])
+        axes = [axis for axis in axes if axis and axis.get_title().strip()]
+        if axes:
+            axis = axes[0] # There should be only one
+            title_obj = axis.title
+            title_bbox = self._bbox(title_obj)
+            label_bbox = self._bbox(axis.yaxis.get_ticklabels()[-1])
+            title_pad = title_bbox.ymin-label_bbox.ymax
+            title_height = (title_bbox.height+title_pad)*self._dpi
+            title_width = title_bbox.width*self._dpi
+        adicts = self._axes_list
+        panels_width = max(self._min_panel(adict, 'x') for adict in adicts)
+        panels_height = max(self._min_panel(adict, 'y') for adict in adicts)
+        self._min_fig_width = dround(max(title_width, panels_width))
+        npanels = len(self._axes_list)
+        self._min_fig_height = dround(npanels*(panels_height+sep)-sep+title_height)
+
+    def _check_figure_spec(self, fig_width=None, fig_height=None):
+        """ Validates given figure size against minimum dimension """
+        small_ex = pexdoc.exh.addex(
+            RuntimeError,
+            'Figure size is too small: minimum width *[min_width]*, '
+            'minimum height *[min_height]*'
+        )
+        small_ex(
+            bool(
+                (fig_width and (fig_width < self._min_fig_width)) or
+                (fig_height and (fig_height < self._min_fig_height))
+            ),
+            [
+                _F('min_width', self._min_fig_width),
+                _F('min_height', self._min_fig_height)
+            ]
+        )
+
+    def _create_figure(self, raise_exception=False):
+        """ Create and resize figure """
+        specified_ex = pexdoc.exh.addex(
+            RuntimeError, 'Figure object is not fully specified'
+        )
+        specified_ex(raise_exception and (not self._complete))
+        if not self._complete:
+            return
+        if self._need_redraw:
+            self._size_given = (
+                (self._fig_width is not None) and (self._fig_height is not None)
+            )
+            # First _draw call is to calculate approximate figure size, (until
+            # matplotlib actually draws the figure, all the bounding boxes of
+            # the elements in the figure are null boxes. The second _draw call
+            # is to draw figure with either the calculated minimum dimensions
+            # or the user-given dimensions, provided they are equal or greater
+            # than the minimum dimensions
+            self._draw(preview=True)
+            self._draw(preview=False)
+            bbox = self._calculate_figure_bbox()
+            self._min_fig_width = math.floor(self.dpi*bbox.width)/self.dpi
+            self._min_fig_height = math.floor(self.dpi*bbox.height)/self.dpi
+            fig_width, fig_height = self._fig_dims()
+            self._fig.set_size_inches(fig_width, fig_height, forward=True)
+            self._need_redraw = False
+        else:
+            bbox = self._calculate_figure_bbox()
+        fig_width, fig_height = self._fig_dims()
+        bbox_xcenter = bbox.xmin+0.5*bbox.width
+        bbox_ycenter = bbox.ymin+0.5*bbox.height
+        bbox = Bbox(
+            [
+                [bbox_xcenter-0.5*fig_width, bbox_ycenter-0.5*fig_height],
+                [bbox_xcenter+0.5*fig_width, bbox_ycenter+0.5*fig_height]
+            ]
+        )
+        return bbox
+
+    def _draw(self, preview=True):
+        # pylint: disable=C0326,W0612
+        log_ex = pexdoc.exh.addex(
+            ValueError,
+            'Figure cannot be plotted with a logarithmic '
+            'independent axis because panel *[panel_num]*, series '
+            '*[series_num]* contains negative independent data points'
+        )
+        ticks_num_ex = pexdoc.exh.addex(
+            RuntimeError,
+            'Number of tick locations and number of tick labels mismatch'
+        )
+        self._axes_list = []
+        num_panels = len(self.panels)
+        plt.close('all')
+        # Create required number of panels
+        fig_width, fig_height = self._fig_dims()
+        figsize = (fig_width, fig_height) if fig_width and fig_height else None
+        self._fig, axes = plt.subplots(
+            num_panels, sharex=True, dpi=self._dpi, figsize=figsize,
+            tight_layout=dict(pad=0, h_pad=10*SPACER)
+        )
+        axes = axes if isinstance(axes, type(numpy.array([]))) else [axes]
+        glob_indep_var = []
+        # Find union of the independent variable data set of all panels
+        for panel_num, panel_obj in enumerate(self.panels):
+            for series_num, series_obj in enumerate(panel_obj.series):
+                log_ex(
+                    bool(
+                        self.log_indep_axis and
+                        (min(series_obj.indep_var) < 0)
+                    ),
+                    edata=_MF(
+                        'panel_num', panel_num, 'series_num', series_num
+                    )
+                )
+                glob_indep_var = numpy.unique(
+                    numpy.append(
+                        glob_indep_var,
+                        numpy.array(
+                            [
+                                peng.round_mantissa(element, 10)
+                                for element in series_obj.indep_var
+                            ]
+                        )
+                    )
+                )
+        indep_axis_ticks = _intelligent_ticks(
+            glob_indep_var,
+            min(glob_indep_var),
+            max(glob_indep_var),
+            tight=True,
+            log_axis=self.log_indep_axis,
+            tick_list=(
+                None if self._log_indep_axis else self._indep_axis_ticks
+            )
+        )
+        self._indep_var_div = indep_axis_ticks.div
+        prev_indep_axis_ticks = self._indep_axis_ticks
+        self._indep_axis_ticks = indep_axis_ticks.locs
+        ticks_num_ex(
+            (self._indep_axis_tick_labels is not None) and
+            (
+                len(self._indep_axis_tick_labels)
+                !=
+                len(indep_axis_ticks.labels)
+            )
+        )
+        # Scale all panel series
+        for panel_obj in self.panels:
+            panel_obj._scale_indep_var(self._indep_var_div)
+        # Draw panels
+        self._indep_axis_tick_labels = (
+            self._indep_axis_tick_labels or indep_axis_ticks.labels
+        )
+        indep_axis_dict = {
+            'log_indep':self.log_indep_axis,
+            'indep_var_min':indep_axis_ticks.min,
+            'indep_var_max':indep_axis_ticks.max,
+            'indep_var_locs':indep_axis_ticks.locs,
+            'indep_var_labels':self._indep_axis_tick_labels,
+            'indep_axis_label':self.indep_var_label,
+            'indep_axis_units':self.indep_var_units,
+            'indep_axis_unit_scale':indep_axis_ticks.unit_scale
+        }
+        panels_with_indep_axis_list = [
+            num for num, panel_obj in enumerate(self.panels)
+            if panel_obj.display_indep_axis
+        ] or [num_panels-1]
+        keys = ['number', 'primary', 'secondary']
+        for num, (panel_obj, axis) in enumerate(zip(self.panels, axes)):
+            panel_dict = panel_obj._draw(
+                axis, indep_axis_dict, num in panels_with_indep_axis_list
+            )
+            panel_dict['number'] = num
+            self._axes_list.append(
+                dict((item, panel_dict[item]) for item in keys)
+            )
+        if self.title not in [None, '']:
+            top_panel = self._axes_list[0]
+            axes = top_panel['primary'] or top_panel['secondary']
+            axes.set_title(
+                self.title,
+                horizontalalignment='center',
+                verticalalignment='bottom',
+                multialignment='center',
+                fontsize=TITLE_FONT_SIZE
+            )
+        # Draw figure otherwise some bounding boxes return NaN
+        FigureCanvasAgg(self._fig).draw()
+        self._calculate_min_figure_size()
+        if preview:
+            for panel_obj in self.panels:
+                panel_obj._scale_indep_var(1/float(self._indep_var_div))
+            self._indep_axis_ticks = prev_indep_axis_ticks
+            self._indep_var_div = 1.0
+
+    def _fig_bottom(self):
+        panel = self._axes_list[-1]
+        axes = [self._axes_list[0]['primary'], self._axes_list[0]['secondary']]
+        axes = [axis for axis in axes if axis]
+        yaxes = [axis.yaxis for axis in axes]
+        yaxes_label = [axis for axis in yaxes if self._label_text(axis)]
+        ylabels = [axis.get_label() for axis in yaxes_label]
+        xaxis = (panel['primary'] or panel['secondary']).xaxis
+        xlabel = self._label_text(xaxis)
+        xtick_bot = _lmin(self._axis_ticks_ymin(xaxis))
+        ytick_bot = _lmin([self._axis_ticks_ymin(axis) for axis in yaxes])
+        xlabel_bot = self._bbox(xaxis.get_label()).ymin if xlabel else INF
+        ylabel_bot = _lmin([self._bbox(ylabel).ymin for ylabel in ylabels])
+        return min(xtick_bot, xlabel_bot, ytick_bot, ylabel_bot)
+
+    def _fig_dims(self):
+        """ Get actual figure size, given or minimum calculated """
+        fig_width = self._fig_width or self._min_fig_width
+        fig_height = self._fig_height or self._min_fig_height
+        return fig_width, fig_height
+
+    def _fig_top(self):
+        panel = self._axes_list[0]
+        axes = [panel['primary'], panel['secondary']]
+        axes = [axis for axis in axes if axis]
+        yaxes = [axis.yaxis for axis in axes]
+        axes_title = [axis for axis in axes if axis.get_title().strip()]
+        yaxes_label = [axis for axis in yaxes if self._label_text(axis)]
+        ylabels = [axis.get_label() for axis in yaxes_label]
+        title_top = _lmax([self._bbox(axis.title).ymax for axis in axes_title])
+        ytick_top = _lmax([self._axis_ticks_ymax(axis) for axis in yaxes])
+        ylabel_top = _lmax([self._bbox(ylabel).ymax for ylabel in ylabels])
+        return max(title_top, ytick_top, ylabel_top)
+
+    def _get_axes_list(self):
+        self._create_figure()
+        return self._axes_list
+
+    def _get_complete(self):
+        """
+        Returns True if figure is fully specified, otherwise returns False
+        """
+        return (self.panels is not None) and len(self.panels)
+
+    def _get_dpi(self):
+        return self._dpi
+
+    def _get_fig(self):
+        self._create_figure()
+        return self._fig
+
+    def _get_fig_height(self):
+        if self._complete and (self._fig_height is None):
+            self._create_figure()
+            self._fig_height = self._min_fig_height
+        return self._fig_height
+
+    def _get_fig_width(self):
+        if self._complete and (self._fig_width is None):
+            self._create_figure()
+            self._fig_width = self._min_fig_width
+        return self._fig_width
+
     def _get_indep_axis_scale(self):
+        self._create_figure()
         return self._indep_var_div
 
     def _get_indep_axis_ticks(self):
+        self._create_figure()
         return self._indep_axis_ticks
+
+    def _get_indep_axis_tick_labels(self):
+        self._create_figure()
+        return self._indep_axis_tick_labels
 
     def _get_indep_var_label(self):
         return self._indep_var_label
 
-    @pexdoc.pcontracts.contract(indep_var_label='None|str')
-    def _set_indep_var_label(self, indep_var_label):
-        self._indep_var_label = indep_var_label
-        self._draw(force_redraw=True)
-
     def _get_indep_var_units(self):
         return self._indep_var_units
-
-    @pexdoc.pcontracts.contract(indep_var_units='None|str')
-    def _set_indep_var_units(self, indep_var_units):
-        self._indep_var_units = indep_var_units
-        self._draw(force_redraw=True)
-
-    def _get_title(self):
-        return self._title
-
-    @pexdoc.pcontracts.contract(title='None|str')
-    def _set_title(self, title):
-        self._title = title
-        self._draw(force_redraw=True)
 
     def _get_log_indep_axis(self):
         return self._log_indep_axis
 
-    @pexdoc.pcontracts.contract(log_indep_axis='None|bool')
-    def _set_log_indep_axis(self, log_indep_axis):
-        self._log_indep_axis = log_indep_axis
-        self._draw(force_redraw=True)
+    def _get_panels(self):
+        return self._panels
 
-    def _get_fig_width(self):
-        return self._fig_width
+    def _get_title(self):
+        return self._title
 
-    @pexdoc.pcontracts.contract(fig_width='None|positive_real_num')
-    def _set_fig_width(self, fig_width):
-        self._fig_width = fig_width
+    def _label_text(self, axis):
+        """ Returns axis label text """
+        return axis.get_label().get_text().strip()
 
-    def _get_fig_height(self):
-        return self._fig_height
+    def _label_bbox(self, axes, prop):
+        """ Returns bounding box of non-empty axis labels """
+        lobj = [(axis.get_label(), self._label_text(axis)) for axis in axes]
+        bboxes = [self._bbox(bbox) for bbox, label in lobj if label]
+        return [getattr(bbox, prop) for bbox in bboxes]
+
+    def _min_panel(self, adict, axis_type):
+        """ Returns minimum panel width panel """
+        prim_dep_axis, sec_dep_axis = adict['primary'], adict['secondary']
+        axis_type = axis_type.lower()
+        xaxis = axis_type == 'x'
+        min_prop = 'xmin' if xaxis else 'ymin'
+        max_prop = 'xmax' if xaxis else 'ymax'
+        dim_prop = 'width' if xaxis else 'height'
+        saxis = 'xaxis' if xaxis else 'yaxis'
+        _axis_box_dim = partial(self._axis_box_dim, axis_type=axis_type)
+        ###
+        # Overhang refers to axis label or first or last tick mark label
+        # extending past axis "box". Note that first or last label may
+        # not be at the edges of the box, since some labels can be set
+        # to empty string ('')
+        ###
+        own_first_overhang = own_last_overhang = 0
+        # Theoretically primary and secondary axis have the same edge gridlines
+        axes = [axis for axis in [prim_dep_axis, sec_dep_axis] if axis]
+        daxes = [getattr(axis, saxis) for axis in axes]
+        axis_box_dim = _lmax([_axis_box_dim(axis) for axis in daxes])
+        # Minimum panel width/height is 1 inch, in pathological cases, for
+        # example where all panels are configured not to show the
+        # independent axis
+        axis_box_dim = axis_box_dim or 5*SPACER
+        indep_axis = [item.get_xaxis() for item in axes]
+        own_label_overhang = 0
+        axes = [getattr(axis, 'get_{0}'.format(saxis))() for axis in axes]
+        for axis in axes:
+            gridlines = [self._bbox(item) for item in axis.get_gridlines()]
+            own_first_mid = getattr(gridlines[0], min_prop)
+            own_last_mid = getattr(gridlines[-1], max_prop)
+            tick_label_bboxes = self._axis_ticks_bbox(axis)
+            if not tick_label_bboxes:
+                continue
+            first_bbox = tick_label_bboxes[0]
+            last_bbox = tick_label_bboxes[-1]
+            label_bbox = self._bbox(axis.get_label())
+            label_dim = getattr(label_bbox, dim_prop)
+            ilabel_overhang = max(0, (label_dim-axis_box_dim)/2.0)
+            own_label_overhang = max(own_label_overhang, ilabel_overhang)
+            iown_first_overhang = own_first_mid-getattr(first_bbox, min_prop)
+            own_first_overhang = max(own_first_overhang, iown_first_overhang)
+            iown_last_overhang = getattr(last_bbox, max_prop)-own_last_mid
+            own_last_overhang = max(own_last_overhang, iown_last_overhang)
+        own_start_overhang = _lmax(own_first_overhang, own_label_overhang)
+        own_stop_overhang = _lmax(own_last_overhang, own_label_overhang)
+        left_label_plus_pad, left_tick_dim = self._axis_side_dim(
+            prim_dep_axis.yaxis, 'primary', own_first_mid
+        ) if xaxis and prim_dep_axis else (0, 0)
+        right_label_plus_pad, right_tick_dim = self._axis_side_dim(
+            sec_dep_axis.yaxis, 'secondary', own_last_mid
+        ) if xaxis and sec_dep_axis else (0, 0)
+        kwargs = dict(axis_type='indep', axis_box_edge=own_first_mid)
+        for axis in indep_axis if not xaxis else []:
+            ilabel_plus_pad, itick_dim = self._axis_side_dim(axis, **kwargs)
+            left_label_plus_pad = max(left_label_plus_pad, ilabel_plus_pad)
+            left_tick_dim = max(left_tick_dim, itick_dim)
+        ret = (
+            left_label_plus_pad+
+            max(left_tick_dim, own_start_overhang)+
+            axis_box_dim+
+            max(right_tick_dim, own_stop_overhang)+
+            right_label_plus_pad
+        )*self._dpi
+        return ret
+
+    def _panel_edge(self, adict, stype):
+        left = stype.lower() == 'left'
+        fmm = _lmin if left else _lmax
+        prop = 'xmin' if left else 'xmax'
+        func = self._axis_ticks_xmin if left else self._axis_ticks_xmax
+        axes = [adict['primary'], adict['secondary']]
+        axes = [axis for axis in axes if axis]
+        xaxes = [axis.xaxis for axis in axes]
+        xtick_edge = fmm([func(xaxis) for xaxis in xaxes])
+        xlabel_edge = fmm(self._label_bbox(xaxes, prop))
+        gridlines = [axis.yaxis.get_gridlines() for axis in axes]
+        gridlines = [gridline[0 if left else -1] for gridline in gridlines]
+        gridline_bboxes = [self._bbox(gridline) for gridline in gridlines]
+        grid_edge = fmm([getattr(bbox, prop) for bbox in gridline_bboxes])
+        axis = adict['primary' if left else 'secondary']
+        yaxis = axis.yaxis if axis else None
+        ytick_edge = fmm(self._axis_ticks_dim(yaxis, prop)) if yaxis else None
+        ylabel_edge = fmm(self._label_bbox([yaxis], prop)) if yaxis else None
+        return fmm(grid_edge, xtick_edge, xlabel_edge, ytick_edge, ylabel_edge)
+
+    @pexdoc.pcontracts.contract(dpi='None|positive_real_num')
+    def _set_dpi(self, dpi):
+        self._dpi = dpi
 
     @pexdoc.pcontracts.contract(fig_height='None|positive_real_num')
     def _set_fig_height(self, fig_height):
+        if self._complete:
+            self._create_figure()
+            self._check_figure_spec(self._fig_width, fig_height)
         self._fig_height = fig_height
+        self._need_redraw = True
 
-    def _get_panels(self):
-        return self._panels
+    @pexdoc.pcontracts.contract(fig_width='None|positive_real_num')
+    def _set_fig_width(self, fig_width):
+        if self._complete:
+            self._create_figure()
+            self._check_figure_spec(fig_width, self._fig_height)
+        self._fig_width = fig_width
+        self._need_redraw = True
+
+    @pexdoc.pcontracts.contract(
+        indep_axis_ticks='None|increasing_real_numpy_vector'
+    )
+    def _set_indep_axis_ticks(self, indep_axis_ticks):
+        self._indep_axis_ticks = indep_axis_ticks
+        self._need_redraw = True
+
+    @pexdoc.pcontracts.contract(indep_axis_tick_labels='None|list(str)')
+    def _set_indep_axis_tick_labels(self, indep_axis_tick_labels):
+        self._indep_axis_tick_labels = indep_axis_tick_labels
+        self._need_redraw = True
+        self._create_figure()
+
+    @pexdoc.pcontracts.contract(indep_var_label='None|str')
+    def _set_indep_var_label(self, indep_var_label):
+        self._indep_var_label = indep_var_label
+        self._need_redraw = True
+
+    @pexdoc.pcontracts.contract(indep_var_units='None|str')
+    def _set_indep_var_units(self, indep_var_units):
+        self._indep_var_units = indep_var_units
+        self._need_redraw = True
+
+    @pexdoc.pcontracts.contract(log_indep_axis='None|bool')
+    def _set_log_indep_axis(self, log_indep_axis):
+        self._log_indep_axis = log_indep_axis
+        self._need_redraw = True
+
+    @pexdoc.pcontracts.contract(title='None|str')
+    def _set_title(self, title):
+        self._title = title
+        self._need_redraw = True
 
     def _set_panels(self, panels):
         self._panels = (
@@ -482,7 +961,7 @@ class Figure(object):
         )
         if self.panels is not None:
             self._validate_panels()
-        self._draw(force_redraw=True)
+        self._need_redraw = True
 
     def _validate_panels(self):
         """
@@ -496,161 +975,6 @@ class Figure(object):
         for num, obj in enumerate(self.panels):
             invalid_ex(not isinstance(obj, Panel))
             specified_ex(not obj._complete, _F('panel_num', num))
-
-    def _get_fig(self):
-        return self._fig
-
-    def _get_axes_list(self):
-        return self._axes_list
-
-    def _get_complete(self):
-        """
-        Returns True if figure is fully specified, otherwise returns False
-        """
-        return (self.panels is not None) and len(self.panels)
-
-    def _draw(self, force_redraw=False, raise_exception=False):
-        # pylint: disable=C0326,W0612
-        log_ex = pexdoc.exh.addex(
-            ValueError,
-            'Figure cannot be plotted with a logarithmic '
-            'independent axis because panel *[panel_num]*, series '
-            '*[series_num]* contains negative independent data points'
-        )
-        specified_ex = pexdoc.exh.addex(
-            RuntimeError, 'Figure object is not fully specified'
-        )
-        if self._complete and force_redraw:
-            num_panels = len(self.panels)
-            plt.close('all')
-            # Create required number of panels
-            self._fig, axes = plt.subplots(num_panels, sharex=True)
-            axes = axes if isinstance(axes, type(numpy.array([]))) else [axes]
-            glob_indep_var = []
-            # Find union of the independent variable data set of all panels
-            for panel_num, panel_obj in enumerate(self.panels):
-                for series_num, series_obj in enumerate(panel_obj.series):
-                    log_ex(
-                        bool(
-                            self.log_indep_axis and
-                            (min(series_obj.indep_var) < 0)
-                        ),
-                        edata=_MF(
-                            'panel_num', panel_num, 'series_num', series_num
-                        )
-                    )
-                    glob_indep_var = numpy.unique(
-                        numpy.append(
-                            glob_indep_var,
-                            numpy.array(
-                                [
-                                    peng.round_mantissa(element, 10)
-                                    for element in series_obj.indep_var
-                                ]
-                            )
-                        )
-                    )
-            indep_var_ticks = _intelligent_ticks(
-                glob_indep_var,
-                min(glob_indep_var),
-                max(glob_indep_var),
-                tight=True,
-                log_axis=self.log_indep_axis,
-                tick_list=(
-                    None if self._log_indep_axis else self._indep_axis_ticks
-                )
-            )
-            self._indep_var_div = indep_var_ticks.div
-            self._indep_axis_ticks = indep_var_ticks.locs
-            # Scale all panel series
-            for panel_obj in self.panels:
-                panel_obj._scale_indep_var(self._indep_var_div)
-            # Draw panels
-            indep_axis_dict = {
-                'log_indep':self.log_indep_axis,
-                'indep_var_min':indep_var_ticks.min,
-                'indep_var_max':indep_var_ticks.max,
-                'indep_var_locs':indep_var_ticks.locs,
-                'indep_var_labels':indep_var_ticks.labels,
-                'indep_axis_label':self.indep_var_label,
-                'indep_axis_units':self.indep_var_units,
-                'indep_axis_unit_scale':indep_var_ticks.unit_scale
-            }
-            panels_with_indep_axis_list = [
-                num for num, panel_obj in enumerate(self.panels)
-                if panel_obj.display_indep_axis
-            ] or [num_panels-1]
-            keys = ['number', 'primary', 'secondary']
-            for num, (panel_obj, axarr) in enumerate(zip(self.panels, axes)):
-                panel_dict = panel_obj._draw_panel(
-                    axarr, indep_axis_dict, num in panels_with_indep_axis_list
-                )
-                panel_dict['number'] = num
-                self._axes_list.append(
-                    dict((item, panel_dict[item]) for item in keys)
-                )
-            if self.title not in [None, '']:
-                axes[0].set_title(
-                    self.title,
-                    horizontalalignment='center',
-                    verticalalignment='bottom',
-                    multialignment='center',
-                    fontsize=TITLE_FONT_SIZE
-                )
-            # Draw figure otherwise some bounding boxes return NaN
-            FigureCanvasAgg(self._fig).draw()
-            self._calculate_figure_size()
-        elif (not self._complete) and (raise_exception):
-            specified_ex(True)
-
-    def _calculate_figure_size(self):
-        """ Calculates minimum panel and figure size """
-        small_ex = pexdoc.exh.addex(
-            RuntimeError,
-            'Figure size is too small: minimum width *[min_width]*, '
-            'minimum height *[min_height]*'
-        )
-        title_height = title_width = 0
-        title = self._fig.axes[0].get_title()
-        if (title is not None) and (title.strip() != ''):
-            title_obj = self._fig.axes[0].title
-            title_height = _get_text_prop(self._fig, title_obj)['height']
-            title_width = _get_text_prop(self._fig, title_obj)['width']
-        xaxis_dims = [
-            _get_xaxis_size(
-                self._fig,
-                axis_obj.xaxis.get_ticklabels(),
-                axis_obj.xaxis.get_label()
-            ) for axis_obj in self._fig.axes
-        ]
-        yaxis_dims = [
-            _get_yaxis_size(
-                self._fig,
-                axis_obj.yaxis.get_ticklabels(),
-                axis_obj.yaxis.get_label()
-            ) for axis_obj in self._fig.axes
-        ]
-        panel_dims = [
-            (yaxis_height+xaxis_height, yaxis_width+xaxis_width)
-            for (yaxis_height, yaxis_width), (xaxis_height, xaxis_width)
-            in zip(yaxis_dims, xaxis_dims)
-        ]
-        dpi = float(self._fig.dpi)
-        panels_width = max([panel_width for _, panel_width in panel_dims])
-        panels_height = max([panel_height for panel_height, _ in panel_dims])
-        min_fig_width = round(max(title_width, panels_width)/dpi, 2)
-        min_fig_height = round(
-            ((len(self._axes_list)*panels_height)+title_height)/dpi, 2
-        )
-        small_ex(
-            bool(
-                (self.fig_width and (self.fig_width < min_fig_width)) or
-                (self.fig_height and (self.fig_height < min_fig_height))
-            ),
-            [_F('min_width', min_fig_width), _F('min_height', min_fig_height)]
-        )
-        self.fig_width = self.fig_width or  min_fig_width
-        self.fig_height = self.fig_height or min_fig_height
 
     @pexdoc.pcontracts.contract(fname='file_name', ftype=str)
     def save(self, fname, ftype='PNG'):
@@ -684,13 +1008,9 @@ class Figure(object):
 
         .. [[[end]]]
         """
-        specified_ex = pexdoc.exh.addex(
-            RuntimeError, 'Figure object is not fully specified'
-        )
         unsupported_ex = pexdoc.exh.addex(
             RuntimeError, 'Unsupported file type: *[file_type]*'
         )
-        specified_ex(not self._complete)
         unsupported_ex(
             ftype.lower() not in ['png', 'eps'], _F('file_type', ftype)
         )
@@ -700,14 +1020,18 @@ class Figure(object):
                 file_name=fname.rstrip('.'),
                 extension=ftype.lower()
             )
-        self._draw(force_redraw=self._fig is None, raise_exception=True)
-        self.fig.set_size_inches(self.fig_width, self.fig_height)
+        bbox = self._create_figure(raise_exception=True)
+        dpi = self._dpi if ftype == 'PNG' else None
+        bbox = bbox if (ftype == 'PNG') and (not self._size_given) else 'tight'
         # Matplotlib seems to have a problem with ~/, expand it to $HOME
         fname = os.path.expanduser(fname)
         pmisc.make_dir(fname)
-        self._fig.savefig(
-            fname, bbox_inches='tight', dpi=self._fig.dpi, format=ftype
-        )
+        self._fig_width, self._fig_height = self._fig_dims()
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            self._fig.savefig(
+                fname, dpi=dpi, bbox_inches=bbox, format=ftype, pad_inches=0
+            )
         plt.close('all')
 
     def show(self):
@@ -727,7 +1051,8 @@ class Figure(object):
 
         .. [[[end]]]
         """
-        self._draw(force_redraw=self._fig is None, raise_exception=True)
+        self._create_figure(raise_exception=True)
+        self._fig_width, self._fig_height = self._fig_dims()
         plt.show()
 
     # Managed attributes
@@ -752,6 +1077,25 @@ class Figure(object):
       secondary axis, None if the figure has no secondary axis
 
     :type: list
+    """
+
+    dpi = property(
+        _get_dpi, _set_dpi, doc='Figure dots per inch (DPI)'
+    )
+    r"""
+    Gets or sets the dots per inch (DPI) of the figure
+
+    :type: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
+           stable/ptypes.html#positiverealnum>`_ or None
+
+    .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
+    .. Auto-generated exceptions documentation for
+    .. pplot.figure.Figure.dpi
+
+    :raises: (when assigned) RuntimeError (Argument \`dpi\` is not
+     valid)
+
+    .. [[[end]]]
     """
 
     fig = property(_get_fig, doc='Figure handle')
@@ -814,14 +1158,49 @@ class Figure(object):
     """
 
     indep_axis_ticks = property(
-        _get_indep_axis_ticks, doc='Independent axis tick locations'
+        _get_indep_axis_ticks,
+        _set_indep_axis_ticks,
+        doc='Independent axis tick locations'
     )
-    """
-    Gets the independent axis (scaled) tick locations, :code:`None` if figure
-    is not fully specified
-
+    r"""
+    Gets or sets the independent axis (scaled) tick locations, :code:`None` if
+    figure is not fully specified
 
     :type: list
+
+    .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
+    .. Auto-generated exceptions documentation for
+    .. pplot.figure.Figure.indep_axis_ticks
+
+    :raises: (when assigned)
+
+     * RuntimeError (Argument \`indep_axis_ticks\` is not valid)
+
+    .. [[[end]]]
+    """
+
+    indep_axis_tick_labels = property(
+        _get_indep_axis_tick_labels,
+        _set_indep_axis_tick_labels,
+        doc='Independent axis tick labels'
+    )
+    r"""
+    Gets or sets the independent axis tick labels
+
+    :type: list of strings
+
+    .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
+    .. Auto-generated exceptions documentation for
+    .. pplot.figure.Figure.indep_axis_tick_labels
+
+    :raises: (when assigned)
+
+     * RuntimeError (Argument \`indep_var_tick_labels\` is not valid)
+
+     * RuntimeError (Number of tick locations and number of tick labels
+       mismatch)
+
+    .. [[[end]]]
     """
 
     indep_var_label = property(

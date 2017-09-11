@@ -508,7 +508,7 @@ class Series(object):
             markerfacecolor=self._ref_markerfacecolor
         )
 
-    def _draw_series(self, axarr, log_indep, log_dep):
+    def _draw(self, axarr, log_indep, log_dep):
         """ Draw series """
         if self._check_series_is_plottable():
             flist = [axarr.plot, axarr.semilogx, axarr.semilogy, axarr.loglog]
@@ -528,7 +528,7 @@ class Series(object):
                     drawstyle=(
                         'steps-post' if self.interp == 'STEP' else 'default'
                     ),
-                    label=self.label
+                    label=self.label,
                 )
             # Plot markers
             if self._marker_spec != '':
@@ -546,7 +546,7 @@ class Series(object):
                     markersize=self._ref_markersize,
                     markeredgewidth=self._ref_markeredgewidth,
                     markerfacecolor=self._ref_markerfacecolor,
-                    label=self.label if self.line_style is None else None
+                    label=self.label if self.line_style is None else None,
                 )
 
     # Managed attributes

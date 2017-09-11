@@ -36,7 +36,9 @@ class TestSeries(object):
             {'value':None, 'string':'None'},
             {'value':'o', 'string':'o'},
             {
-                'value':matplotlib.path.Path([(0, 0), (1, 1)]),
+                'value':matplotlib.path.Path(
+                    [(0, 0), (1, 1), (1, 1), (1, 0), (0, 0)]
+                ),
                 'string':'matplotlib.path.Path object'
             },
             {'value':[(0, 0), (1, 1)], 'string':'[(0, 0), (1, 1)]'},

@@ -21,7 +21,7 @@ import pplot
 # Global variables
 ###
 # Relative figure size
-SCALE = 5
+SCALE = 2
 
 
 ###

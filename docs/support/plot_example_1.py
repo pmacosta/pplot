@@ -87,13 +87,14 @@ def main(fname, no_print):
     ###
     # Figure definition (Figure class)
     ###
+    dim = 2.25
     fig_obj = pplot.Figure(
         panels=panel_obj,
         indep_var_label='Indep. var.',
         indep_var_units='S',
         log_indep_axis=False,
-        fig_width=4*2.25,
-        fig_height=3*2.25,
+        fig_width=4*dim,
+        fig_height=3*dim,
         title='Library pplot Example'
     )
     # Save figure

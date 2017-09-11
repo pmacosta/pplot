@@ -53,9 +53,9 @@ Classes
 	:show-inheritance:
  .. autoclass:: pplot.Figure
 	:members: axes_list, fig, fig_height, fig_width,
-	          indep_axis_scale, indep_axis_ticks, indep_var_label,
-                  indep_var_units, log_indep_axis, panels, save, show, title,
-                  __bool__, __iter__, __nonzero__, __str__
+	          indep_axis_scale, indep_axis_ticks, indep_axis_tick_labels,
+                  indep_var_label, indep_var_units, log_indep_axis, panels,
+                  save, show, title, __bool__, __iter__, __nonzero__, __str__
 	:show-inheritance:
 
 **********************
