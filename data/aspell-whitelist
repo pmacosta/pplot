@@ -319,8 +319,10 @@ doctrees
 Docutils
 dodgerblue
 dpi
+DPI
 dpk
 dprop
+dpu
 drawstyle
 dropbox
 Dropbox
@@ -443,6 +445,7 @@ ffull
 fget
 fgrid
 fhandle
+FHEIGHT
 figsize
 FigureCanvasAgg
 filecmp
@@ -515,6 +518,7 @@ Funcsigs
 FunctionDef
 FunctionType
 functools
+FWIDTH
 fwobj
 gainsboro
 gcd
@@ -633,6 +637,7 @@ ishex
 isinstance
 isint
 isiterable
+isize
 isneginf
 isnumber
 isposinf
@@ -1000,6 +1005,7 @@ pformat
 pgcd
 pico
 pid
+PIL
 Pillow>=2.6.1
 pindex
 pinspect

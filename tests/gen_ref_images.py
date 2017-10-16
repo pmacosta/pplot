@@ -21,7 +21,10 @@ import pplot
 # Global variables
 ###
 # Relative figure size
-SCALE = 2
+SCALE = 2.5
+DPI = 100
+FHEIGHT = 3*SCALE
+FWIDTH = 4*SCALE
 
 
 ###
@@ -108,8 +111,9 @@ def unittest_series_images(mode=None, test_dir=None, _timeit=False):
             indep_var_label='Independent axis',
             indep_var_units='',
             log_indep_axis=False,
-            fig_width=SCALE*4,
-            fig_height=SCALE*3,
+            fig_width=FWIDTH,
+            fig_height=FHEIGHT,
+            dpi=DPI,
             title='marker: {0}\ninterp: {1}\nline_style: {2}'.format(
                 marker,
                 interp,
@@ -324,8 +328,9 @@ def unittest_panel_images(mode=None, test_dir=None):
                 indep_var_label='Independent axis',
                 indep_var_units='',
                 log_indep_axis=(axis_type == 'filter'),
-                fig_width=SCALE*4,
-                fig_height=SCALE*3,
+                fig_width=FWIDTH,
+                fig_height=FHEIGHT,
+                dpi=DPI,
                 title='Axis: {0}\nSeries in axis: {1}'.format(
                     axis_type,
                     series_in_axis
@@ -349,8 +354,9 @@ def unittest_panel_images(mode=None, test_dir=None):
         indep_var_label='Independent axis',
         indep_var_units='',
         log_indep_axis=False,
-        fig_width=SCALE*4,
-        fig_height=SCALE*3,
+        fig_width=FWIDTH,
+        fig_height=FHEIGHT,
+        dpi=DPI,
         title='Panel no legend'
     )
     fig_obj.save(fname)
@@ -445,8 +451,7 @@ def unittest_figure_images(mode=None, test_dir=None):
             indep_var_label='Independent axis' if not num else '',
             indep_var_units='',
             log_indep_axis=False,
-            fig_width=SCALE*4,
-            fig_height=SCALE*3,
+            dpi=DPI,
             title=(
                 'Multiple independent axis\n'
                 'Panel 1 {0}, panel 2 {1}, panel 3 {2}'.format(
@@ -466,7 +471,7 @@ def unittest_figure_images(mode=None, test_dir=None):
     )
     series_obj = pplot.Series(source_obj, label='')
     panel_obj = pplot.Panel(series_obj)
-    figure_obj = pplot.Figure(panel_obj)
+    figure_obj = pplot.Figure(panel_obj, dpi=DPI)
     figure_obj.save(fname)
     return olist
 

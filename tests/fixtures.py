@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 # PyPI imports
+from PIL import Image
 import numpy
 import pytest
 import scipy
@@ -25,17 +26,19 @@ IMGTOL = 1e-3
 ###
 # Fixtures
 ###
-def compare_images(image_file_name1, image_file_name2, no_print=True):
+def compare_images(ref_fname, act_fname, no_print=True, isize=None):
     """ Compare two images by calculating Manhattan and Zero norms """
     # Source: http://stackoverflow.com/questions/189943/
     # how-can-i-quantify-difference-between-two-images
-    img1 = imread(image_file_name1).astype(float)
-    img2 = imread(image_file_name2).astype(float)
-    if img1.size != img2.size:
+    ref_img = Image.open(ref_fname)
+    act_img = Image.open(act_fname)
+    if (ref_img.size != act_img.size) or ((isize and (act_img.size != isize))):
         m_norm, z_norm = 2*[2*IMGTOL]
     else:
         # Element-wise for Scipy arrays
-        diff = img1-img2
+        ref_img = imread(ref_fname).astype(float)
+        act_img = imread(act_fname).astype(float)
+        diff = ref_img-act_img
         # Manhattan norm
         m_norm = scipy.sum(numpy.abs(diff))
         # Zero norm
@@ -44,13 +47,13 @@ def compare_images(image_file_name1, image_file_name2, no_print=True):
     if not no_print:
         print(
             'Image 1: {0}, Image 2: {1} -> ({2}, {3}) [{4}]'.format(
-                image_file_name1, image_file_name2, m_norm, z_norm, result
+                ref_fname, act_fname, m_norm, z_norm, result
             )
         )
     return result
 
 
-def compare_image_set(tmpdir, images_dict_list, section):
+def compare_image_set(tmpdir, images_dict_list, section, isize=None):
     """ Compare image sets """
     subdir = 'test_images_{0}'.format(section)
     tmpdir.mkdir(subdir)
@@ -60,19 +63,25 @@ def compare_image_set(tmpdir, images_dict_list, section):
         test_file_name = images_dict['test_fname']
         print('Reference images:')
         for ref_file_name in ref_file_name_list:
-            print('   file://{0}'.format(
-                    os.path.realpath(ref_file_name)
+            img_size = Image.open(ref_file_name).size
+            print('   file://{0} ({1})'.format(
+                    os.path.realpath(ref_file_name),
+                    img_size
                 )
             )
+        img_size = Image.open(test_file_name).size
+        if isize:
+            print('Extra size data: {0}'.format(isize))
         print('Actual image:')
-        print('   file://{0}'.format(
-                os.path.realpath(test_file_name)
+        print('   file://{0} ({1})'.format(
+                os.path.realpath(test_file_name),
+                img_size
             )
         )
         partial_result = []
         for ref_file_name in ref_file_name_list:
             partial_result.append(
-                compare_images(ref_file_name, test_file_name)
+                compare_images(ref_file_name, test_file_name, isize=isize)
             )
         result = any(partial_result)
         global_result = global_result and result

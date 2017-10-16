@@ -1052,11 +1052,13 @@ class Panel(object):
         # This is necessary because if there is no primary axis but there
         # is a secondary axis, then the independent axis bounding boxes
         # are all stacked up in the same spot
+        axarr_prim.display_indep_axis = self.display_indep_axis
         axarr_prim.yaxis.log_axis = prim_log_axis
         axarr_prim.xaxis.log_axis = indep_axis_dict['log_indep']
         if self._panel_has_secondary_axis:
             axarr_sec.xaxis = axarr_prim.xaxis
             axarr_sec.yaxis.log_axis = sec_log_axis
+            axarr_sec.display_indep_axis = self.display_indep_axis
         return {
             'primary':(
                 None

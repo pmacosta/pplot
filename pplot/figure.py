@@ -47,13 +47,17 @@ exobj_plot = trace_ex_plot_figure.trace_module(no_print=True)
 # Global variables
 ###
 INF = sys.float_info.max
-NULL_BBOX = Bbox([[0, 0], [0, 0]])
 SPACER = 0.2 # in inches
+PANEL_SEP = 10*SPACER
 
 
 ###
 # Functions
 ###
+def _get_text(obj):
+    return obj.get_text().strip()
+
+
 def _lmax(*args):
     return _lmm(max, 0, *args)
 
@@ -197,6 +201,7 @@ class Figure(object):
         self._fig_height = None
         self._indep_var_units = None
         self._indep_var_div = None
+        self._prev_indep_axis_ticks = None
         self._axes_list = []
         # Assignment of arguments to attributes
         self._set_dpi(dpi)
@@ -208,12 +213,9 @@ class Figure(object):
             indep_axis_ticks if not self.log_indep_axis else None
         )
         self._set_indep_axis_tick_labels(indep_axis_tick_labels)
+        self._set_panels(panels)
         self._set_fig_width(fig_width)
         self._set_fig_height(fig_height)
-        self._set_panels(panels)
-        if self._complete:
-            self._create_figure()
-            self._check_figure_spec(self._fig_width, self._fig_height)
 
 
     def __bool__(self): # pragma: no cover
@@ -437,11 +439,11 @@ class Figure(object):
     def _axis_box_dim(self, axis, axis_type='x'):
         """ Returns minimum axis box size given label width """
         xaxis = axis_type.lower() == 'x'
-        sep = (1.5 if xaxis else 1.0)*SPACER
+        sep = (1.5 if xaxis else 0.5)*SPACER
         dim = 'width' if xaxis else 'height'
         locs = self._indep_axis_ticks if xaxis else axis.get_ticklocs()
         tlabels = axis.get_ticklabels()
-        tlabels = [label for label in tlabels if label.get_text().strip()]
+        tlabels = [label for label in tlabels if _get_text(label)]
         if not tlabels:
             # X axis in a panel that is configured to not display the
             # independent axis, for example
@@ -449,12 +451,14 @@ class Figure(object):
         bboxes = [self._bbox(label) for label in tlabels]
         mult = 3 if axis.log_axis else 1
         label_half_dim = [(getattr(bbox, dim)+mult*sep)/2.0 for bbox in bboxes]
+        min_label_half_dim = max(label_half_dim)*(len(label_half_dim)-1)
         if axis.log_axis:
-            return max(label_half_dim)*(len(label_half_dim)-1)
-        tick_ratios = numpy.diff(numpy.array(locs))
+            return min_label_half_dim
+        tick_diffs = numpy.diff(numpy.array(locs))
         curr_label, prev_label = label_half_dim[1:], label_half_dim[:-1]
         sep_dim = [curr+prev for curr, prev in zip(curr_label, prev_label)]
-        axis_box_dim = (locs[-1]-locs[0])*max(sep_dim/tick_ratios)
+        dpu = max(sep_dim/tick_diffs)
+        axis_box_dim = (locs[-1]-locs[0])*dpu
         return axis_box_dim
 
     def _axis_side_dim(self, axis, axis_type='indep', axis_box_edge=0):
@@ -464,7 +468,7 @@ class Figure(object):
         sign = +1 if indep or primary else -1
         func = _lmin if indep or primary else _lmax
         dim = 'ymin' if indep else ('xmin' if primary else 'xmax')
-        label = axis.get_label().get_text().strip()
+        label = _get_text(axis.get_label())
         label_dim = getattr(self._bbox(axis.get_label()), dim) if label else 0
         tick_bbox = self._axis_ticks_bbox(axis)
         tick_edge = func([getattr(bbox, dim) for bbox in tick_bbox])
@@ -477,7 +481,7 @@ class Figure(object):
         """ Get bounding box of non-empty axis ticks """
         return [
             self._bbox(tick)
-            for tick in axis.get_ticklabels() if tick.get_text().strip()
+            for tick in axis.get_ticklabels() if _get_text(tick)
         ]
 
     def _axis_ticks_dim(self, axis, dim):
@@ -518,8 +522,7 @@ class Figure(object):
 
     def _calculate_min_figure_size(self):
         """ Calculates minimum panel and figure size """
-        dround = lambda x: round(x/self._dpi, 2)
-        sep = 10*SPACER
+        dround = lambda x: math.floor(x)/self.dpi
         title_height = title_width = 0
         top_panel = self._axes_list[0]
         axes = (top_panel['primary'], top_panel['secondary'])
@@ -530,14 +533,16 @@ class Figure(object):
             title_bbox = self._bbox(title_obj)
             label_bbox = self._bbox(axis.yaxis.get_ticklabels()[-1])
             title_pad = title_bbox.ymin-label_bbox.ymax
-            title_height = (title_bbox.height+title_pad)*self._dpi
-            title_width = title_bbox.width*self._dpi
+            title_height = (title_bbox.height+title_pad)*self.dpi
+            title_width = title_bbox.width*self.dpi
         adicts = self._axes_list
         panels_width = max(self._min_panel(adict, 'x') for adict in adicts)
         panels_height = max(self._min_panel(adict, 'y') for adict in adicts)
         self._min_fig_width = dround(max(title_width, panels_width))
         npanels = len(self._axes_list)
-        self._min_fig_height = dround(npanels*(panels_height+sep)-sep+title_height)
+        self._min_fig_height = dround(
+            npanels*(panels_height+PANEL_SEP)-PANEL_SEP+title_height
+        )
 
     def _check_figure_spec(self, fig_width=None, fig_height=None):
         """ Validates given figure size against minimum dimension """
@@ -575,28 +580,41 @@ class Figure(object):
             # is to draw figure with either the calculated minimum dimensions
             # or the user-given dimensions, provided they are equal or greater
             # than the minimum dimensions
-            self._draw(preview=True)
-            self._draw(preview=False)
+            self._draw()
+            self._draw()
             bbox = self._calculate_figure_bbox()
-            self._min_fig_width = math.floor(self.dpi*bbox.width)/self.dpi
-            self._min_fig_height = math.floor(self.dpi*bbox.height)/self.dpi
+            #self._min_fig_width = math.floor(self.dpi*bbox.width)/self.dpi
+            #self._min_fig_height = math.floor(self.dpi*bbox.height)/self.dpi
             fig_width, fig_height = self._fig_dims()
             self._fig.set_size_inches(fig_width, fig_height, forward=True)
             self._need_redraw = False
         else:
             bbox = self._calculate_figure_bbox()
         fig_width, fig_height = self._fig_dims()
+        # Get figure pixel size exact
+        width = int(round(fig_width*self._dpi))
+        lwidth = int(round(width/2.0))
+        rwidth = width-lwidth
+        height = int(round(fig_height*self._dpi))
+        bheight = int(round(height/2.0))
+        theight = height-bheight
         bbox_xcenter = bbox.xmin+0.5*bbox.width
         bbox_ycenter = bbox.ymin+0.5*bbox.height
         bbox = Bbox(
             [
-                [bbox_xcenter-0.5*fig_width, bbox_ycenter-0.5*fig_height],
-                [bbox_xcenter+0.5*fig_width, bbox_ycenter+0.5*fig_height]
+                [
+                    bbox_xcenter-(lwidth/self._dpi),
+                    bbox_ycenter-(bheight/self._dpi)
+                ],
+                [
+                    bbox_xcenter+(rwidth/self._dpi),
+                    bbox_ycenter+(theight/self._dpi)
+                ]
             ]
         )
         return bbox
 
-    def _draw(self, preview=True):
+    def _draw(self):
         # pylint: disable=C0326,W0612
         log_ex = pexdoc.exh.addex(
             ValueError,
@@ -615,11 +633,17 @@ class Figure(object):
         fig_width, fig_height = self._fig_dims()
         figsize = (fig_width, fig_height) if fig_width and fig_height else None
         self._fig, axes = plt.subplots(
-            num_panels, sharex=True, dpi=self._dpi, figsize=figsize,
-            tight_layout=dict(pad=0, h_pad=10*SPACER)
+            num_panels, sharex=True, dpi=self.dpi, figsize=figsize,
+            tight_layout=dict(pad=0, h_pad=PANEL_SEP)
         )
         axes = axes if isinstance(axes, type(numpy.array([]))) else [axes]
         glob_indep_var = []
+        # Restore scaling
+        if self._indep_var_div is not None:
+            for panel_obj in self.panels:
+                panel_obj._scale_indep_var(1/float(self._indep_var_div))
+            self._indep_var_div = 1.0
+            self._indep_axis_ticks = self._prev_indep_axis_ticks
         # Find union of the independent variable data set of all panels
         for panel_num, panel_obj in enumerate(self.panels):
             for series_num, series_obj in enumerate(panel_obj.series):
@@ -654,7 +678,7 @@ class Figure(object):
             )
         )
         self._indep_var_div = indep_axis_ticks.div
-        prev_indep_axis_ticks = self._indep_axis_ticks
+        self._prev_indep_axis_ticks = self._indep_axis_ticks
         self._indep_axis_ticks = indep_axis_ticks.locs
         ticks_num_ex(
             (self._indep_axis_tick_labels is not None) and
@@ -707,11 +731,6 @@ class Figure(object):
         # Draw figure otherwise some bounding boxes return NaN
         FigureCanvasAgg(self._fig).draw()
         self._calculate_min_figure_size()
-        if preview:
-            for panel_obj in self.panels:
-                panel_obj._scale_indep_var(1/float(self._indep_var_div))
-            self._indep_axis_ticks = prev_indep_axis_ticks
-            self._indep_var_div = 1.0
 
     def _fig_bottom(self):
         panel = self._axes_list[-1]
@@ -805,7 +824,7 @@ class Figure(object):
 
     def _label_text(self, axis):
         """ Returns axis label text """
-        return axis.get_label().get_text().strip()
+        return _get_text(axis.get_label())
 
     def _label_bbox(self, axes, prop):
         """ Returns bounding box of non-empty axis labels """
@@ -838,7 +857,9 @@ class Figure(object):
         # example where all panels are configured not to show the
         # independent axis
         axis_box_dim = axis_box_dim or 5*SPACER
-        indep_axis = [item.get_xaxis() for item in axes]
+        indep_axis = [
+            item.get_xaxis() for item in axes if item.display_indep_axis
+        ]
         own_label_overhang = 0
         axes = [getattr(axis, 'get_{0}'.format(saxis))() for axis in axes]
         for axis in axes:
@@ -877,7 +898,7 @@ class Figure(object):
             axis_box_dim+
             max(right_tick_dim, own_stop_overhang)+
             right_label_plus_pad
-        )*self._dpi
+        )*self.dpi
         return ret
 
     def _panel_edge(self, adict, stype):
@@ -887,6 +908,9 @@ class Figure(object):
         func = self._axis_ticks_xmin if left else self._axis_ticks_xmax
         axes = [adict['primary'], adict['secondary']]
         axes = [axis for axis in axes if axis]
+        title_objs = [axis.title for axis in axes if _get_text(axis.title)]
+        title_bboxes = [self._bbox(title_obj) for title_obj in title_objs]
+        title_edge = fmm([getattr(bbox, prop) for bbox in title_bboxes])
         xaxes = [axis.xaxis for axis in axes]
         xtick_edge = fmm([func(xaxis) for xaxis in xaxes])
         xlabel_edge = fmm(self._label_bbox(xaxes, prop))
@@ -898,17 +922,24 @@ class Figure(object):
         yaxis = axis.yaxis if axis else None
         ytick_edge = fmm(self._axis_ticks_dim(yaxis, prop)) if yaxis else None
         ylabel_edge = fmm(self._label_bbox([yaxis], prop)) if yaxis else None
-        return fmm(grid_edge, xtick_edge, xlabel_edge, ytick_edge, ylabel_edge)
+        return fmm(
+            title_edge,
+            grid_edge,
+            xtick_edge,
+            xlabel_edge,
+            ytick_edge,
+            ylabel_edge
+        )
 
     @pexdoc.pcontracts.contract(dpi='None|positive_real_num')
     def _set_dpi(self, dpi):
-        self._dpi = dpi
+        self._dpi = float(dpi)
 
     @pexdoc.pcontracts.contract(fig_height='None|positive_real_num')
     def _set_fig_height(self, fig_height):
         if self._complete:
             self._create_figure()
-            self._check_figure_spec(self._fig_width, fig_height)
+            self._check_figure_spec(self.fig_width, fig_height)
         self._fig_height = fig_height
         self._need_redraw = True
 
@@ -916,7 +947,7 @@ class Figure(object):
     def _set_fig_width(self, fig_width):
         if self._complete:
             self._create_figure()
-            self._check_figure_spec(fig_width, self._fig_height)
+            self._check_figure_spec(fig_width, self.fig_height)
         self._fig_width = fig_width
         self._need_redraw = True
 
@@ -1021,8 +1052,8 @@ class Figure(object):
                 extension=ftype.lower()
             )
         bbox = self._create_figure(raise_exception=True)
-        dpi = self._dpi if ftype == 'PNG' else None
-        bbox = bbox if (ftype == 'PNG') and (not self._size_given) else 'tight'
+        dpi = self.dpi if ftype == 'PNG' else None
+        bbox = bbox if ftype == 'PNG' else 'tight'
         # Matplotlib seems to have a problem with ~/, expand it to $HOME
         fname = os.path.expanduser(fname)
         pmisc.make_dir(fname)

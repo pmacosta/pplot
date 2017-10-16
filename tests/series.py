@@ -16,7 +16,7 @@ import matplotlib
 import pplot
 from .fixtures import compare_image_set
 sys.path.append('..')
-from tests.gen_ref_images import unittest_series_images
+from tests.gen_ref_images import DPI, FHEIGHT, FWIDTH, unittest_series_images
 
 
 ###
@@ -315,4 +315,7 @@ class TestSeries(object):
         images_dict_list = unittest_series_images(
             mode='test', test_dir=str(tmpdir)
         )
-        assert compare_image_set(tmpdir, images_dict_list, 'series')
+        isize = (int(DPI*FWIDTH), int(DPI*FHEIGHT))
+        assert compare_image_set(
+            tmpdir, images_dict_list, 'series', isize=isize
+        )
