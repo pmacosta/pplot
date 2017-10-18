@@ -64,7 +64,7 @@ def compare_image_set(tmpdir, images_dict_list, section, isize=None):
         print('Reference images:')
         for ref_file_name in ref_file_name_list:
             img_size = Image.open(ref_file_name).size
-            print('   file://{0} ({1})'.format(
+            print('   file://{0} {1}'.format(
                     os.path.realpath(ref_file_name),
                     img_size
                 )
@@ -73,7 +73,7 @@ def compare_image_set(tmpdir, images_dict_list, section, isize=None):
         if isize:
             print('Extra size data: {0}'.format(isize))
         print('Actual image:')
-        print('   file://{0} ({1})'.format(
+        print('   file://{0} {1}'.format(
                 os.path.realpath(test_file_name),
                 img_size
             )
