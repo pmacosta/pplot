@@ -529,6 +529,7 @@ class Series(object):
                         'steps-post' if self.interp == 'STEP' else 'default'
                     ),
                     label=self.label,
+                    zorder=10,
                 )
             # Plot markers
             if self._marker_spec != '':
@@ -547,6 +548,7 @@ class Series(object):
                     markeredgewidth=self._ref_markeredgewidth,
                     markerfacecolor=self._ref_markerfacecolor,
                     label=self.label if self.line_style is None else None,
+                    zorder=11,
                 )
 
     # Managed attributes

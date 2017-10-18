@@ -588,6 +588,11 @@ class Figure(object):
             fig_width, fig_height = self._fig_dims()
             self._fig.set_size_inches(fig_width, fig_height, forward=True)
             self._need_redraw = False
+            # From https://github.com/matplotlib/matplotlib/issues/7984:
+            # When the Figure is drawn, its Axes are sorted based on zorder with a
+            # stable sort, and then drawn in that order. Then within each Axes,
+            # artists are sorted based on zorder. Therefore you can't interleave
+            # the drawing orders of artists from one Axes with those from another.
         else:
             bbox = self._calculate_figure_bbox()
         fig_width, fig_height = self._fig_dims()
@@ -632,11 +637,8 @@ class Figure(object):
         # Create required number of panels
         fig_width, fig_height = self._fig_dims()
         figsize = (fig_width, fig_height) if fig_width and fig_height else None
-        self._fig, axes = plt.subplots(
-            num_panels, sharex=True, dpi=self.dpi, figsize=figsize,
-            tight_layout=dict(pad=0, h_pad=PANEL_SEP)
-        )
-        axes = axes if isinstance(axes, type(numpy.array([]))) else [axes]
+        self._fig = plt.figure(dpi=self.dpi, figsize=figsize)
+        axes = [plt.subplot(num_panels, 1, num+1) for num in range(num_panels)]
         glob_indep_var = []
         # Restore scaling
         if self._indep_var_div is not None:
@@ -849,7 +851,6 @@ class Figure(object):
         # to empty string ('')
         ###
         own_first_overhang = own_last_overhang = 0
-        # Theoretically primary and secondary axis have the same edge gridlines
         axes = [axis for axis in [prim_dep_axis, sec_dep_axis] if axis]
         daxes = [getattr(axis, saxis) for axis in axes]
         axis_box_dim = _lmax([_axis_box_dim(axis) for axis in daxes])
@@ -861,11 +862,16 @@ class Figure(object):
             item.get_xaxis() for item in axes if item.display_indep_axis
         ]
         own_label_overhang = 0
+        spines_bboxes_list = [
+            [self._bbox(axis.spines['left']), self._bbox(axis.spines['right'])]
+            if xaxis else
+            [self._bbox(axis.spines['bottom']), self._bbox(axis.spines['top'])]
+            for axis in axes
+        ]
         axes = [getattr(axis, 'get_{0}'.format(saxis))() for axis in axes]
-        for axis in axes:
-            gridlines = [self._bbox(item) for item in axis.get_gridlines()]
-            own_first_mid = getattr(gridlines[0], min_prop)
-            own_last_mid = getattr(gridlines[-1], max_prop)
+        for axis, spines_bboxes in zip(axes, spines_bboxes_list):
+            own_first_mid = getattr(spines_bboxes[0], min_prop)
+            own_last_mid = getattr(spines_bboxes[-1], max_prop)
             tick_label_bboxes = self._axis_ticks_bbox(axis)
             if not tick_label_bboxes:
                 continue
@@ -914,17 +920,17 @@ class Figure(object):
         xaxes = [axis.xaxis for axis in axes]
         xtick_edge = fmm([func(xaxis) for xaxis in xaxes])
         xlabel_edge = fmm(self._label_bbox(xaxes, prop))
-        gridlines = [axis.yaxis.get_gridlines() for axis in axes]
-        gridlines = [gridline[0 if left else -1] for gridline in gridlines]
-        gridline_bboxes = [self._bbox(gridline) for gridline in gridlines]
-        grid_edge = fmm([getattr(bbox, prop) for bbox in gridline_bboxes])
+        spines = [[axis.spines['bottom'], axis.spines['top']] for axis in axes]
+        spines = [spine[0 if left else -1] for spine in spines]
+        spines_bboxes = [self._bbox(spine) for spine in spines]
+        spine_edge = fmm([getattr(bbox, prop) for bbox in spines_bboxes])
         axis = adict['primary' if left else 'secondary']
         yaxis = axis.yaxis if axis else None
         ytick_edge = fmm(self._axis_ticks_dim(yaxis, prop)) if yaxis else None
         ylabel_edge = fmm(self._label_bbox([yaxis], prop)) if yaxis else None
         return fmm(
             title_edge,
-            grid_edge,
+            spine_edge,
             xtick_edge,
             xlabel_edge,
             ytick_edge,

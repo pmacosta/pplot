@@ -4,6 +4,7 @@
 # pylint: disable=C0111,C0302,C1801,R0912,R0913,R0914,R0915,W0105,W0212
 
 # PyPI imports
+import copy
 import numpy
 import matplotlib.pyplot as plt
 import pexdoc.exh
@@ -847,67 +848,70 @@ class Panel(object):
 
         """ Configure dependent axis """
         # pylint: disable=R0201
-        # Set function pointers
-        xflist = [
-            axis_obj.xaxis.grid, axis_obj.set_xlim, axis_obj.xaxis.set_ticks,
-            axis_obj.xaxis.set_ticklabels, axis_obj.xaxis.set_label_text
-        ]
-        yflist = [
-            axis_obj.yaxis.grid, axis_obj.set_ylim, axis_obj.yaxis.set_ticks,
-            axis_obj.yaxis.set_ticklabels, axis_obj.yaxis.set_label_text
-        ]
-        (fgrid, flim, fticks, fticklabels, fset_label_text) = (
-            xflist
-            if axis_type.upper() == 'INDEP' else
-            yflist
-        )
-        # Process
-        fgrid(True, which='both')
-        flim((dep_min, dep_max), emit=True, auto=False)
-        fticks(tick_locs)
-        axis_obj.tick_params(
-            axis='x' if axis_type.upper() == 'INDEP' else 'y',
-            which='major',
-            labelsize=AXIS_TICKS_FONT_SIZE
-        )
-        fticklabels(tick_labels)
+        indep = axis_type.upper() == 'INDEP'
+        set_lim = axis_obj.set_xlim if indep else axis_obj.set_ylim
+        axis = axis_obj.xaxis if indep else axis_obj.yaxis
+        set_lim((dep_min, dep_max), emit=True, auto=False)
+        axis.set_ticks(tick_locs)
+        char = 'x' if indep else 'y'
+        label_size = AXIS_TICKS_FONT_SIZE
+        axis_obj.tick_params(axis=char, which='major', labelsize=label_size)
+        axis.set_ticklabels(tick_labels)
         if (axis_label not in [None, '']) or (axis_units not in [None, '']):
-            axis_label = '' if axis_label is None else axis_label.strip()
-            unit_scale = '' if axis_scale is None else axis_scale.strip()
-            fset_label_text(
-                axis_label +
-                (
-                    ''
-                    if (unit_scale == '') and (axis_units == '') else
-                    (
-                        ' [{unit_scale}{units}]'.format(
-                            unit_scale=unit_scale,
-                            units='-' if axis_units == '' else axis_units
-                        )
-                    )
-                ),
-                fontdict={'fontsize':AXIS_LABEL_FONT_SIZE}
+            axis_label = (axis_label or '').strip()
+            unit_scale = (axis_scale or '').strip()
+            empty_units = (unit_scale == '') and (axis_units == '')
+            units_str = ' [{0}{1}]'.format(unit_scale, axis_units or '-')
+            fdict = dict(fontsize=AXIS_LABEL_FONT_SIZE)
+            axis.set_label_text(
+                axis_label+('' if empty_units else units_str), fontdict=fdict
             )
 
     def _draw(self, axarr_prim, indep_axis_dict, print_indep_axis):
         """ Draw panel series """
         # pylint: disable=W0612
-        axarr_sec = (
-            axarr_prim.twinx()
-            if self._panel_has_secondary_axis else
-            None
-        )
-        #if self._panel_has_primary_axis:
-        #    axarr_prim.set_axisbelow(True)
-        #    axarr_prim.xaxis.grid(True, which='both')
-        #    axarr_prim.yaxis.grid(True, which='both')
         #if self._panel_has_secondary_axis:
-        #    axarr_sec.set_axisbelow(True)
-        #    axarr_sec.xaxis.grid(True, which='both')
-        #    axarr_sec.yaxis.grid(True, which='both')
+        axarr_sec = (
+            axarr_prim.twinx() if self._panel_has_secondary_axis else None
+        )
+        # Set up tick labels and axis labels
+        if self._panel_has_primary_axis:
+            self._setup_axis(
+                'DEP',
+                axarr_prim,
+                self._primary_dep_var_min,
+                self._primary_dep_var_max,
+                self._primary_dep_var_locs,
+                self._primary_dep_var_labels,
+                self.primary_axis_label,
+                self.primary_axis_units,
+                self._primary_dep_var_unit_scale,
+            )
+        if self._panel_has_secondary_axis:
+            self._setup_axis(
+                'DEP',
+                axarr_sec,
+                self._secondary_dep_var_min,
+                self._secondary_dep_var_max,
+                self._secondary_dep_var_locs,
+                self._secondary_dep_var_labels,
+                self.secondary_axis_label,
+                self.secondary_axis_units,
+                self._secondary_dep_var_unit_scale,
+            )
+        if not self._panel_has_secondary_axis:
+            axarr_prim.set_axisbelow(True)
+            axarr_prim.xaxis.grid(True, which='both', zorder=4)
+            axarr_prim.yaxis.grid(True, which='both', zorder=4)
+        else:
+            axarr_sec.set_axisbelow(True)
+            axarr_sec.xaxis = copy.copy(axarr_prim.xaxis)
+            axarr_sec.xaxis.grid(True, which='both', zorder=4)
+            axarr_sec.yaxis.grid(True, which='both', zorder=4)
         # Place data series in their appropriate axis (primary or secondary)
         prim_log_axis = sec_log_axis = False
-        for series_obj in self.series:
+        # Reverse series list so that first series is drawn on top
+        for series_obj in reversed(self.series):
             series_obj._draw(
                 axarr_prim if not series_obj.secondary_axis else axarr_sec,
                 indep_axis_dict['log_indep'],
@@ -923,34 +927,6 @@ class Panel(object):
                 if sec_log_axis else
                 series_obj.secondary_axis and self.log_dep_axis
             )
-        # Set up tick labels and axis labels
-        if self._panel_has_primary_axis:
-            self._setup_axis(
-                'DEP',
-                axarr_prim,
-                self._primary_dep_var_min,
-                self._primary_dep_var_max,
-                self._primary_dep_var_locs,
-                self._primary_dep_var_labels,
-                self.primary_axis_label,
-                self.primary_axis_units,
-                self._primary_dep_var_unit_scale
-            )
-        if self._panel_has_secondary_axis:
-            self._setup_axis(
-                'DEP',
-                axarr_sec,
-                self._secondary_dep_var_min,
-                self._secondary_dep_var_max,
-                self._secondary_dep_var_locs,
-                self._secondary_dep_var_labels,
-                self.secondary_axis_label,
-                self.secondary_axis_units,
-                self._secondary_dep_var_unit_scale
-            )
-        if ((not self._panel_has_primary_axis) and
-           self._panel_has_secondary_axis):
-            axarr_prim.yaxis.set_visible(False)
         # Print legend
         if (len(self.series) > 1) and (len(self.legend_props) > 0):
             _, primary_labels = (
@@ -980,7 +956,11 @@ class Panel(object):
                     if series_obj._check_series_is_plottable()
                 ]
                 legend_axis = (
-                    axarr_prim if self._panel_has_primary_axis else axarr_sec
+                    axarr_prim
+                    if self._panel_has_primary_axis and (
+                        not self._panel_has_secondary_axis
+                    ) else
+                    axarr_sec
                 )
                 loc_key = self._legend_pos_list.index(
                             self.legend_props['pos'].lower()
@@ -1001,11 +981,11 @@ class Panel(object):
                 # the axis/series of the other
                 # From: http://stackoverflow.com/questions/17158469/
                 #       legend-transparency-when-using-secondary-axis
-                if (self._panel_has_primary_axis and
-                    self._panel_has_secondary_axis):
-                    axarr_prim.set_zorder(1)
-                    axarr_prim.set_frame_on(False)
-                    axarr_sec.set_frame_on(True)
+                # if (self._panel_has_primary_axis and
+                #     self._panel_has_secondary_axis):
+                #     axarr_prim.set_zorder(1)
+                #     axarr_prim.set_frame_on(False)
+                #     axarr_sec.set_frame_on(True)
         #  Print independent axis tick marks and label
         (indep_var_min, indep_var_max, indep_var_locs) = (
             indep_axis_dict['indep_var_min'],
@@ -1049,6 +1029,12 @@ class Panel(object):
             indep_axis_unit_scale
         )
         plt.setp(axarr_prim.get_xticklabels(), visible=print_indep_axis)
+        if axarr_prim and axarr_sec:
+            # Plot series in primary axis on top of seriesin secondary axis
+            axarr_prim.set_zorder(axarr_sec.get_zorder()+1)
+            axarr_prim.patch.set_visible(False)
+            for line in axarr_sec.lines:
+                line.set_zorder(10)
         # This is necessary because if there is no primary axis but there
         # is a secondary axis, then the independent axis bounding boxes
         # are all stacked up in the same spot
