@@ -581,7 +581,7 @@ class Figure(object):
             # or the user-given dimensions, provided they are equal or greater
             # than the minimum dimensions
             self._draw()
-            self._draw()
+            #self._draw()
             bbox = self._calculate_figure_bbox()
             #self._min_fig_width = math.floor(self.dpi*bbox.width)/self.dpi
             #self._min_fig_height = math.floor(self.dpi*bbox.height)/self.dpi
@@ -631,15 +631,7 @@ class Figure(object):
             RuntimeError,
             'Number of tick locations and number of tick labels mismatch'
         )
-        self._axes_list = []
         num_panels = len(self.panels)
-        plt.close('all')
-        # Create required number of panels
-        fig_width, fig_height = self._fig_dims()
-        figsize = (fig_width, fig_height) if fig_width and fig_height else None
-        self._fig = plt.figure(dpi=self.dpi, figsize=figsize)
-        axes = [plt.subplot(num_panels, 1, num+1) for num in range(num_panels)]
-        glob_indep_var = []
         # Restore scaling
         if self._indep_var_div is not None:
             for panel_obj in self.panels:
@@ -647,49 +639,10 @@ class Figure(object):
             self._indep_var_div = 1.0
             self._indep_axis_ticks = self._prev_indep_axis_ticks
         # Find union of the independent variable data set of all panels
-        for panel_num, panel_obj in enumerate(self.panels):
-            for series_num, series_obj in enumerate(panel_obj.series):
-                log_ex(
-                    bool(
-                        self.log_indep_axis and
-                        (min(series_obj.indep_var) < 0)
-                    ),
-                    edata=_MF(
-                        'panel_num', panel_num, 'series_num', series_num
-                    )
-                )
-                glob_indep_var = numpy.unique(
-                    numpy.append(
-                        glob_indep_var,
-                        numpy.array(
-                            [
-                                peng.round_mantissa(element, 10)
-                                for element in series_obj.indep_var
-                            ]
-                        )
-                    )
-                )
-        indep_axis_ticks = _intelligent_ticks(
-            glob_indep_var,
-            min(glob_indep_var),
-            max(glob_indep_var),
-            tight=True,
-            log_axis=self.log_indep_axis,
-            tick_list=(
-                None if self._log_indep_axis else self._indep_axis_ticks
-            )
-        )
+        indep_axis_ticks = self._get_global_xaxis()
         self._indep_var_div = indep_axis_ticks.div
         self._prev_indep_axis_ticks = self._indep_axis_ticks
         self._indep_axis_ticks = indep_axis_ticks.locs
-        ticks_num_ex(
-            (self._indep_axis_tick_labels is not None) and
-            (
-                len(self._indep_axis_tick_labels)
-                !=
-                len(indep_axis_ticks.labels)
-            )
-        )
         # Scale all panel series
         for panel_obj in self.panels:
             panel_obj._scale_indep_var(self._indep_var_div)
@@ -707,19 +660,8 @@ class Figure(object):
             'indep_axis_units':self.indep_var_units,
             'indep_axis_unit_scale':indep_axis_ticks.unit_scale
         }
-        panels_with_indep_axis_list = [
-            num for num, panel_obj in enumerate(self.panels)
-            if panel_obj.display_indep_axis
-        ] or [num_panels-1]
-        keys = ['number', 'primary', 'secondary']
-        for num, (panel_obj, axis) in enumerate(zip(self.panels, axes)):
-            panel_dict = panel_obj._draw(
-                axis, indep_axis_dict, num in panels_with_indep_axis_list
-            )
-            panel_dict['number'] = num
-            self._axes_list.append(
-                dict((item, panel_dict[item]) for item in keys)
-            )
+        # Create required number of panels
+        self._fig, axes = self._draw_panels(indep_axis_dict)
         if self.title not in [None, '']:
             top_panel = self._axes_list[0]
             axes = top_panel['primary'] or top_panel['secondary']
@@ -733,6 +675,38 @@ class Figure(object):
         # Draw figure otherwise some bounding boxes return NaN
         FigureCanvasAgg(self._fig).draw()
         self._calculate_min_figure_size()
+
+    def _draw_panels(self, indep_axis_dict):
+        num_panels = len(self.panels)
+        fig_width, fig_height = self._fig_dims()
+        figsize = (fig_width, fig_height) if fig_width and fig_height else None
+        plt.close('all')
+        self._fig = plt.figure(dpi=self.dpi, figsize=figsize)
+        axes = [plt.subplot(num_panels, 1, num+1) for num in range(num_panels)]
+        keys = ['number', 'primary', 'secondary']
+        axes = []
+        self._axes_list = []
+        for num, panel_obj in enumerate(self.panels):
+            axis = plt.subplot(num_panels, 1, num+1)
+            disp_indep_axis = (num_panels == 1) or panel_obj.display_indep_axis
+            panel_dict = panel_obj._draw(
+                axis, indep_axis_dict, disp_indep_axis
+            )
+            if panel_dict['primary'] and panel_dict['secondary'] and fig_width:
+                delta = self._panel_right_adjust(panel_dict)/fig_width
+                fbbox = [0, 0, 1-delta, 1]
+                if delta:
+                    plt.delaxes(axis)
+                    axis = plt.subplot(num_panels, 1, num+1)
+                    panel_dict = panel_obj._draw(
+                        axis, indep_axis_dict, disp_indep_axis, fbbox
+                    )
+            axes.append(axis)
+            panel_dict['number'] = num
+            self._axes_list.append(
+                dict((item, panel_dict[item]) for item in keys)
+            )
+        return self._fig, axes
 
     def _fig_bottom(self):
         panel = self._axes_list[-1]
@@ -796,6 +770,60 @@ class Figure(object):
             self._create_figure()
             self._fig_width = self._min_fig_width
         return self._fig_width
+
+    def _get_global_xaxis(self):
+        log_ex = pexdoc.exh.addex(
+            ValueError,
+            'Figure cannot be plotted with a logarithmic '
+            'independent axis because panel *[panel_num]*, series '
+            '*[series_num]* contains negative independent data points'
+        )
+        ticks_num_ex = pexdoc.exh.addex(
+            RuntimeError,
+            'Number of tick locations and number of tick labels mismatch'
+        )
+        glob_indep_var = []
+        for panel_num, panel_obj in enumerate(self.panels):
+            for series_num, series_obj in enumerate(panel_obj.series):
+                log_ex(
+                    bool(
+                        self.log_indep_axis and
+                        (min(series_obj.indep_var) < 0)
+                    ),
+                    edata=_MF(
+                        'panel_num', panel_num, 'series_num', series_num
+                    )
+                )
+                glob_indep_var = numpy.unique(
+                    numpy.append(
+                        glob_indep_var,
+                        numpy.array(
+                            [
+                                peng.round_mantissa(element, 10)
+                                for element in series_obj.indep_var
+                            ]
+                        )
+                    )
+                )
+        indep_axis_ticks = _intelligent_ticks(
+            glob_indep_var,
+            min(glob_indep_var),
+            max(glob_indep_var),
+            tight=True,
+            log_axis=self.log_indep_axis,
+            tick_list=(
+                None if self._log_indep_axis else self._indep_axis_ticks
+            )
+        )
+        ticks_num_ex(
+            (self._indep_axis_tick_labels is not None) and
+            (
+                len(self._indep_axis_tick_labels)
+                !=
+                len(indep_axis_ticks.labels)
+            )
+        )
+        return indep_axis_ticks
 
     def _get_indep_axis_scale(self):
         self._create_figure()
@@ -937,6 +965,26 @@ class Figure(object):
             ylabel_edge
         )
 
+    def _panel_right_adjust(self, adict):
+        prop = 'xmax'
+        axes = [adict['primary']]
+        title_objs = [axis.title for axis in axes if _get_text(axis.title)]
+        title_bboxes = [self._bbox(title_obj) for title_obj in title_objs]
+        title_edge = _lmax([bbox.xmax for bbox in title_bboxes])
+        xaxes = [axis.xaxis for axis in axes]
+        xtick_edge = _lmax([self._axis_ticks_xmax(xaxis) for xaxis in xaxes])
+        xlabel_edge = _lmax(self._label_bbox(xaxes, prop))
+        spines = [axis.spines['right'] for axis in axes]
+        spines_bboxes = [self._bbox(spine) for spine in spines]
+        spine_edge = _lmax([bbox.xmax for bbox in spines_bboxes])
+        x_edge = _lmax(title_edge, spine_edge, xtick_edge, xlabel_edge)
+        renderer = self._fig.canvas.get_renderer()
+        yaxis = adict['secondary'].yaxis
+        y_edge = yaxis.get_tightbbox(renderer=renderer).transformed(
+            self._fig.dpi_scale_trans.inverted()
+        ).xmax
+        return _lmax(0, y_edge-x_edge)
+
     @pexdoc.pcontracts.contract(dpi='None|positive_real_num')
     def _set_dpi(self, dpi):
         self._dpi = float(dpi)
@@ -1066,8 +1114,11 @@ class Figure(object):
         self._fig_width, self._fig_height = self._fig_dims()
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
+            #self._fig.savefig(
+            #    fname, dpi=dpi, bbox_inches=bbox, format=ftype, pad_inches=0
+            #)
             self._fig.savefig(
-                fname, dpi=dpi, bbox_inches=bbox, format=ftype, pad_inches=0
+                fname, dpi=dpi, format=ftype, pad_inches=0
             )
         plt.close('all')
 
