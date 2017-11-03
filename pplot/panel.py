@@ -1000,18 +1000,22 @@ class Panel(object):
                     axarr_sec
                 )
                 loc_key = self._legend_pos_list.index(
-                            self.legend_props['pos'].lower()
-                            if 'pos' in self.legend_props else 'lower left'
+                    self.legend_props['pos'].lower()
+                    if 'pos' in self.legend_props else 'lower left'
                 )
                 legend_axis.legend(
                     leg_artist,
                     labels,
-                    ncol=self.legend_props['cols']
-                         if 'cols' in self.legend_props else
-                         len(labels),
+                    ncol=(
+                        self.legend_props['cols']
+                        if 'cols' in self.legend_props else
+                        len(labels)
+                    ),
                     loc=self._legend_pos_list[loc_key],
                     numpoints=1,
-                    fontsize=AXIS_LABEL_FONT_SIZE/LEGEND_SCALE
+                    fontsize=AXIS_LABEL_FONT_SIZE/LEGEND_SCALE,
+                    facecolor='white',
+                    framealpha=1.0,
                 )
         # This is necessary because if there is no primary axis but there
         # is a secondary axis, then the independent axis bounding boxes
