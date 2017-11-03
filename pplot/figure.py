@@ -9,7 +9,7 @@ from functools import partial
 import math
 import os
 import sys
-import warnings
+# import warnings
 # PyPI imports
 import numpy
 import matplotlib.pyplot as plt
@@ -21,7 +21,6 @@ import pexdoc.pcontracts
 import peng
 # Intra-package imports
 from .panel import Panel
-from .constants import TITLE_FONT_SIZE
 from .functions import _F, _MF, _intelligent_ticks
 
 
@@ -67,7 +66,11 @@ def _lmin(*args):
 
 
 def _lmm(fpointer, limit, *args):
-    ret = [item for item in pmisc.flatten_list(args) if item is not None]
+    ret = [
+        item
+        for item in pmisc.flatten_list(args)
+        if (item is not None) and (-INF <= item <= INF)
+    ]
     return fpointer(ret) if ret else limit
 
 
@@ -201,8 +204,9 @@ class Figure(object):
         self._fig_height = None
         self._indep_var_units = None
         self._indep_var_div = None
-        self._prev_indep_axis_ticks = None
         self._axes_list = []
+        self._scaling_done = False
+        self._indep_axis_dict = None
         # Assignment of arguments to attributes
         self._set_dpi(dpi)
         self._set_indep_var_label(indep_var_label)
@@ -461,13 +465,20 @@ class Figure(object):
         axis_box_dim = (locs[-1]-locs[0])*dpu
         return axis_box_dim
 
+    def _axis_edge(self, axis, prop):
+        renderer = self._fig.canvas.get_renderer()
+        obj = axis.get_tightbbox(renderer=renderer).transformed(
+            self._fig.dpi_scale_trans.inverted()
+        )
+        return getattr(obj, prop)
+
     def _axis_side_dim(self, axis, axis_type='indep', axis_box_edge=0):
         """ Returns minimum space required by axis label and tick marks """
         indep = axis_type.lower() == 'indep'
         primary = axis_type.lower() == 'primary'
         sign = +1 if indep or primary else -1
-        func = _lmin if indep or primary else _lmax
         dim = 'ymin' if indep else ('xmin' if primary else 'xmax')
+        func = min if indep else (min if primary else max)
         label = _get_text(axis.get_label())
         label_dim = getattr(self._bbox(axis.get_label()), dim) if label else 0
         tick_bbox = self._axis_ticks_bbox(axis)
@@ -481,7 +492,7 @@ class Figure(object):
         """ Get bounding box of non-empty axis ticks """
         return [
             self._bbox(tick)
-            for tick in axis.get_ticklabels() if _get_text(tick)
+            for tick in axis.get_ticklabels() if tick.get_text().strip()
         ]
 
     def _axis_ticks_dim(self, axis, dim):
@@ -511,37 +522,16 @@ class Figure(object):
             self._fig.dpi_scale_trans.inverted()
         )
 
-    def _calculate_figure_bbox(self):
-        """ Returns bounding box of figure """
-        top = self._fig_top()
-        bottom = self._fig_bottom()
-        right = max(self._panel_edge(obj, 'right') for obj in self._axes_list)
-        left = min(self._panel_edge(obj, 'left') for obj in self._axes_list)
-        fig_bbox = Bbox([[left, bottom], [right, top]])
-        return fig_bbox
-
     def _calculate_min_figure_size(self):
         """ Calculates minimum panel and figure size """
         dround = lambda x: math.floor(x)/self.dpi
-        title_height = title_width = 0
-        top_panel = self._axes_list[0]
-        axes = (top_panel['primary'], top_panel['secondary'])
-        axes = [axis for axis in axes if axis and axis.get_title().strip()]
-        if axes:
-            axis = axes[0] # There should be only one
-            title_obj = axis.title
-            title_bbox = self._bbox(title_obj)
-            label_bbox = self._bbox(axis.yaxis.get_ticklabels()[-1])
-            title_pad = title_bbox.ymin-label_bbox.ymax
-            title_height = (title_bbox.height+title_pad)*self.dpi
-            title_width = title_bbox.width*self.dpi
-        adicts = self._axes_list
-        panels_width = max(self._min_panel(adict, 'x') for adict in adicts)
-        panels_height = max(self._min_panel(adict, 'y') for adict in adicts)
-        self._min_fig_width = dround(max(title_width, panels_width))
-        npanels = len(self._axes_list)
+        self._min_fig_width = dround(
+            max([panel._min_bbox.width for panel in self.panels])*self.dpi
+        )
+        npanels = len(self.panels)
         self._min_fig_height = dround(
-            npanels*(panels_height+PANEL_SEP)-PANEL_SEP+title_height
+            sum([panel._min_bbox.height*self.dpi for panel in self.panels])+
+            ((npanels-1)*PANEL_SEP)
         )
 
     def _check_figure_spec(self, fig_width=None, fig_height=None):
@@ -581,8 +571,8 @@ class Figure(object):
             # or the user-given dimensions, provided they are equal or greater
             # than the minimum dimensions
             self._draw()
-            #self._draw()
-            bbox = self._calculate_figure_bbox()
+            self._draw()
+            bbox = self._fig_bbox()
             #self._min_fig_width = math.floor(self.dpi*bbox.width)/self.dpi
             #self._min_fig_height = math.floor(self.dpi*bbox.height)/self.dpi
             fig_width, fig_height = self._fig_dims()
@@ -594,7 +584,7 @@ class Figure(object):
             # artists are sorted based on zorder. Therefore you can't interleave
             # the drawing orders of artists from one Axes with those from another.
         else:
-            bbox = self._calculate_figure_bbox()
+            bbox = self._fig_bbox()
         fig_width, fig_height = self._fig_dims()
         # Get figure pixel size exact
         width = int(round(fig_width*self._dpi))
@@ -632,115 +622,99 @@ class Figure(object):
             'Number of tick locations and number of tick labels mismatch'
         )
         num_panels = len(self.panels)
-        # Restore scaling
-        if self._indep_var_div is not None:
+        if not self._scaling_done:
+            # Find union of the independent variable data set of all panels
+            indep_axis_ticks = self._get_global_xaxis()
+            self._indep_var_div = indep_axis_ticks.div
+            self._indep_axis_ticks = indep_axis_ticks.locs
+            # Scale all panel series
             for panel_obj in self.panels:
-                panel_obj._scale_indep_var(1/float(self._indep_var_div))
-            self._indep_var_div = 1.0
-            self._indep_axis_ticks = self._prev_indep_axis_ticks
-        # Find union of the independent variable data set of all panels
-        indep_axis_ticks = self._get_global_xaxis()
-        self._indep_var_div = indep_axis_ticks.div
-        self._prev_indep_axis_ticks = self._indep_axis_ticks
-        self._indep_axis_ticks = indep_axis_ticks.locs
-        # Scale all panel series
-        for panel_obj in self.panels:
-            panel_obj._scale_indep_var(self._indep_var_div)
-        # Draw panels
-        self._indep_axis_tick_labels = (
-            self._indep_axis_tick_labels or indep_axis_ticks.labels
-        )
-        indep_axis_dict = {
-            'log_indep':self.log_indep_axis,
-            'indep_var_min':indep_axis_ticks.min,
-            'indep_var_max':indep_axis_ticks.max,
-            'indep_var_locs':indep_axis_ticks.locs,
-            'indep_var_labels':self._indep_axis_tick_labels,
-            'indep_axis_label':self.indep_var_label,
-            'indep_axis_units':self.indep_var_units,
-            'indep_axis_unit_scale':indep_axis_ticks.unit_scale
-        }
-        # Create required number of panels
-        self._fig, axes = self._draw_panels(indep_axis_dict)
-        if self.title not in [None, '']:
-            top_panel = self._axes_list[0]
-            axes = top_panel['primary'] or top_panel['secondary']
-            axes.set_title(
-                self.title,
-                horizontalalignment='center',
-                verticalalignment='bottom',
-                multialignment='center',
-                fontsize=TITLE_FONT_SIZE
+                panel_obj._scale_indep_var(self._indep_var_div)
+            self._indep_axis_tick_labels = (
+                self._indep_axis_tick_labels or indep_axis_ticks.labels
             )
+            self._indep_axis_dict = {
+                'log_indep':self.log_indep_axis,
+                'indep_var_min':indep_axis_ticks.min,
+                'indep_var_max':indep_axis_ticks.max,
+                'indep_var_locs':indep_axis_ticks.locs,
+                'indep_var_labels':self._indep_axis_tick_labels,
+                'indep_axis_label':self.indep_var_label,
+                'indep_axis_units':self.indep_var_units,
+                'indep_axis_unit_scale':indep_axis_ticks.unit_scale
+            }
+            self._scaling_done = True
+        # Create required number of panels
+        self._draw_panels(self._indep_axis_dict)
         # Draw figure otherwise some bounding boxes return NaN
         FigureCanvasAgg(self._fig).draw()
         self._calculate_min_figure_size()
 
     def _draw_panels(self, indep_axis_dict):
+        def make_panel_dict(panel_obj, num):
+            panel_dict = {}
+            panel_dict['number'] = num
+            panel_dict['primary'] = (
+                panel_obj._axis_prim.axis if panel_obj._has_prim_axis else None
+            )
+            panel_dict['secondary'] = (
+                panel_obj._axis_sec.axis if panel_obj._has_sec_axis else None
+            )
+            return panel_dict
         num_panels = len(self.panels)
         fig_width, fig_height = self._fig_dims()
         figsize = (fig_width, fig_height) if fig_width and fig_height else None
         plt.close('all')
         self._fig = plt.figure(dpi=self.dpi, figsize=figsize)
-        axes = [plt.subplot(num_panels, 1, num+1) for num in range(num_panels)]
-        keys = ['number', 'primary', 'secondary']
         axes = []
         self._axes_list = []
         for num, panel_obj in enumerate(self.panels):
-            axis = plt.subplot(num_panels, 1, num+1)
             disp_indep_axis = (num_panels == 1) or panel_obj.display_indep_axis
-            panel_dict = panel_obj._draw(
-                axis, indep_axis_dict, disp_indep_axis
+            title = self.title if not num else None
+            panel_obj._draw(
+                num_panels, num, indep_axis_dict, disp_indep_axis, title
             )
-            if panel_dict['primary'] and panel_dict['secondary'] and fig_width:
-                delta = self._panel_right_adjust(panel_dict)/fig_width
-                fbbox = [0, 0, 1-delta, 1]
-                if delta:
-                    plt.delaxes(axis)
-                    axis = plt.subplot(num_panels, 1, num+1)
-                    panel_dict = panel_obj._draw(
-                        axis, indep_axis_dict, disp_indep_axis, fbbox
+            panel_dict = make_panel_dict(panel_obj, num)
+            if fig_width and fig_height:
+                xdelta_right = (
+                    self._panel_right_adjust(panel_dict)/fig_width
+                    if panel_obj._axis_sec else
+                    0
+                )
+                xdelta_left = self._panel_left_adjust(panel_dict)/fig_width
+                ydelta_top = self._panel_top_adjust(panel_dict)/fig_height
+                ydelta_bot = self._panel_bottom_adjust(panel_dict)/fig_height
+                fbbox = [
+                    0+xdelta_left, 0+ydelta_bot, 1-xdelta_right, 1-ydelta_top
+                ]
+                if xdelta_right or xdelta_left or ydelta_top or ydelta_bot:
+                    plt.delaxes(panel_obj._axis_prim.axis)
+                    panel_obj._draw(
+                        num_panels,
+                        num,
+                        indep_axis_dict,
+                        disp_indep_axis,
+                        title,
+                        fbbox
                     )
-            axes.append(axis)
-            panel_dict['number'] = num
-            self._axes_list.append(
-                dict((item, panel_dict[item]) for item in keys)
-            )
-        return self._fig, axes
+            axes.append(panel_obj._axis_prim.axis)
+            panel_dict = make_panel_dict(panel_obj, num)
+            self._axes_list.append(panel_dict)
 
-    def _fig_bottom(self):
-        panel = self._axes_list[-1]
-        axes = [self._axes_list[0]['primary'], self._axes_list[0]['secondary']]
-        axes = [axis for axis in axes if axis]
-        yaxes = [axis.yaxis for axis in axes]
-        yaxes_label = [axis for axis in yaxes if self._label_text(axis)]
-        ylabels = [axis.get_label() for axis in yaxes_label]
-        xaxis = (panel['primary'] or panel['secondary']).xaxis
-        xlabel = self._label_text(xaxis)
-        xtick_bot = _lmin(self._axis_ticks_ymin(xaxis))
-        ytick_bot = _lmin([self._axis_ticks_ymin(axis) for axis in yaxes])
-        xlabel_bot = self._bbox(xaxis.get_label()).ymin if xlabel else INF
-        ylabel_bot = _lmin([self._bbox(ylabel).ymin for ylabel in ylabels])
-        return min(xtick_bot, xlabel_bot, ytick_bot, ylabel_bot)
+    def _fig_bbox(self):
+        """ Returns bounding box of figure """
+        left = min(pobj._left for pobj in self.panels)
+        bottom = min(pobj._bottom for pobj in self.panels)
+        top = max(pobj._top for pobj in self.panels)
+        right = max(pobj._right for pobj in self.panels)
+        fig_bbox = Bbox([[left, bottom], [right, top]])
+        return fig_bbox
 
     def _fig_dims(self):
         """ Get actual figure size, given or minimum calculated """
         fig_width = self._fig_width or self._min_fig_width
         fig_height = self._fig_height or self._min_fig_height
         return fig_width, fig_height
-
-    def _fig_top(self):
-        panel = self._axes_list[0]
-        axes = [panel['primary'], panel['secondary']]
-        axes = [axis for axis in axes if axis]
-        yaxes = [axis.yaxis for axis in axes]
-        axes_title = [axis for axis in axes if axis.get_title().strip()]
-        yaxes_label = [axis for axis in yaxes if self._label_text(axis)]
-        ylabels = [axis.get_label() for axis in yaxes_label]
-        title_top = _lmax([self._bbox(axis.title).ymax for axis in axes_title])
-        ytick_top = _lmax([self._axis_ticks_ymax(axis) for axis in yaxes])
-        ylabel_top = _lmax([self._bbox(ylabel).ymax for ylabel in ylabels])
-        return max(title_top, ytick_top, ylabel_top)
 
     def _get_axes_list(self):
         self._create_figure()
@@ -858,8 +832,9 @@ class Figure(object):
 
     def _label_bbox(self, axes, prop):
         """ Returns bounding box of non-empty axis labels """
-        lobj = [(axis.get_label(), self._label_text(axis)) for axis in axes]
-        bboxes = [self._bbox(bbox) for bbox, label in lobj if label]
+        labels = [axis.get_label() for axis in axes]
+        labels = [label for label in labels if label.get_text().strip()]
+        bboxes = [self._bbox(label) for label in labels]
         return [getattr(bbox, prop) for bbox in bboxes]
 
     def _min_panel(self, adict, axis_type):
@@ -935,39 +910,46 @@ class Figure(object):
         )*self.dpi
         return ret
 
-    def _panel_edge(self, adict, stype):
-        left = stype.lower() == 'left'
-        fmm = _lmin if left else _lmax
-        prop = 'xmin' if left else 'xmax'
-        func = self._axis_ticks_xmin if left else self._axis_ticks_xmax
+    def _panel_bottom_adjust(self, adict):
         axes = [adict['primary'], adict['secondary']]
         axes = [axis for axis in axes if axis]
+        yaxes = [axis.yaxis for axis in axes]
+        y_edge = _lmin([self._axis_edge(axis, 'ymin') for axis in yaxes])
+        xaxis = adict['primary'] or adict['secondary']
+        x_edge = self._axis_edge(xaxis, 'ymin')
+        return max(0, -min(y_edge, x_edge))
+
+    def _panel_left_adjust(self, adict):
+        prop = 'xmin'
+        axes = [adict['primary'] or adict['secondary']]
         title_objs = [axis.title for axis in axes if _get_text(axis.title)]
         title_bboxes = [self._bbox(title_obj) for title_obj in title_objs]
-        title_edge = fmm([getattr(bbox, prop) for bbox in title_bboxes])
+        title_edge = _lmin([bbox.xmin for bbox in title_bboxes])
         xaxes = [axis.xaxis for axis in axes]
-        xtick_edge = fmm([func(xaxis) for xaxis in xaxes])
-        xlabel_edge = fmm(self._label_bbox(xaxes, prop))
-        spines = [[axis.spines['bottom'], axis.spines['top']] for axis in axes]
-        spines = [spine[0 if left else -1] for spine in spines]
+        xtick_edge = _lmin([self._axis_ticks_xmin(xaxis) for xaxis in xaxes])
+        xlabel_edge = _lmin(self._label_bbox(xaxes, prop))
+        spines = [axis.spines['left'] for axis in axes]
         spines_bboxes = [self._bbox(spine) for spine in spines]
-        spine_edge = fmm([getattr(bbox, prop) for bbox in spines_bboxes])
-        axis = adict['primary' if left else 'secondary']
-        yaxis = axis.yaxis if axis else None
-        ytick_edge = fmm(self._axis_ticks_dim(yaxis, prop)) if yaxis else None
-        ylabel_edge = fmm(self._label_bbox([yaxis], prop)) if yaxis else None
-        return fmm(
-            title_edge,
-            spine_edge,
-            xtick_edge,
-            xlabel_edge,
-            ytick_edge,
-            ylabel_edge
+        spine_edge = _lmin([bbox.xmin for bbox in spines_bboxes])
+        x_edge = (
+            -_lmin([self._axis_edge(xaxis, prop) for xaxis in xaxes])
+            if (not adict['primary']) and adict['secondary'] else
+            _lmin(title_edge, spine_edge, xtick_edge, xlabel_edge)
+        )
+        yaxes = [axis.yaxis for axis in axes]
+        y_edge = _lmin([self._axis_edge(yaxis, 'xmin') for yaxis in yaxes])
+        #yaxis = adict['primary'].yaxis
+        #y_edge = self._axis_edge(yaxis, 'xmin')
+        return (
+            x_edge
+            if (not adict['primary']) and adict['secondary'] else
+            -1*_lmin(y_edge, x_edge)
         )
 
     def _panel_right_adjust(self, adict):
         prop = 'xmax'
-        axes = [adict['primary']]
+        axes = [adict['primary'] or adict['secondary']]
+        axes = [axis for axis in axes if axis]
         title_objs = [axis.title for axis in axes if _get_text(axis.title)]
         title_bboxes = [self._bbox(title_obj) for title_obj in title_objs]
         title_edge = _lmax([bbox.xmax for bbox in title_bboxes])
@@ -977,13 +959,30 @@ class Figure(object):
         spines = [axis.spines['right'] for axis in axes]
         spines_bboxes = [self._bbox(spine) for spine in spines]
         spine_edge = _lmax([bbox.xmax for bbox in spines_bboxes])
-        x_edge = _lmax(title_edge, spine_edge, xtick_edge, xlabel_edge)
-        renderer = self._fig.canvas.get_renderer()
-        yaxis = adict['secondary'].yaxis
-        y_edge = yaxis.get_tightbbox(renderer=renderer).transformed(
-            self._fig.dpi_scale_trans.inverted()
-        ).xmax
+        yaxes = [axis.yaxis for axis in axes]
+        yaxes = [adict['secondary'].yaxis]
+        x_edge = (
+            _lmax(title_edge, spine_edge, xtick_edge, xlabel_edge)
+            if adict['primary'] and adict['secondary'] else
+            _lmax([self._axis_edge(yaxis, 'xmin') for yaxis in yaxes])
+        )
+        y_edge = _lmax([self._axis_edge(yaxis, 'xmax') for yaxis in yaxes])
         return _lmax(0, y_edge-x_edge)
+
+    def _panel_top_adjust(self, adict):
+        axes = [adict['primary'], adict['secondary']]
+        axes = [axis for axis in axes if axis]
+        yaxes = [axis.yaxis for axis in axes]
+        axes_title = [axis for axis in axes if axis.get_title().strip()]
+        yaxes_label = [axis for axis in yaxes if self._label_text(axis)]
+        ylabels = [axis.get_label() for axis in yaxes_label]
+        title_top = _lmax([self._bbox(axis.title).ymax for axis in axes_title])
+        title_bot = _lmax([self._bbox(axis.title).ymin for axis in axes_title])
+        ytick_top = _lmax([self._axis_ticks_ymax(axis) for axis in yaxes])
+        ylabel_top = _lmax([self._bbox(ylabel).ymax for ylabel in ylabels])
+        top = _lmax([title_top, ytick_top, ylabel_top])
+        bottom = _lmax([title_bot, ytick_top, ylabel_top])
+        return top-bottom
 
     @pexdoc.pcontracts.contract(dpi='None|positive_real_num')
     def _set_dpi(self, dpi):
@@ -1112,14 +1111,14 @@ class Figure(object):
         fname = os.path.expanduser(fname)
         pmisc.make_dir(fname)
         self._fig_width, self._fig_height = self._fig_dims()
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            #self._fig.savefig(
-            #    fname, dpi=dpi, bbox_inches=bbox, format=ftype, pad_inches=0
-            #)
-            self._fig.savefig(
-                fname, dpi=dpi, format=ftype, pad_inches=0
-            )
+        #with warnings.catch_warnings():
+        #    warnings.simplefilter('ignore')
+        #    self._fig.savefig(
+        #        fname, dpi=dpi, bbox_inches=bbox, format=ftype, pad_inches=0
+        #    )
+        self._fig.savefig(
+            fname, dpi=dpi, bbox='tight', format=ftype
+        )
         plt.close('all')
 
     def show(self):
