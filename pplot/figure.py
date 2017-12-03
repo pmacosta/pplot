@@ -50,30 +50,6 @@ PANEL_SEP = 10*SPACER
 
 
 ###
-# Functions
-###
-def _get_text(obj):
-    return obj.get_text().strip()
-
-
-def _lmax(*args):
-    return _lmm(max, 0, *args)
-
-
-def _lmin(*args):
-    return _lmm(min, INF, *args)
-
-
-def _lmm(fpointer, limit, *args):
-    ret = [
-        item
-        for item in pmisc.flatten_list(args)
-        if (item is not None) and (-INF <= item <= INF)
-    ]
-    return fpointer(ret) if ret else limit
-
-
-###
 # Class
 ###
 class Figure(object):
@@ -442,9 +418,12 @@ class Figure(object):
     def _calculate_min_figure_size(self):
         """ Calculates minimum panel and figure size """
         dround = lambda x: math.floor(x)/self.dpi
-        self._min_fig_width = dround(
-            max([panel._min_bbox.width for panel in self.panels])*self.dpi
+        min_width = (
+            max(panel._left_overhang for panel in self.panels)+
+            max(panel._min_spine_bbox.width for panel in self.panels)+
+            max(panel._right_overhang for panel in self.panels)
         )
+        self._min_fig_width = dround(min_width*self.dpi)
         npanels = len(self.panels)
         self._min_fig_height = dround(
             sum([panel._min_bbox.height*self.dpi for panel in self.panels])+
@@ -476,7 +455,7 @@ class Figure(object):
         )
         specified_ex(raise_exception and (not self._complete))
         if not self._complete:
-            return
+            return Bbox([[0, 0], [0, 0]])
         if self._need_redraw:
             self._size_given = (
                 (self._fig_width is not None) and (self._fig_height is not None)
@@ -567,35 +546,45 @@ class Figure(object):
         FigureCanvasAgg(self._fig).draw()
         self._calculate_min_figure_size()
 
-    def _draw_panels(self, indep_axis_dict):
-        def make_panel_dict(panel_obj, num):
-            panel_dict = {}
-            panel_dict['number'] = num
-            panel_dict['primary'] = (
-                panel_obj._axis_prim.axis if panel_obj._has_prim_axis else None
+    def _draw_panels(self, indep_axis_dict, fbbox=None):
+        def init_figure(num_panels, fbbox=None):
+            fig_width, fig_height = self._fig_dims()
+            figsize = (fig_width, fig_height) if fig_width and fig_height else None
+            plt.close('all')
+            self._fig, axesh = plt.subplots(
+                nrows=num_panels, ncols=1, dpi=self.dpi, figsize=figsize
             )
-            panel_dict['secondary'] = (
-                panel_obj._axis_sec.axis if panel_obj._has_sec_axis else None
-            )
-            return panel_dict
+            plt.tight_layout(rect=fbbox, pad=0, h_pad=2)
+            axesh = [axesh] if num_panels == 1 else axesh
+            return axesh, fig_width, fig_height
         num_panels = len(self.panels)
-        fig_width, fig_height = self._fig_dims()
-        figsize = (fig_width, fig_height) if fig_width and fig_height else None
-        plt.close('all')
-        self._fig = plt.figure(dpi=self.dpi, figsize=figsize)
-        axes = []
+        axesh, fig_width, fig_height = init_figure(num_panels, fbbox)
         self._axes_list = []
-        for num, panel_obj in enumerate(self.panels):
-            panel_obj._draw(
-                num_panels,
-                num,
-                indep_axis_dict,
-                self.title if not num else None,
-                fig_width,
-                fig_height
-            )
-            axes.append(panel_obj._axis_prim.axis)
-            self._axes_list.append(make_panel_dict(panel_obj, num))
+        top = right = -INF
+        bottom = left = +INF
+        if all(not panel.display_indep_axis for panel in self.panels):
+            self.panels[-1].display_indep_axis = True
+        for num, (panel, axish) in enumerate(zip(self.panels, axesh)):
+            title = self.title if not num else None
+            disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
+            panel._draw(disp_indep_axis, indep_axis_dict, title, axish)
+            left = min(left, panel._panel_bbox.xmin)
+            bottom = min(bottom, panel._panel_bbox.ymin)
+            right = max(right, panel._panel_bbox.xmax)
+            top = max(top, panel._panel_bbox.ymax)
+        if fig_width and fig_height:
+            xdelta_left = -left/fig_width
+            ydelta_bot = -bottom/fig_height
+            xdelta_right = (right-fig_width)/fig_width
+            ydelta_top = (top-fig_height)/fig_height
+            fbbox = [
+                0+xdelta_left, 0+ydelta_bot, 1-xdelta_right, 1-ydelta_top
+            ]
+            axesh, _, _ = init_figure(num_panels, fbbox)
+            for num, (panel, axish) in enumerate(zip(self.panels, axesh)):
+                title = self.title if not num else None
+                disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
+                panel._draw(disp_indep_axis, indep_axis_dict, title, axish)
 
     def _fig_bbox(self):
         """ Returns bounding box of figure """

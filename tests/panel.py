@@ -834,8 +834,8 @@ class TestPanel(object):
             series=[series1_obj, series2_obj, series3_obj, series4_obj]
         )
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (True, True)
         assert (
             panel_obj._primary_dep_var_locs == [
@@ -877,8 +877,8 @@ class TestPanel(object):
         # 9-17: Linear primary axis with multiple series
         panel_obj = pplot.Panel(series=[series1_obj, series2_obj])
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (True, False)
         assert (
             panel_obj._primary_dep_var_locs == [
@@ -911,8 +911,8 @@ class TestPanel(object):
         # 18-26: Linear secondary axis with multiple series on both
         panel_obj = pplot.Panel(series=[series3_obj, series4_obj])
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (False, True)
         assert panel_obj._primary_dep_var_locs is None
         assert panel_obj._primary_dep_var_labels is None
@@ -948,8 +948,8 @@ class TestPanel(object):
             series=[series1_obj, series5_obj], log_dep_axis=True
         )
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (True, True)
         assert (panel_obj._primary_dep_var_locs == [0.9, 1, 10, 100])
         assert (panel_obj._primary_dep_var_labels == ['', '1', '10', '100'])
@@ -974,8 +974,8 @@ class TestPanel(object):
         # 36-44: Logarithmic primary axis (bottom point at decade edge)
         panel_obj = pplot.Panel(series=[series1_obj], log_dep_axis=True)
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (True, False)
         assert (panel_obj._primary_dep_var_locs == [0.9, 1, 10])
         assert (panel_obj._primary_dep_var_labels == ['', '1', '10'])
@@ -1000,8 +1000,8 @@ class TestPanel(object):
         # 45-53: Logarithmic secondary axis (top point at decade edge)
         panel_obj = pplot.Panel(series=[series6_obj], log_dep_axis=True)
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (False, True)
         assert panel_obj._primary_dep_var_locs is None
         assert panel_obj._primary_dep_var_labels is None
@@ -1026,8 +1026,8 @@ class TestPanel(object):
         # 54-62: Logarithmic secondary axis (points not at decade edge)
         panel_obj = pplot.Panel(series=[series7_obj], log_dep_axis=True)
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (True, False)
         assert (panel_obj._primary_dep_var_locs == [10, 100])
         assert (panel_obj._primary_dep_var_labels == ['10', '100'])
@@ -1052,8 +1052,8 @@ class TestPanel(object):
         # 63-71: Logarithmic secondary axis (1 point)
         panel_obj = pplot.Panel(series=[series8_obj], log_dep_axis=True)
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (True, False)
         assert (panel_obj._primary_dep_var_locs == [18, 20, 22])
         assert (panel_obj._primary_dep_var_labels == ['18', '20', '22'])
@@ -1078,8 +1078,8 @@ class TestPanel(object):
         # 72-80: Linear secondary axis (1 point)
         panel_obj = pplot.Panel(series=[series8_obj], log_dep_axis=False)
         assert (
-            panel_obj._panel_has_primary_axis,
-            panel_obj._panel_has_secondary_axis
+            panel_obj._has_prim_axis,
+            panel_obj._has_sec_axis
         ) == (True, False)
         assert (panel_obj._primary_dep_var_locs == [18, 20, 22])
         assert (panel_obj._primary_dep_var_labels == ['18', '20', '22'])

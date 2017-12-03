@@ -43,6 +43,8 @@ exobj_plot = trace_ex_plot_panel.trace_module(no_print=True)
 ###
 INF = sys.float_info.max
 SPACER = 0.2 # in inches
+GRID_ZORDER = 2
+TICK_ZORDER = 4
 
 
 ###
@@ -80,6 +82,15 @@ def _lmm(fpointer, limit, *args):
     return fpointer(ret) if ret else limit
 
 
+def _turn_off_axis(axis, atype='x'):
+    obj = axis.xaxis if atype == 'x' else axis.yaxis
+    for tick in obj.get_ticklabels():
+        tick.set_visible(False)
+    for tick in obj.get_ticklines():
+        tick.set_visible(False)
+    obj.get_label().set_visible(False)
+
+
 ###
 # Classes
 ###
@@ -91,36 +102,14 @@ class _Axis(object):
         self.sec = atype.lower() == 'sec'
         self.fig = axis.figure
         self.renderer = self.fig.canvas.get_renderer()
-        self._spine_bbox = None
-        self._min_spine_bbox = None
-        self.dummy_bbox = None
-        self._xlabel = None
-        self._xlabel_bbox = None
-        self._xticklabels = None
-        self._xticklabels_bbox = None
-        self._ylabel = None
-        self._ylabel_bbox = None
-        self._yticklabels = None
-        self._yticklabels_bbox = None
-        self._title = None
-        self._title_bbox = None
-        self._left = None
-        self._bottom = None
-        self._right = None
-        self._top = None
-        self._axis_bbox = None
-        self._xlabel_plus_pad = None
-        self._title_plus_pad = None
-        self._left_overhang = None
-        self._right_overhang = None
-        self._ylabel_plus_pad = None
-        self._bottom_overhang = None
-        self._top_overhang = None
         self.ticklabels = ticklabels
-        self.axis_bbox = self.axis.get_tightbbox(
-            renderer=self.renderer
-        ).transformed(self.fig.dpi_scale_trans.inverted())
+        # This call needs to happen first because it calculates the
+        # dummy bounding box used for other getters
         self._get_spine_bbox()
+        #
+        self._title = self.axis.get_title().strip()
+        self._xlabel = self.axis.xaxis.get_label().get_text().strip()
+        self._ylabel = self.axis.yaxis.get_label().get_text().strip()
         self._get_xlabel()
         self._get_xlabel_bbox()
         self._get_xticklabels()
@@ -135,7 +124,7 @@ class _Axis(object):
         self._get_bottom()
         self._get_right()
         self._get_top()
-        self._get_axis_bbox()
+        #self._get_axis_bbox()
         self._get_min_spine_bbox()
         self._get_title_plus_pad()
         self._get_xlabel_plus_pad()
@@ -158,76 +147,57 @@ class _Axis(object):
             self.fig.dpi_scale_trans.inverted()
         )
 
-    def _get_axis_bbox(self):
-        if self._axis_bbox is None:
-            self.axis_bbox = Bbox(
-                [[self.left, self.bottom], [self.right, self.top]]
-            )
-        return self._axis_bbox
-
     def _get_bottom(self):
         return _lmin([self.xaxis_bottom, self.yaxis_bottom])
 
     def _get_bottom_overhang(self):
-        if self._bottom_overhang is None:
-            self._bottom_overhang = self._get_yoverhang('ymin')
-        return self._bottom_overhang
+        return self._get_yoverhang('ymin')
 
     def _get_left(self):
-        return _lmin([self.xaxis_left, self.yaxis_left])
+        title_left = self.title_bbox.xmin if self.title_bbox else 0
+        return _lmin([self.xaxis_left, self.yaxis_left, title_left])
 
     def _get_left_overhang(self):
-        if self._left_overhang is None:
-            self._left_overhang = self._get_xoverhang('xmin')
-        return self._left_overhang
+        return self._get_xoverhang('xmin')
 
     def _get_right(self):
-        return _lmax([self.xaxis_right, self.yaxis_right])
+        title_right = self.title_bbox.xmax if self.title_bbox else 0
+        return _lmax([self.xaxis_right, self.yaxis_right, title_right])
 
     def _get_right_overhang(self):
-        if self._right_overhang is None:
-            self._right_overhang = self._get_xoverhang('xmax')
-        return self._right_overhang
+        return self._get_xoverhang('xmax')
 
     def _get_spine_bbox(self):
-        if self._spine_bbox is None:
-            left = self._bbox(self.axis.spines['left']).xmin
-            bottom = self._bbox(self.axis.spines['bottom']).ymin
-            right = self._bbox(self.axis.spines['right']).xmax
-            top = self._bbox(self.axis.spines['top']).ymax
-            self._spine_bbox = Bbox([[left, bottom], [right, top]])
-            # Create dummy bbox in the midle of the spine so as to not limit
-            # measurements in any dimension
-            xcenter = (left+right)/2.0
-            ycenter = (top+bottom)/2.0
-            self.dummy_bbox = Bbox([[xcenter, ycenter], [xcenter, ycenter]])
-        return self._spine_bbox
+        left = self._bbox(self.axis.spines['left']).xmin
+        bottom = self._bbox(self.axis.spines['bottom']).ymin
+        right = self._bbox(self.axis.spines['right']).xmax
+        top = self._bbox(self.axis.spines['top']).ymax
+        # Create dummy bbox in the midle of the spine so as to not limit
+        # measurements in any dimension
+        xcenter = (left+right)/2.0
+        ycenter = (top+bottom)/2.0
+        self.dummy_bbox = Bbox([[xcenter, ycenter], [xcenter, ycenter]])
+        return Bbox([[left, bottom], [right, top]])
 
     def _get_title(self):
-        if self._title is None:
-            self._title = self.axis.get_title().strip()
-        return self._title or None
+        return self._title
 
     def _get_title_bbox(self):
-        if (self._title_bbox is None) and (self._title is None):
-            self._title_bbox = self.dummy_bbox
-        elif self._title_bbox is None:
-            self._title_bbox = self._bbox(self.axis.title)
-        return self._title_bbox
+        return (
+            self.dummy_bbox
+            if self._title is None else
+            self._bbox(self.axis.title)
+        )
 
     def _get_title_plus_pad(self):
-        if self._title_plus_pad is None:
-            edge = max(self.yticklabels_bbox.ymax, self.ylabel_bbox.ymax)
-            self._title_plus_pad = self.title_bbox.ymax-edge
-        return self._title_plus_pad
+        edge = max(self.yticklabels_bbox.ymax, self.ylabel_bbox.ymax)
+        return self.title_bbox.ymax-edge
 
     def _get_top(self):
-        return _lmax([self.xaxis_top, self.yaxis_top])
+        return _lmax([self.title_bbox.ymax, self.xaxis_top, self.yaxis_top])
 
     def _get_top_overhang(self):
-        if self._top_overhang is None:
-            self._top_overhang = self._get_yoverhang('ymax')
-        return self._top_overhang
+        return self._get_yoverhang('ymax')
 
     def _get_xaxis_bottom(self):
         return self._axis_edge(self.axis.xaxis, 'ymin')
@@ -242,75 +212,75 @@ class _Axis(object):
         return self._axis_edge(self.axis.xaxis, 'ymax')
 
     def _get_xlabel(self):
-        if self._xlabel is None:
-            self._xlabel = self.axis.xaxis.get_label().get_text().strip()
-        return self._xlabel or None
+        return self.axis.xaxis.get_label().get_text().strip()
 
     def _get_xlabel_bbox(self):
-        if (self._xlabel_bbox is None) and (self._xlabel is None):
-            self._xlabel_bbox = self.dummy_bbox
-        elif self._xlabel_bbox is None:
-            self._xlabel_bbox = self._bbox(self.axis.xaxis.get_label())
-        return self._xlabel_bbox
+        return (
+             self.dummy_bbox
+            if self._xlabel else
+            self._bbox(self.axis.xaxis.get_label())
+        )
 
     def _get_xlabel_plus_pad(self):
-        if self._xlabel_plus_pad is None:
-            dim = lambda x: getattr(x, 'ymin')
-            spine_edge = dim(self.spine_bbox)
-            edge = min(dim(self.xticklabels_bbox), spine_edge)
-            self._xlabel_plus_pad = max(0, edge-dim(self._xlabel_bbox))
-        return self._xlabel_plus_pad
+        dim = lambda x: getattr(x, 'ymin')
+        spine_edge = dim(self.spine_bbox)
+        edge = min(dim(self.xticklabels_bbox), spine_edge)
+        return max(0, edge-dim(self.xlabel_bbox))
 
     def _get_xoverhang(self, prop):
         sign = -1 if prop == 'xmin' else +1
         dim = lambda x: getattr(x, prop)
         mid = dim(self.spine_bbox)
-        label = dim(self.xlabel_bbox) if self.xlabel_bbox else mid
-        label_overhang = max(0, sign*(label-mid))
+        ylabel_overhang = self._get_ylabel_plus_pad()
         ytick = dim(self.yticklabels_bbox) if self.yticklabels_bbox else mid
         ytick_overhang = max(0, sign*(ytick-mid))
         xtick = dim(self.xticklabels_bbox) if self.xticklabels_bbox else mid
-        xtick_overhang = max(0, sign*(xtick-mid))
+        xtick_overhang = (
+            max(0, sign*(xtick-mid)) if self.axis.display_indep_axis else 0
+        )
+        xlabel_overhang = (
+            max(0, sign*(dim(self.xlabel_bbox)-mid))
+            if self.axis.display_indep_axis else 0
+        )
         title = dim(self.title_bbox) if self.title_bbox else mid
         title_overhang = max(0, sign*(title-mid))
-        return max(
-            [label_overhang, ytick_overhang, xtick_overhang, title_overhang]
-        )
+        if (self.prim and (prop == 'xmin')) or (self.sec and (prop == 'xmax')):
+            ret = max(
+                title_overhang,
+                max(xtick_overhang, ytick_overhang)+ylabel_overhang,
+                xlabel_overhang,
+            )
+        else:
+            ret = max(title_overhang, xtick_overhang)
+        return ret
 
     def _get_xticklabels(self):
-        if self._xticklabels is None:
-            self._xticklabels = [
-                label.get_text().strip()
-                for label in self.axis.xaxis.get_ticklabels()
-                if label.get_text().strip()
-            ]
-        return self._xticklabels or None
+        return [
+            label.get_text().strip()
+            for label in self.axis.xaxis.get_ticklabels()
+            if label.get_text().strip()
+        ] or None
 
     def _get_xticklabels_bbox(self):
-        if self._xticklabels_bbox is None:
-            ticks = self.axis.xaxis.get_ticklabels()
-            tick_bboxes = [
-                self._bbox(tick_bbox)
-                for tick_bbox in ticks if tick_bbox.get_text().strip()
-            ]
-            if not tick_bboxes:
-                self._xticklabels_bbox = self.dummy_bbox
-            else:
-                left = _lmin([tick_bbox.xmin for tick_bbox in tick_bboxes])
-                right = _lmax([tick_bbox.xmax for tick_bbox in tick_bboxes])
-                bottom = _lmin([tick_bbox.ymin for tick_bbox in tick_bboxes])
-                top = _lmax([tick_bbox.ymax for tick_bbox in tick_bboxes])
-                self._xticklabels_bbox = Bbox([[left, bottom], [right, top]])
-        return self._xticklabels_bbox
+        ticks = self.axis.xaxis.get_ticklabels()
+        tick_bboxes = [
+            self._bbox(tick_bbox)
+            for tick_bbox in ticks if tick_bbox.get_text().strip()
+        ]
+        if not tick_bboxes:
+            return self.dummy_bbox
+        left = _lmin([tick_bbox.xmin for tick_bbox in tick_bboxes])
+        right = _lmax([tick_bbox.xmax for tick_bbox in tick_bboxes])
+        bottom = _lmin([tick_bbox.ymin for tick_bbox in tick_bboxes])
+        top = _lmax([tick_bbox.ymax for tick_bbox in tick_bboxes])
+        return Bbox([[left, bottom], [right, top]])
 
     def _get_yticklabels(self):
-        if self._yticklabels is None:
-            self._yticklabels = [
-                label.get_text().strip()
-                for label in self.axis.yaxis.get_ticklabels()
-                if label.get_text().strip()
-            ]
-        return self._yticklabels or None
+        return [
+            label.get_text().strip()
+            for label in self.axis.yaxis.get_ticklabels()
+            if label.get_text().strip()
+        ] or None
 
     def _get_yaxis_bottom(self):
         return self._axis_edge(self.axis.yaxis, 'ymin')
@@ -325,29 +295,25 @@ class _Axis(object):
         return self._axis_edge(self.axis.yaxis, 'ymax')
 
     def _get_ylabel(self):
-        if self._ylabel is None:
-            self._ylabel = self.axis.yaxis.get_label().get_text().strip()
-        return self._ylabel or None
+        return self.axis.yaxis.get_label().get_text().strip()
 
     def _get_ylabel_bbox(self):
-        if (self._ylabel_bbox is None) and (self._ylabel is None):
-            self._ylabel_bbox = self.dummy_bbox
-        elif self._ylabel_bbox is None:
-            self._ylabel_bbox = self._bbox(self.axis.yaxis.get_label())
-        return self._ylabel_bbox
+        return (
+            self.dummy_bbox
+            if self._ylabel is None else
+            self._bbox(self.axis.yaxis.get_label())
+        )
 
     def _get_ylabel_plus_pad(self):
-        if self._ylabel_plus_pad is None:
-            sign = -1 if self.prim else +1
-            func = min if self.prim else max
-            prop = 'xmin' if self.prim else 'xmax'
-            dim = lambda x: getattr(x, prop)
-            spine_edge = dim(self.spine_bbox)
-            edge = func(dim(self.yticklabels_bbox), spine_edge)
-            self._ylabel_plus_pad = max(
-                0, sign*(dim(self.ylabel_bbox)-edge)
-            )
-        return self._ylabel_plus_pad
+        if not self.ylabel:
+            return 0
+        sign = -1 if self.prim else +1
+        func = min if self.prim else max
+        prop = 'xmin' if self.prim else 'xmax'
+        dim = lambda x: getattr(x, prop)
+        spine_edge = dim(self.spine_bbox)
+        edge = func(dim(self.yticklabels_bbox), spine_edge)
+        return max(0, sign*(dim(self.ylabel_bbox)-edge))
 
     def _get_yoverhang(self, prop):
         sign = -1 if prop == 'ymin' else +1
@@ -362,18 +328,16 @@ class _Axis(object):
         return max(label_overhang, xtick_overhang, ytick_overhang)
 
     def _get_yticklabels_bbox(self):
-        if self._yticklabels_bbox is None:
-            ticks = self.axis.yaxis.get_ticklabels()
-            tick_bboxes = [
-                self._bbox(tick_bbox)
-                for tick_bbox in ticks if tick_bbox.get_text().strip()
-            ]
-            left = _lmin([tick_bbox.xmin for tick_bbox in tick_bboxes])
-            right = _lmax([tick_bbox.xmax for tick_bbox in tick_bboxes])
-            bottom = _lmin([tick_bbox.ymin for tick_bbox in tick_bboxes])
-            top = _lmax([tick_bbox.ymax for tick_bbox in tick_bboxes])
-            self._yticklabels_bbox = Bbox([[left, bottom], [right, top]])
-        return self._yticklabels_bbox
+        ticks = self.axis.yaxis.get_ticklabels()
+        tick_bboxes = [
+            self._bbox(tick_bbox)
+            for tick_bbox in ticks if tick_bbox.get_text().strip()
+        ]
+        left = _lmin([tick_bbox.xmin for tick_bbox in tick_bboxes])
+        right = _lmax([tick_bbox.xmax for tick_bbox in tick_bboxes])
+        bottom = _lmin([tick_bbox.ymin for tick_bbox in tick_bboxes])
+        top = _lmax([tick_bbox.ymax for tick_bbox in tick_bboxes])
+        return Bbox([[left, bottom], [right, top]])
 
     def _get_min_spine_bbox(self):
         def core(xaxis):
@@ -410,11 +374,9 @@ class _Axis(object):
             dpu = max(sep_dim/tick_diffs)
             axis_box_dim = (locs[-1]-locs[0])*dpu
             return axis_box_dim
-        if self._min_spine_bbox is None:
-            width = core(xaxis=True)
-            height = core(xaxis=False)
-            self._min_spine_bbox = Bbox([[0, 0], [width, height]])
-        return self._min_spine_bbox
+        width = core(xaxis=True)
+        height = core(xaxis=False)
+        return Bbox([[0, 0], [width, height]])
 
     # Managed attributes
     bottom = property(_get_bottom)
@@ -566,6 +528,9 @@ class Panel(object):
         self._top = None
         self._min_spine_bbox = None
         self._min_bbox = None
+        self._panel_bbox = None
+        self._left_overhang = None
+        self._right_overhang = None
         # Private attributes
         self._legend_pos_list = [
             'best', 'upper right', 'upper left', 'lower left', 'lower right',
@@ -1207,17 +1172,6 @@ class Panel(object):
             )
         return ret
 
-    def _top_adjust(self):
-        axes = [self._axis_prim, self._axis_sec]
-        axes = [axis for axis in axes if axis]
-        title_top = _lmax([axis.title_bbox.ymax for axis in axes])
-        title_bot = _lmax([axis.title_bbox.ymin for axis in axes])
-        ytick_top = _lmax([axis.yticklabels_bbox.ymax for axis in axes])
-        ylabel_top = _lmax([axis.ylabel_bbox.ymax for axis in axes])
-        top = _lmax([title_top, ytick_top, ylabel_top])
-        bottom = _lmax([title_bot, ytick_top, ylabel_top])
-        return top-bottom
-
     def _validate_series(self):
         """
         Verifies that elements of series list are of the right type and
@@ -1245,39 +1199,6 @@ class Panel(object):
         Returns True if panel is fully specified, otherwise returns False
         """
         return (self.series is not None) and (len(self.series) > 0)
-
-    def _left_adjust(self):
-        axes = [self._axis_prim or self._axis_sec]
-        title_edge = _lmin([axis.title_bbox.xmin for axis in axes])
-        xtick_edge = _lmin([axis.xticklabels_bbox.xmin for axis in axes])
-        xlabel_edge = _lmin([axis.xlabel_bbox.xmin for axis in axes])
-        spine_edge = _lmin([axis.spine_bbox.xmin for axis in axes])
-        x_edge = (
-            -_lmin([axis.xaxis_left for axis in axes])
-            if (not self._axis_prim) and self._axis_sec else
-            _lmin(title_edge, spine_edge, xtick_edge, xlabel_edge)
-        )
-        y_edge = _lmin([axis.yaxis_left for axis in axes])
-        return (
-            x_edge
-            if (not self._axis_prim) and self._axis_sec else
-            -_lmin(y_edge, x_edge)
-        )
-
-    def _right_adjust(self):
-        axes = [self._axis_prim, self._axis_sec]
-        axes = [axis for axis in axes if axis]
-        title_edge = _lmax([axis.title_bbox.xmax for axis in axes])
-        xtick_edge = _lmax([axis.xticklabels_bbox.xmax for axis in axes])
-        xlabel_edge = _lmax([axis.xlabel_bbox.xmax for axis in axes])
-        spine_edge = _lmax([axis.spine_bbox.xmax for axis in axes])
-        x_edge = (
-            _lmax(title_edge, spine_edge, xtick_edge, xlabel_edge)
-            if self._axis_prim and self._axis_sec else
-            self._axis_sec.yaxis_left
-        )
-        y_edge = self._axis_sec.yaxis_right
-        return _lmax(0, y_edge-x_edge)
 
     def _scale_indep_var(self, scaling_factor):
         """ Scale independent variable of panel series """
@@ -1321,8 +1242,12 @@ class Panel(object):
         dep_dict = prim_dict if axis_type == 'PRIMARY' else sec_dict
         ylim = [dep_dict['ymin'], dep_dict['ymax']]
         lsize = AXIS_TICKS_FONT_SIZE
-        axis_obj.tick_params(axis='x', which='major', labelsize=lsize, zorder=4)
-        axis_obj.tick_params(axis='y', which='major', labelsize=lsize, zorder=4)
+        axis_obj.tick_params(
+            axis='x', which='major', labelsize=lsize, zorder=TICK_ZORDER
+        )
+        axis_obj.tick_params(
+            axis='y', which='major', labelsize=lsize, zorder=TICK_ZORDER
+        )
         axis_obj.xaxis.set_ticks(indep_tick_locs)
         axis_obj.yaxis.set_ticks(dep_dict['ticks'])
         axis_obj.set_xlim([indep_min, indep_max], emit=True, auto=False)
@@ -1344,56 +1269,7 @@ class Panel(object):
             dep_dict['axis_scale']
         )
 
-    def _bottom_adjust(self):
-        axes = [self._axis_prim, self._axis_sec]
-        axes = [axis for axis in axes if axis]
-        y_edge = _lmin([axis.yaxis_bottom for axis in axes])
-        x_edge = (self._axis_prim or self._axis_sec).xaxis_bottom
-        return _lmax(0, -_lmin(y_edge, x_edge))
-
-    def _draw(
-            self,
-            num_panels,
-            num_panel,
-            indep_axis_dict,
-            title,
-            fig_width=None,
-            fig_height=None
-    ):
-        disp_indep_axis = (num_panels == 1) or self._display_indep_axis
-        self._draw_core(
-            num_panels, num_panel, indep_axis_dict, disp_indep_axis, title
-        )
-        if fig_width and fig_height:
-            xdelta_right = (
-                self._right_adjust()/fig_width if self._axis_sec else 0
-            )
-            xdelta_left = self._left_adjust()/fig_width
-            ydelta_top = self._top_adjust()/fig_height
-            ydelta_bot = self._bottom_adjust()/fig_height
-            fbbox = [
-                0+xdelta_left, 0+ydelta_bot, 1-xdelta_right, 1-ydelta_top
-            ]
-            if xdelta_right or xdelta_left or ydelta_top or ydelta_bot:
-                plt.delaxes(self._axis_prim.axis)
-                self._draw_core(
-                    num_panels,
-                    num_panel,
-                    indep_axis_dict,
-                    disp_indep_axis,
-                    title,
-                    fbbox
-                )
-
-    def _draw_core(
-            self,
-            num_panels,
-            num_panel,
-            indep_axis_dict,
-            disp_indep_axis,
-            title,
-            fbbox=None,
-    ):
+    def _draw(self, disp_indep_axis, indep_axis_dict, title, axis_prim):
         """ Draw panel series """
         # pylint: disable=W0612
         def amin(prim, sec, prop):
@@ -1409,10 +1285,9 @@ class Panel(object):
         zero = lambda x: x if x is not None else 0
         gkey = lambda key: (
             ''
-            if indep_axis_dict[key] is None or not disp_indep_axis else
+            if indep_axis_dict[key] is None or (not disp_indep_axis) else
             indep_axis_dict[key].strip()
         )
-        axis_prim = plt.subplot(num_panels, 1, num_panel+1)
         if self._has_prim_axis:
             self._setup_axis(
                 'PRIMARY',
@@ -1421,16 +1296,16 @@ class Panel(object):
                 indep_axis_dict['indep_var_max'],
                 indep_axis_dict['indep_var_locs'],
                 indep_axis_dict.get('indep_var_labels', None),
-                gkey('indep_axis_label'),
-                gkey('indep_axis_units'),
-                gkey('indep_axis_unit_scale'),
+                indep_axis_dict['indep_axis_label'],
+                indep_axis_dict['indep_axis_units'],
+                indep_axis_dict['indep_axis_unit_scale'],
                 True
             )
-        plt.tight_layout(rect=fbbox, pad=0, h_pad=2)
         axis_sec = None
         tobjs = None
         if self._has_sec_axis:
-            axis_sec = plt.axes(axis_prim.get_position(), frameon=False)
+            axis_sec = plt.axes(
+                axis_prim.get_position(), frameon=not self._has_prim_axis)
             self._setup_axis(
                 'SECONDARY',
                 axis_sec,
@@ -1438,9 +1313,9 @@ class Panel(object):
                 indep_axis_dict['indep_var_max'],
                 indep_axis_dict['indep_var_locs'],
                 indep_axis_dict.get('indep_var_labels', None),
-                gkey('indep_axis_label'),
-                gkey('indep_axis_units'),
-                gkey('indep_axis_unit_scale'),
+                indep_axis_dict['indep_axis_label'],
+                indep_axis_dict['indep_axis_units'],
+                indep_axis_dict['indep_axis_unit_scale'],
                 not self._has_prim_axis
             )
             axis_sec.yaxis.set_label_position('right')
@@ -1455,35 +1330,30 @@ class Panel(object):
                 axis_sec.tick_params(
                     axis='x', which='both', length=0, labelbottom='off'
                 )
+        # Grid control
+        if self._has_sec_axis:
+            if axis_prim:
+                axis_prim.xaxis.grid(False)
+                axis_prim.yaxis.grid(False)
                 axis_prim.set_zorder(axis_sec.get_zorder()+1)
                 axis_prim.patch.set_visible(False)
-            else:
-                axis_prim.xaxis.set_ticks([])
-                axis_prim.yaxis.set_ticks([])
-            axis_sec.xaxis.grid(True, which='both', zorder=2)
-            axis_sec.yaxis.grid(True, which='both', zorder=2)
+            axis_sec.xaxis.grid(True, which='both', zorder=GRID_ZORDER)
+            axis_sec.yaxis.grid(True, which='both', zorder=GRID_ZORDER)
         else:
-            axis_prim.xaxis.grid(True, which='both', zorder=2)
-            axis_prim.yaxis.grid(True, which='both', zorder=2)
+            axis_prim.xaxis.grid(True, which='both', zorder=GRID_ZORDER)
+            axis_prim.yaxis.grid(True, which='both', zorder=GRID_ZORDER)
         # Place data series in their appropriate axis (primary or secondary)
-        prim_log_axis = sec_log_axis = False
         # Reverse series list so that first series is drawn on top
-        for series_obj in reversed(self.series):
-            series_obj._draw(
-                axis_prim if not series_obj.secondary_axis else axis_sec,
-                indep_axis_dict['log_indep'],
-                self.log_dep_axis,
-            )
-            prim_log_axis = (
-                prim_log_axis
-                if prim_log_axis else
-                (not series_obj.secondary_axis) and self.log_dep_axis
-            )
-            sec_log_axis = (
-                sec_log_axis
-                if sec_log_axis else
-                series_obj.secondary_axis and self.log_dep_axis
-            )
+        prim_series = [
+            series for series in self.series if not series.secondary_axis
+        ]
+        sec_series = [
+            series for series in self.series if series.secondary_axis
+        ]
+        self._draw_series(sec_series, axis_sec, indep_axis_dict)
+        self._draw_series(prim_series, axis_prim, indep_axis_dict)
+        prim_log_axis = len(prim_series) and self.log_dep_axis
+        sec_log_axis = len(sec_series) and self.log_dep_axis
         # Print legend
         if (len(self.series) > 1) and (len(self.legend_props) > 0):
             _, primary_labels = (
@@ -1507,23 +1377,25 @@ class Panel(object):
                 primary_labels+secondary_labels
             )
             if any([bool(label) for label in labels]):
+                top_axis = axis_prim if self._has_prim_axis else axis_sec
+                top_zorder = max(
+                    [
+                        axis_prim.get_zorder() if self._has_prim_axis else 0,
+                        axis_sec.get_zorder() if self._has_sec_axis else 0,
+                        GRID_ZORDER,
+                        TICK_ZORDER,
+                    ]
+                )+1
                 leg_artist = [
                     series_obj._legend_artist(LEGEND_SCALE)
                     for series_obj in self.series
                     if series_obj._check_series_is_plottable()
                 ]
-                legend_axis = (
-                    axis_prim
-                    if self._has_prim_axis and (
-                        not self._has_sec_axis
-                    ) else
-                    axis_sec
-                )
                 loc_key = self._legend_pos_list.index(
                     self.legend_props['pos'].lower()
                     if 'pos' in self.legend_props else 'lower left'
                 )
-                legend_axis.legend(
+                lobj = top_axis.legend(
                     leg_artist,
                     labels,
                     ncol=(
@@ -1537,6 +1409,7 @@ class Panel(object):
                     facecolor='white',
                     framealpha=1.0,
                 )
+                lobj.set_zorder(top_zorder)
         if title not in [None, '']:
             axis = (
                 axis_prim if self._has_prim_axis else axis_sec
@@ -1551,9 +1424,7 @@ class Panel(object):
         # This is necessary because if there is no primary axis but there
         # is a secondary axis, then the independent axis bounding boxes
         # are all stacked up in the same spot
-        axis_prim.display_indep_axis = (
-            self.display_indep_axis or (num_panels == 1)
-        )
+        axis_prim.display_indep_axis = disp_indep_axis
         axis_prim.yaxis.log_axis = prim_log_axis
         axis_prim.xaxis.log_axis = indep_axis_dict['log_indep']
         if axis_sec:
@@ -1567,20 +1438,18 @@ class Panel(object):
         self._right = amax(self._axis_prim, self._axis_sec, 'right')
         self._top = amax(self._axis_prim, self._axis_sec, 'top')
         spine_min_width = amax(
-            self._axis_prim._min_spine_bbox if self._axis_prim else None,
-            self._axis_sec._min_spine_bbox if self._axis_sec else None,
+            self._axis_prim.min_spine_bbox if self._axis_prim else None,
+            self._axis_sec.min_spine_bbox if self._axis_sec else None,
             'width'
         )
         spine_min_height = amax(
-            self._axis_prim._min_spine_bbox if self._axis_prim else None,
-            self._axis_sec._min_spine_bbox if self._axis_sec else None,
+            self._axis_prim.min_spine_bbox if self._axis_prim else None,
+            self._axis_sec.min_spine_bbox if self._axis_sec else None,
             'height'
         )
         self._min_spine_bbox = Bbox(
             [[0, 0], [spine_min_width, spine_min_height]]
         )
-        left_label_plus_pad = 0
-        right_label_plus_pad = 0
         prim_left_overhang = 0
         prim_bottom_overhang = 0
         prim_right_overhang = 0
@@ -1595,7 +1464,6 @@ class Panel(object):
         sec_title_plus_pad = 0
         sec_xlabel_plus_pad = 0
         if self._has_prim_axis:
-            left_label_plus_pad = zero(self._axis_prim.ylabel_plus_pad)
             prim_left_overhang = zero(self._axis_prim.left_overhang)
             prim_right_overhang = zero(self._axis_prim.right_overhang)
             prim_bottom_overhang = zero(self._axis_prim.bottom_overhang)
@@ -1605,7 +1473,6 @@ class Panel(object):
                 self._axis_prim.xlabel_plus_pad
             )
         if self._has_sec_axis:
-            right_label_plus_pad = zero(self._axis_sec.ylabel_plus_pad)
             sec_left_overhang = zero(self._axis_sec.left_overhang)
             sec_right_overhang = zero(self._axis_sec.right_overhang)
             sec_bottom_overhang = zero(self._axis_sec.bottom_overhang)
@@ -1625,11 +1492,7 @@ class Panel(object):
             prim_xlabel_plus_pad, sec_bottom_overhang
         )
         panel_min_width = (
-            left_label_plus_pad+
-            left_overhang+
-            self._min_spine_bbox.width+
-            right_overhang+
-            right_label_plus_pad
+            left_overhang+self._min_spine_bbox.width+right_overhang
         )
         panel_min_height = (
             xlabel_plus_pad+
@@ -1638,7 +1501,39 @@ class Panel(object):
             top_overhang+
             title_plus_pad
         )
+        self._left_overhang = left_overhang
+        self._right_overhang = right_overhang
         self._min_bbox = Bbox([[0, 0], [panel_min_width, panel_min_height]])
+        #
+        self._panel_bbox = Bbox(
+            [[self._left, self._bottom], [self._right, self._top]]
+        )
+        if (not disp_indep_axis) and axis_prim:
+            _turn_off_axis(axis_prim, 'x')
+        if (disp_indep_axis and self._axis_prim and
+            self._axis_prim.xticklabels and self._axis_sec and
+            self._axis_sec.xticklabels):
+            _turn_off_axis(axis_prim, 'x')
+        if (not disp_indep_axis) and axis_sec:
+            _turn_off_axis(axis_sec, 'x')
+        if len(prim_series) and (not len(sec_series)) and axis_sec:
+            _turn_off_axis(axis_sec, 'y')
+        if (not len(prim_series)) and len(sec_series) and axis_prim:
+            _turn_off_axis(axis_prim, 'y')
+        zmax = 0
+        if axis_prim:
+            zlist = [line.get_zorder() for line in axis_prim.get_lines()]
+            zmax = max(zmax, 0 if not zlist else max(zlist))
+        if axis_sec:
+            zlist = [line.get_zorder() for line in axis_sec.get_lines()]
+            zmax = max(zmax, 0 if not zlist else max(zlist))
+        spines = ['left', 'bottom', 'right', 'top']
+        if axis_prim:
+            for spine in spines:
+                axis_prim.spines[spine].set_zorder(zmax+1)
+        if axis_sec:
+            for spine in spines:
+                axis_sec.spines[spine].set_zorder(zmax+1)
 
     def _draw_label(self, axis, axis_label, axis_units, axis_scale):
         # pylint: disable=R0201
@@ -1650,6 +1545,14 @@ class Panel(object):
             fdict = dict(fontsize=AXIS_LABEL_FONT_SIZE)
             axis.set_label_text(
                 axis_label+('' if empty_units else units_str), fontdict=fdict
+            )
+
+    def _draw_series(self, series_list, axis, indep_axis_dict):
+        for series in reversed(series_list):
+            series._draw(
+                axis,
+                indep_axis_dict['log_indep'],
+                self.log_dep_axis,
             )
 
     _complete = property(_get_complete)

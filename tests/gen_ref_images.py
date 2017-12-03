@@ -130,8 +130,7 @@ def unittest_panel_images(mode=None, test_dir=None):
     """ Images for Panel() class """
     mode, ref_dir, test_dir = setup_env(mode, test_dir)
     #
-    axis_type_list = ['log']
-    #axis_type_list = ['single', 'linear', 'log', 'filter']
+    axis_type_list = ['single', 'linear', 'log', 'filter']
     series_in_axis_list = ['primary', 'secondary', 'both']
     master_list = [axis_type_list, series_in_axis_list]
     comb_list = itertools.product(*master_list)
@@ -221,7 +220,8 @@ def unittest_panel_images(mode=None, test_dir=None):
         marker='o',
         interp='STRAIGHT',
         line_style='-',
-        color='m', secondary_axis=True
+        color='m',
+        secondary_axis=True
     )
     series6_obj = pplot.Series(
         data_source=ds6_obj,
@@ -229,7 +229,8 @@ def unittest_panel_images(mode=None, test_dir=None):
         marker='o',
         interp='STRAIGHT',
         line_style='-',
-        color='c', secondary_axis=True
+        color='c',
+        secondary_axis=True
     )
     series7_obj = pplot.Series(
         data_source=ds7_obj,
@@ -269,7 +270,8 @@ def unittest_panel_images(mode=None, test_dir=None):
         marker='o',
         interp='STRAIGHT',
         line_style='-',
-        color='m', secondary_axis=True
+        color='m',
+        secondary_axis=True
     )
     for axis_type, series_in_axis in comb_list:
         img_name = 'panel_{0}_axis_series_in_{1}_axis.png'.format(
@@ -479,15 +481,14 @@ def unittest_figure_images(mode=None, test_dir=None):
 
 def main(argv):
     """ Main function, generate images """
-    unittest_panel_images(mode='ref')
-    #if argv:
-    #    unittest_series_images(mode='ref')
-    #    unittest_panel_images(mode='ref')
-    #    unittest_figure_images(mode='ref')
-    #else:
-    #    unittest_series_images(mode='ref', test_dir=argv[0])
-    #    unittest_panel_images(mode='ref', test_dir=argv[0])
-    #    unittest_figure_images(mode='ref', test_dir=argv[0])
+    if argv:
+        unittest_series_images(mode='ref')
+        unittest_panel_images(mode='ref')
+        unittest_figure_images(mode='ref')
+    else:
+        unittest_series_images(mode='ref', test_dir=argv[0])
+        unittest_panel_images(mode='ref', test_dir=argv[0])
+        unittest_figure_images(mode='ref', test_dir=argv[0])
 
 
 if __name__ == '__main__':
