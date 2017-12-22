@@ -1283,11 +1283,6 @@ class Panel(object):
                 getattr(sec, prop) if self._axis_sec else -INF
             )
         zero = lambda x: x if x is not None else 0
-        gkey = lambda key: (
-            ''
-            if indep_axis_dict[key] is None or (not disp_indep_axis) else
-            indep_axis_dict[key].strip()
-        )
         if self._has_prim_axis:
             self._setup_axis(
                 'PRIMARY',
@@ -1332,11 +1327,10 @@ class Panel(object):
                 )
         # Grid control
         if self._has_sec_axis:
-            if axis_prim:
-                axis_prim.xaxis.grid(False)
-                axis_prim.yaxis.grid(False)
-                axis_prim.set_zorder(axis_sec.get_zorder()+1)
-                axis_prim.patch.set_visible(False)
+            axis_prim.xaxis.grid(False)
+            axis_prim.yaxis.grid(False)
+            axis_prim.set_zorder(axis_sec.get_zorder()+1)
+            axis_prim.patch.set_visible(False)
             axis_sec.xaxis.grid(True, which='both', zorder=GRID_ZORDER)
             axis_sec.yaxis.grid(True, which='both', zorder=GRID_ZORDER)
         else:
@@ -1516,21 +1510,16 @@ class Panel(object):
             _turn_off_axis(axis_prim, 'x')
         if (not disp_indep_axis) and axis_sec:
             _turn_off_axis(axis_sec, 'x')
-        if len(prim_series) and (not len(sec_series)) and axis_sec:
-            _turn_off_axis(axis_sec, 'y')
         if (not len(prim_series)) and len(sec_series) and axis_prim:
             _turn_off_axis(axis_prim, 'y')
-        zmax = 0
-        if axis_prim:
-            zlist = [line.get_zorder() for line in axis_prim.get_lines()]
-            zmax = max(zmax, 0 if not zlist else max(zlist))
+        zlist = [line.get_zorder() for line in axis_prim.get_lines()]
+        zmax = 0 if not zlist else max(zlist)
         if axis_sec:
             zlist = [line.get_zorder() for line in axis_sec.get_lines()]
             zmax = max(zmax, 0 if not zlist else max(zlist))
         spines = ['left', 'bottom', 'right', 'top']
-        if axis_prim:
-            for spine in spines:
-                axis_prim.spines[spine].set_zorder(zmax+1)
+        for spine in spines:
+            axis_prim.spines[spine].set_zorder(zmax+1)
         if axis_sec:
             for spine in spines:
                 axis_sec.spines[spine].set_zorder(zmax+1)

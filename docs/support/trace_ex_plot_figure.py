@@ -15,15 +15,18 @@ def trace_module(no_print=True):
         '__init__',
         'show',
         'save',
+        'axes_list',
+        'fig',
+        'fig_height',
+        'fig_width',
+        'indep_axis_scale',
+        'indep_axis_ticks',
+        'indep_axis_tick_labels',
         'indep_var_label',
         'indep_var_units',
-        'title',
         'log_indep_axis',
-        'fig_width',
-        'fig_height',
         'panels',
-        'fig',
-        'axes_list'
+        'title',
     )
     module_exclude_list = ['peng.functions']
     return docs.support.trace_support.run_trace(

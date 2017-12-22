@@ -1,7 +1,8 @@
 # figure.py
 # Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0103,C0111,C0411,C0413,E0611,E1129,F0401,R0201,W0212,W0621
+# pylint: disable=C0103,C0111,C0411,C0413,E0611,E1129,F0401
+# pylint: disable=R0201,W0104,W0212,W0621
 
 # Standard library imports
 from __future__ import print_function
@@ -15,7 +16,7 @@ import pytest
 if sys.hexversion < 0x03000000:
     import mock
 import pmisc
-from pmisc import AI, AE, AROPROP, RE
+from pmisc import AI, AE, AROPROP, GET_EXMSG, RE
 import matplotlib
 # Intra-package imports
 import pplot
@@ -137,6 +138,30 @@ class TestFigure(object):
         if act_height not in ref_heights:
             assert False, '{0} not in {1}'.format(act_height, ref_heights)
 
+    @pytest.mark.figure
+    def test_str_exceptions(self, default_panel, negative_panel):
+        """ Test figure __str__ method exceptions """
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            str(obj)
+        assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        with pytest.raises(RuntimeError) as excinfo:
+            str(obj)
+        assert GET_EXMSG(excinfo) == exmsg
+
+
     ### Public methods
     def test_save(self, default_panel):
         """ Test save method behavior """
@@ -173,13 +198,31 @@ class TestFigure(object):
             os.remove(fref)
 
     @pytest.mark.figure
-    def test_save_exceptions(self, default_panel):
+    def test_save_exceptions(self, default_panel, negative_panel):
         """ Test save method exceptions """
         obj = pplot.Figure(panels=default_panel)
         for item in [3, 'test\0']:
             AI(obj.save, 'fname', fname=item)
         AI(obj.save, 'ftype', 'myfile', 5)
-        AE(obj.save, RE, 'Unsupported file type: bmp', 'myfile', ftype='bmp')
+        AE(obj.save, RE, 'Unsupported file type: bmp', 'myfile', 'bmp')
+        obj = pplot.Figure(panels=None)
+        exmsg = 'Figure object is not fully specified'
+        AE(obj.save, RE, exmsg, 'myfile')
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        AE(obj.save, ValueError, exmsg, 'myfile')
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        AE(obj.save, RE, exmsg, 'myfile')
 
     def test_show(self, default_panel, capsys):
         """ Test that show method behavior """
@@ -190,6 +233,28 @@ class TestFigure(object):
             obj.show()
         out, _ = capsys.readouterr()
         assert out == 'show called\n'
+
+    @pytest.mark.figure
+    def test_show_exceptions(self, default_panel, negative_panel):
+        """ Test show method exceptions """
+        obj = pplot.Figure(panels=None)
+        exmsg = 'Figure object is not fully specified'
+        AE(obj.show, RE, exmsg)
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        AE(obj.show, ValueError, exmsg)
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        AE(obj.show, RE, exmsg)
 
     ### Properties
     def test_axes_list(self, default_panel):
@@ -207,12 +272,58 @@ class TestFigure(object):
                 comp_list.append(True)
         assert comp_list == len(obj.axes_list)*[True]
 
+    @pytest.mark.figure
+    def test_axes_list_exceptions(self, default_panel, negative_panel):
+        """ Test figure axes_list property exceptions """
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            obj.axes_list
+        assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        with pytest.raises(RuntimeError) as excinfo:
+            obj.axes_list
+        assert GET_EXMSG(excinfo) == exmsg
+
     def test_fig(self, default_panel):
         """ Test fig property behavior """
         obj = pplot.Figure(panels=None)
         assert obj.fig is None
         obj = pplot.Figure(panels=default_panel)
         assert isinstance(obj.fig, matplotlib.figure.Figure)
+
+    @pytest.mark.figure
+    def test_fig_exceptions(self, default_panel, negative_panel):
+        """ Test figure fig property exceptions """
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            obj.fig
+        assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        with pytest.raises(RuntimeError) as excinfo:
+            obj.fig
+        assert GET_EXMSG(excinfo) == exmsg
 
     def test_fig_width(self, default_panel):
         """ Test figure width attributes """
@@ -227,9 +338,28 @@ class TestFigure(object):
         assert obj.fig_width == 7
 
     @pytest.mark.figure
-    def test_fig_width_exceptions(self, default_panel):
+    def test_fig_width_exceptions(self, default_panel, negative_panel):
         """ Test figure width property exceptions """
         AI(FOBJ, 'fig_width', panels=default_panel, fig_width='a')
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            obj.fig_width = 10
+        assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        with pytest.raises(RuntimeError) as excinfo:
+            obj.fig_width = 10
+        assert GET_EXMSG(excinfo) == exmsg
 
     def test_fig_height(self, default_panel):
         """ Test figure height property behavior """
@@ -241,9 +371,28 @@ class TestFigure(object):
         assert obj.fig_height == 5
 
     @pytest.mark.figure
-    def test_fig_height_exceptions(self, default_panel):
+    def test_fig_height_exceptions(self, default_panel, negative_panel):
         """ Test figure height property exceptions """
         AI(FOBJ, 'fig_height', panels=default_panel, fig_height='a')
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            obj.fig_height = 10
+        assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        with pytest.raises(RuntimeError) as excinfo:
+            obj.fig_height = 10
+        assert GET_EXMSG(excinfo) == exmsg
 
     def test_indep_axis_scale(self, default_panel):
         """ Test indep_axis_scale property """
@@ -251,6 +400,28 @@ class TestFigure(object):
         assert obj.indep_axis_scale is None
         obj = pplot.Figure(panels=default_panel)
         assert obj.indep_axis_scale == 1
+
+    @pytest.mark.figure
+    def test_indep_axis_scale_exceptions(self, default_panel, negative_panel):
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            obj.indep_axis_scale
+        assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is important
+        # in order to raise desired exception when save method is called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        with pytest.raises(RuntimeError) as excinfo:
+            obj.indep_axis_scale
+        assert GET_EXMSG(excinfo) == exmsg
 
     def test_indep_axis_ticks(self, default_panel):
         """ Test indep_axis_ticks property behavior """
@@ -274,11 +445,31 @@ class TestFigure(object):
         assert obj.indep_axis_ticks == [1.0, 10.0]
 
     @pytest.mark.figure
-    def test_indep_axis_ticks_exceptions(self, default_panel):
+    def test_indep_axis_ticks_exceptions(self, default_panel, negative_panel):
         """ Test indep_axis_ticks exceptions """
         obj = pplot.Figure(panels=None)
         assert obj.indep_axis_ticks is None
         AI(FOBJ, 'indep_axis_ticks', default_panel, indep_axis_ticks=5)
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            obj.indep_axis_ticks
+        assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        obj = pplot.Figure()
+        # Order of assignment of indep_axis_tick_labels and panels is
+        # important in order to raise desired exception when save method is
+        # called
+        obj.indep_axis_tick_labels = []
+        obj.panels = default_panel
+        with pytest.raises(RuntimeError) as excinfo:
+            obj.indep_axis_ticks
+        assert GET_EXMSG(excinfo) == exmsg
 
     def test_indep_axis_tick_labels(self, default_panel):
         """ Test indep_axis_tick_labels property behavior """
@@ -295,7 +486,7 @@ class TestFigure(object):
         assert obj.indep_axis_tick_labels == ['1.0', '2.0', '3.0', '3.5']
 
     @pytest.mark.figure
-    def test_indep_axis_tick_labels_exceptions(self, default_panel):
+    def test_indep_axis_tick_labels_exceptions(self, default_panel, negative_panel):
         """ Test indep_axis_tick_labels property exceptions """
         AI(
             FOBJ,
@@ -312,6 +503,36 @@ class TestFigure(object):
         exmsg = 'Number of tick locations and number of tick labels mismatch'
         AE(FOBJ, RE, exmsg, panels=default_panel, indep_axis_tick_labels=[])
         AE(FOBJ, RE, exmsg, panels=default_panel, indep_axis_tick_labels=['a'])
+        exmsg = (
+            'Figure cannot be plotted with a logarithmic independent '
+            'axis because panel 0, series 0 contains negative independent '
+            'data points'
+        )
+        for flag in [True, False]:
+            obj = pplot.Figure(log_indep_axis=True)
+            obj.panels = negative_panel
+            if flag:
+                with pytest.raises(ValueError) as excinfo:
+                    obj.indep_axis_tick_labels
+            else:
+                with pytest.raises(ValueError) as excinfo:
+                    obj.indep_axis_tick_labels = ['1', '2', '3']
+            assert GET_EXMSG(excinfo) == exmsg
+        exmsg = 'Number of tick locations and number of tick labels mismatch'
+        for flag in [True, False]:
+            obj = pplot.Figure()
+            # Order of assignment of indep_axis_tick_labels and panels is
+            # important in order to raise desired exception when save method is
+            # called
+            obj.indep_axis_tick_labels = []
+            obj.panels = default_panel
+            if flag:
+                with pytest.raises(RuntimeError) as excinfo:
+                    obj.indep_axis_tick_labels
+            else:
+                with pytest.raises(RuntimeError) as excinfo:
+                    obj.indep_axis_tick_labels = ['1', '2', '3']
+            assert GET_EXMSG(excinfo) == exmsg
 
     def test_indep_var_label(self, default_panel):
         """ Test indep_var_label property behavior """
@@ -347,17 +568,9 @@ class TestFigure(object):
         assert not obj.log_indep_axis
 
     @pytest.mark.figure
-    def test_log_indep_axis_exceptions(self, default_panel):
+    def test_log_indep_axis_exceptions(self, default_panel, negative_panel):
         """ Test log_indep_axis property exceptions """
         AI(FOBJ, 'log_indep_axis', default_panel, log_indep_axis=5)
-        negative_data_source = pplot.BasicSource(
-            indep_var=np.array([-5, 6, 7, 8]),
-            dep_var=np.array([0.1, 10, 5, 4])
-        )
-        negative_series = pplot.Series(
-            data_source=negative_data_source, label='negative data series'
-        )
-        negative_panel = pplot.Panel(series=negative_series)
         exmsg = (
             'Figure cannot be plotted with a logarithmic independent '
             'axis because panel 0, series 0 contains negative independent '

@@ -13,17 +13,13 @@ dist: trusty
 language: python
 
 python:
-  - "2.6"
   - "2.7"
-  - "3.3"
   - "3.4"
   - "3.5"
   - "3.6"
 
 env:
-  # - JNAME="2.6"
   # - JNAME="2.7"
-  # - JNAME="3.3"
   # - JNAME="3.4"
   # - JNAME="3.5"
   # - JNAME="3.6"
@@ -185,9 +181,6 @@ script:
   - ${EXTRA_DIR}/sbin/set-matplotlib-backend.sh ${EXTRA_DIR}/tests/support
   - ${EXTRA_DIR}/sbin/set-matplotlib-backend.sh ${EXTRA_DIR}/docs
   - ${EXTRA_DIR}/sbin/set-matplotlib-backend.sh ${EXTRA_DIR}/docs/support
-  - if [ "${INTERP}" == "py26" ]; then
-        ${SBIN_DIR}/patch_pylint.py ${PYTHON_SITE_PACKAGES};
-    fi
   ###
   # Change to tests sub-directory to mimic Tox conditions
   ###

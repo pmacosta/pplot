@@ -10,7 +10,7 @@ import shutil
 import subprocess
 # PyPI imports
 from PIL import Image
-import numpy
+import numpy as np
 import pytest
 import scipy
 from scipy.misc import imread
@@ -40,7 +40,7 @@ def compare_images(ref_fname, act_fname, no_print=True, isize=None):
         act_img = imread(act_fname).astype(float)
         diff = ref_img-act_img
         # Manhattan norm
-        m_norm = scipy.sum(numpy.abs(diff))
+        m_norm = scipy.sum(np.abs(diff))
         # Zero norm
         z_norm = scipy.linalg.norm(diff.ravel(), 0)
     result = bool((m_norm < IMGTOL) and (z_norm < IMGTOL))
@@ -104,8 +104,8 @@ def default_source():
     pplot.Series class
     """
     return pplot.BasicSource(
-        indep_var=numpy.array([5, 6, 7, 8]),
-        dep_var=numpy.array([0, -10, 5, 4])
+        indep_var=np.array([5, 6, 7, 8]),
+        dep_var=np.array([0, -10, 5, 4])
     )
 
 
@@ -168,3 +168,18 @@ def export_image(fname, method=True):
             )
             stdout, _ = proc.communicate()
             print(stdout)
+
+@pytest.fixture
+def negative_panel():
+    """
+    Provides a panel with series containing negative data to be used in testing
+    the pplot.Figure class
+    """
+    negative_data_source = pplot.BasicSource(
+        indep_var=np.array([-5, 6, 7, 8]),
+        dep_var=np.array([0.1, 10, 5, 4])
+    )
+    negative_series = pplot.Series(
+        data_source=negative_data_source, label='negative data series'
+    )
+    return pplot.Panel(series=negative_series)

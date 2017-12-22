@@ -4,15 +4,9 @@
 
 environment:
   matrix:
-    - JOB: "2.6"
-      INTERP: "py26"
-      PYVER: "2.6"
     - JOB: "2.7"
       INTERP: "py27"
       PYVER: "2.7"
-    - JOB: "3.3"
-      INTERP: "py33"
-      PYVER: "3.3"
     - JOB: "3.4"
       INTERP: "py34"
       PYVER: "3.4"
@@ -170,7 +164,6 @@ build_script:
 ###
 - python %SBIN_DIR%\coveragerc_manager.py 'ci' 1 %INTERP% %PYTHON_SITE_PACKAGES%
 - type %COV_FILE%
-- if "%INTERP%" == "py26" python %SBIN_DIR%\patch_pylint.py %PYTHON_SITE_PACKAGES%
 ###
 # Change to tests sub-directory to mimic Tox conditions
 ###

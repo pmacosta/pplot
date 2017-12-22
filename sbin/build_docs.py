@@ -34,7 +34,7 @@ except ImportError:
 ###
 # Global variables
 ###
-PKG_NAME = 'peng'
+PKG_NAME = 'pplot'
 VALID_MODULES = [PKG_NAME]
 PKG_SUBMODULES = [
     'basic_source', 'constants', 'csv_source', 'figure', 'functions', 'panel',

@@ -521,7 +521,7 @@ Contributing
 	    usage: build_docs.py [-h] [-d DIRECTORY] [-r]
 	                         [-n NUM_CPUS] [-t]
 
-	    Build peng package documentation
+	    Build pplot package documentation
 
 	    optional arguments:
 	      -h, --help            show this help message and exit

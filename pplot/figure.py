@@ -66,18 +66,18 @@ class Figure(object):
     :param indep_var_units: Independent variable units
     :type  indep_var_units: string
 
+    :param indep_axis_tick_labels: Independent axis tick labels. If not None
+                                   overrides ticks automatically generated
+                                   or as given by the **indep_axis_ticks**
+                                   argument
+    :type  indep_axis_tick_labels: list of strings or None
+
     :param indep_axis_ticks: Independent axis tick marks. If not None
                              overrides automatically generated tick marks if
                              the axis type is linear. If None automatically
                              generated tick marks are used for the independent
                              axis
     :type  indep_axis_ticks: list, Numpy vector or None
-
-    :param indep_axis_tick_labels: Independent axis tick labels. If not None
-                                   overrides ticks automatically generated
-                                   or as given by the **indep_axis_ticks**
-                                   argument
-    :type  indep_axis_tick_labels: list of strings or None
 
     :param fig_width: Hard copy plot width in inches. If None the width is
                       automatically calculated so that there is no horizontal
@@ -112,11 +112,11 @@ class Figure(object):
 
      * RuntimeError (Argument \`fig_width\` is not valid)
 
+     * RuntimeError (Argument \`indep_axis_tick_labels\` is not valid)
+
      * RuntimeError (Argument \`indep_axis_ticks\` is not valid)
 
      * RuntimeError (Argument \`indep_var_label\` is not valid)
-
-     * RuntimeError (Argument \`indep_axis_tick_labels\` is not valid)
 
      * RuntimeError (Argument \`indep_var_units\` is not valid)
 
@@ -125,8 +125,6 @@ class Figure(object):
      * RuntimeError (Argument \`panels\` is not valid)
 
      * RuntimeError (Argument \`title\` is not valid)
-
-     * RuntimeError (Figure object is not fully specified)
 
      * RuntimeError (Figure size is too small: minimum width *[min_width]*,
        minimum height *[min_height]*)
@@ -204,7 +202,6 @@ class Figure(object):
 
         .. note:: This method applies to Python 3.x
         """
-        self._create_figure()
         return self._panels is not None
 
     def __iter__(self):
@@ -315,8 +312,10 @@ class Figure(object):
                cols: 1
                pos: BEST
             <BLANKLINE>
+
+        .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
+        .. [[[end]]]
         """
-        self._create_figure()
         return iter(self._panels)
 
     def __nonzero__(self):  # pragma: no cover
@@ -326,7 +325,6 @@ class Figure(object):
 
         .. note:: This method applies to Python 2.x
         """
-        self._create_figure()
         return self._panels is not None
 
     def __str__(self):
@@ -450,15 +448,17 @@ class Figure(object):
 
     def _create_figure(self, raise_exception=False):
         """ Create and resize figure """
-        specified_ex = pexdoc.exh.addex(
-            RuntimeError, 'Figure object is not fully specified'
-        )
-        specified_ex(raise_exception and (not self._complete))
+        if raise_exception:
+            specified_ex = pexdoc.exh.addex(
+                RuntimeError, 'Figure object is not fully specified'
+            )
+            specified_ex(raise_exception and (not self._complete))
         if not self._complete:
             return Bbox([[0, 0], [0, 0]])
         if self._need_redraw:
             self._size_given = (
-                (self._fig_width is not None) and (self._fig_height is not None)
+                (self._fig_width is not None) and
+                (self._fig_height is not None)
             )
             # First _draw call is to calculate approximate figure size, (until
             # matplotlib actually draws the figure, all the bounding boxes of
@@ -475,10 +475,11 @@ class Figure(object):
             self._fig.set_size_inches(fig_width, fig_height, forward=True)
             self._need_redraw = False
             # From https://github.com/matplotlib/matplotlib/issues/7984:
-            # When the Figure is drawn, its Axes are sorted based on zorder with a
-            # stable sort, and then drawn in that order. Then within each Axes,
-            # artists are sorted based on zorder. Therefore you can't interleave
-            # the drawing orders of artists from one Axes with those from another.
+            # When the Figure is drawn, its Axes are sorted based on zorder
+            # with a stable sort, and then drawn in that order. Then within
+            # each Axes, artists are sorted based on zorder. Therefore you
+            # can't interleave the drawing orders of artists from one Axes with
+            # those from another.
         else:
             bbox = self._fig_bbox()
         fig_width, fig_height = self._fig_dims()
@@ -507,16 +508,6 @@ class Figure(object):
 
     def _draw(self):
         # pylint: disable=C0326,W0612
-        log_ex = pexdoc.exh.addex(
-            ValueError,
-            'Figure cannot be plotted with a logarithmic '
-            'independent axis because panel *[panel_num]*, series '
-            '*[series_num]* contains negative independent data points'
-        )
-        ticks_num_ex = pexdoc.exh.addex(
-            RuntimeError,
-            'Number of tick locations and number of tick labels mismatch'
-        )
         num_panels = len(self.panels)
         if not self._scaling_done:
             # Find union of the independent variable data set of all panels
@@ -563,7 +554,7 @@ class Figure(object):
         top = right = -INF
         bottom = left = +INF
         if all(not panel.display_indep_axis for panel in self.panels):
-            self.panels[-1].display_indep_axis = True
+            self.panels[-1]._display_indep_axis = True
         for num, (panel, axish) in enumerate(zip(self.panels, axesh)):
             title = self.title if not num else None
             disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
@@ -815,7 +806,14 @@ class Figure(object):
 
          * RuntimeError (Figure object is not fully specified)
 
+         * RuntimeError (Number of tick locations and number of tick labels
+           mismatch)
+
          * RuntimeError (Unsupported file type: *[file_type]*)
+
+         * ValueError (Figure cannot be plotted with a logarithmic independent
+           axis because panel *[panel_num]*, series *[series_num]* contains
+           negative independent data points)
 
         .. [[[end]]]
         """
@@ -838,14 +836,7 @@ class Figure(object):
         fname = os.path.expanduser(fname)
         pmisc.make_dir(fname)
         self._fig_width, self._fig_height = self._fig_dims()
-        #with warnings.catch_warnings():
-        #    warnings.simplefilter('ignore')
-        #    self._fig.savefig(
-        #        fname, dpi=dpi, bbox_inches=bbox, format=ftype, pad_inches=0
-        #    )
-        self._fig.savefig(
-            fname, dpi=dpi, bbox='tight', format=ftype
-        )
+        self._fig.savefig(fname, dpi=dpi, bbox='tight', format=ftype)
         plt.close('all')
 
     def show(self):
@@ -858,6 +849,9 @@ class Figure(object):
 
         :raises:
          * RuntimeError (Figure object is not fully specified)
+
+         * RuntimeError (Number of tick locations and number of tick labels
+           mismatch)
 
          * ValueError (Figure cannot be plotted with a logarithmic independent
            axis because panel *[panel_num]*, series *[series_num]* contains
@@ -891,6 +885,21 @@ class Figure(object):
       secondary axis, None if the figure has no secondary axis
 
     :type: list
+
+    .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
+    .. Auto-generated exceptions documentation for
+    .. pplot.figure.Figure.axes_list
+
+    :raises: (when retrieved)
+
+     * RuntimeError (Number of tick locations and number of tick labels
+       mismatch)
+
+     * ValueError (Figure cannot be plotted with a logarithmic independent
+       axis because panel *[panel_num]*, series *[series_num]* contains
+       negative independent data points)
+
+    .. [[[end]]]
     """
 
     dpi = property(
@@ -903,11 +912,9 @@ class Figure(object):
            stable/ptypes.html#positiverealnum>`_ or None
 
     .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
-    .. Auto-generated exceptions documentation for
-    .. pplot.figure.Figure.dpi
+    .. Auto-generated exceptions documentation for pplot.figure.Figure.dpi
 
-    :raises: (when assigned) RuntimeError (Argument \`dpi\` is not
-     valid)
+    :raises: (when assigned) RuntimeError (Argument \`dpi\` is not valid)
 
     .. [[[end]]]
     """
@@ -919,6 +926,20 @@ class Figure(object):
     fully specified
 
     :type: Matplotlib figure handle or None
+
+    .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
+    .. Auto-generated exceptions documentation for pplot.figure.Figure.fig
+
+    :raises: (when retrieved)
+
+     * RuntimeError (Number of tick locations and number of tick labels
+       mismatch)
+
+     * ValueError (Figure cannot be plotted with a logarithmic independent
+       axis because panel *[panel_num]*, series *[series_num]* contains
+       negative independent data points)
+
+    .. [[[end]]]
     """
 
     fig_height = property(
@@ -935,8 +956,19 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.fig_height
 
-    :raises: (when assigned) RuntimeError (Argument \`fig_height\` is not
-     valid)
+    :raises: (when assigned)
+
+     * RuntimeError (Argument \`fig_height\` is not valid)
+
+     * RuntimeError (Figure size is too small: minimum width *[min_width]*,
+       minimum height *[min_height]*)
+
+     * RuntimeError (Number of tick locations and number of tick labels
+       mismatch)
+
+     * ValueError (Figure cannot be plotted with a logarithmic independent
+       axis because panel *[panel_num]*, series *[series_num]* contains
+       negative independent data points)
 
     .. [[[end]]]
     """
@@ -955,8 +987,19 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.fig_width
 
-    :raises: (when assigned) RuntimeError (Argument \`fig_width\` is not
-     valid)
+    :raises: (when assigned)
+
+     * RuntimeError (Argument \`fig_width\` is not valid)
+
+     * RuntimeError (Figure size is too small: minimum width *[min_width]*,
+       minimum height *[min_height]*)
+
+     * RuntimeError (Number of tick locations and number of tick labels
+       mismatch)
+
+     * ValueError (Figure cannot be plotted with a logarithmic independent
+       axis because panel *[panel_num]*, series *[series_num]* contains
+       negative independent data points)
 
     .. [[[end]]]
     """
@@ -969,6 +1012,21 @@ class Figure(object):
     not fully specified
 
     :type:  float or None if figure has no panels associated with it
+
+    .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
+    .. Auto-generated exceptions documentation for
+    .. pplot.figure.Figure.indep_axis_scale
+
+    :raises: (when retrieved)
+
+     * RuntimeError (Number of tick locations and number of tick labels
+       mismatch)
+
+     * ValueError (Figure cannot be plotted with a logarithmic independent
+       axis because panel *[panel_num]*, series *[series_num]* contains
+       negative independent data points)
+
+    .. [[[end]]]
     """
 
     indep_axis_ticks = property(
@@ -986,9 +1044,19 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.indep_axis_ticks
 
-    :raises: (when assigned)
+    :raises:
+     * When assigned
 
-     * RuntimeError (Argument \`indep_axis_ticks\` is not valid)
+       * RuntimeError (Argument \`indep_axis_ticks\` is not valid)
+
+     * When retrieved
+
+       * RuntimeError (Number of tick locations and number of tick labels
+         mismatch)
+
+       * ValueError (Figure cannot be plotted with a logarithmic
+         independent axis because panel *[panel_num]*, series *[series_num]*
+         contains negative independent data points)
 
     .. [[[end]]]
     """
@@ -1007,12 +1075,26 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.indep_axis_tick_labels
 
-    :raises: (when assigned)
+    :raises:
+     * When assigned
 
-     * RuntimeError (Argument \`indep_var_tick_labels\` is not valid)
+       * RuntimeError (Argument \`indep_axis_tick_labels\` is not valid)
 
-     * RuntimeError (Number of tick locations and number of tick labels
-       mismatch)
+       * RuntimeError (Number of tick locations and number of tick labels
+         mismatch)
+
+       * ValueError (Figure cannot be plotted with a logarithmic
+         independent axis because panel *[panel_num]*, series *[series_num]*
+         contains negative independent data points)
+
+     * When retrieved
+
+       * RuntimeError (Number of tick locations and number of tick labels
+         mismatch)
+
+       * ValueError (Figure cannot be plotted with a logarithmic
+         independent axis because panel *[panel_num]*, series *[series_num]*
+         contains negative independent data points)
 
     .. [[[end]]]
     """
@@ -1031,15 +1113,8 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.indep_var_label
 
-    :raises: (when assigned)
-
-     * RuntimeError (Argument \`indep_var_label\` is not valid)
-
-     * RuntimeError (Figure object is not fully specified)
-
-     * ValueError (Figure cannot be plotted with a logarithmic independent
-       axis because panel *[panel_num]*, series *[series_num]* contains
-       negative independent data points)
+    :raises: (when assigned) RuntimeError (Argument \`indep_var_label\` is
+     not valid)
 
     .. [[[end]]]
     """
@@ -1058,15 +1133,8 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.indep_var_units
 
-    :raises: (when assigned)
-
-     * RuntimeError (Argument \`indep_var_units\` is not valid)
-
-     * RuntimeError (Figure object is not fully specified)
-
-     * ValueError (Figure cannot be plotted with a logarithmic independent
-       axis because panel *[panel_num]*, series *[series_num]* contains
-       negative independent data points)
+    :raises: (when assigned) RuntimeError (Argument \`indep_var_units\` is
+     not valid)
 
     .. [[[end]]]
     """
@@ -1084,15 +1152,8 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.log_indep_axis
 
-    :raises: (when assigned)
-
-     * RuntimeError (Argument \`log_indep_axis\` is not valid)
-
-     * RuntimeError (Figure object is not fully specified)
-
-     * ValueError (Figure cannot be plotted with a logarithmic independent
-       axis because panel *[panel_num]*, series *[series_num]* contains
-       negative independent data points)
+    :raises: (when assigned) RuntimeError (Argument \`log_indep_axis\` is
+     not valid)
 
     .. [[[end]]]
     """
@@ -1111,22 +1172,9 @@ class Figure(object):
 
     :raises: (when assigned)
 
-     * RuntimeError (Argument \`fig_height\` is not valid)
-
-     * RuntimeError (Argument \`fig_width\` is not valid)
-
      * RuntimeError (Argument \`panels\` is not valid)
 
-     * RuntimeError (Figure object is not fully specified)
-
-     * RuntimeError (Figure size is too small: minimum width *[min_width]*,
-       minimum height *[min_height]*)
-
      * TypeError (Panel *[panel_num]* is not fully specified)
-
-     * ValueError (Figure cannot be plotted with a logarithmic independent
-       axis because panel *[panel_num]*, series *[series_num]* contains
-       negative independent data points)
 
     .. [[[end]]]
     """
@@ -1141,15 +1189,8 @@ class Figure(object):
     .. Auto-generated exceptions documentation for
     .. pplot.figure.Figure.title
 
-    :raises: (when assigned)
-
-     * RuntimeError (Argument \`title\` is not valid)
-
-     * RuntimeError (Figure object is not fully specified)
-
-     * ValueError (Figure cannot be plotted with a logarithmic independent
-       axis because panel *[panel_num]*, series *[series_num]* contains
-       negative independent data points)
+    :raises: (when assigned) RuntimeError (Argument \`title\` is not
+     valid)
 
     .. [[[end]]]
     """

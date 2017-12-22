@@ -11,4 +11,6 @@ from tests.series import TestSeries
 from tests.panel import TestPanel
 from tests.figure import TestFigure
 from tests.functions import TestDataSource, TestParameterizedColorSpace
-from tests.fixtures import default_panel, default_series, default_source
+from tests.fixtures import (
+    default_panel, default_series, default_source, negative_panel
+)

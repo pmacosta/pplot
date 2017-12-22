@@ -62,27 +62,25 @@ def run_trace(
     par = trace_pars(mname)
     start_time = datetime.datetime.now()
     with pexdoc.exdoc.ExDocCxt(
-            exclude=par.exclude+module_exclude,
-            pickle_fname=par.pickle_fname,
-            in_callables_fname=par.in_callables_fname,
-            out_callables_fname=par.out_callables_fname,
-            _no_print=no_print
+        exclude=par.exclude+module_exclude,
+        pickle_fname=par.pickle_fname,
+        in_callables_fname=par.in_callables_fname,
+        out_callables_fname=par.out_callables_fname,
+        _no_print=no_print
     ) as exdoc_obj:
-        debug_msg = '-s -vv' if debug else '-q'
-        test_cmd = (
-            '--color=yes {debug_msg} -x {noption}-m {mname} {file}'.format(
-                debug_msg=debug_msg,
-                noption='{0} '.format(par.noption) if par.noption else '',
-                mname=mname,
-                file=repr(os.path.realpath(os.path.join(
+        test_cmd = [
+            '--color=yes',
+            '-s -vv' if debug else '-q',
+            '-x',
+        ]+(['{0} '.format(par.noption)] if par.noption else [])+[
+            '-m {mname}'.format(mname=mname),
+            os.path.realpath(
+                os.path.join(
                     os.path.dirname(__file__),
-                    '..',
-                    '..',
-                    'tests',
-                    'test_{0}.py'.format(fname)
-                )))
+                    '..', '..', 'tests', 'test_{0}.py'.format(fname)
+                )
             )
-        )
+        ]
         if pytest.main(test_cmd):
             raise RuntimeError('Tracing did not complete successfully')
     stop_time = datetime.datetime.now()
