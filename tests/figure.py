@@ -132,11 +132,9 @@ class TestFigure(object):
         act_width = float(actual.split('\n')[-3][14:])
         act_height = float(actual.split('\n')[-2][15:])
         ref_widths = [6.08, 6.4, 6.55, 6.71, 6.67, 6.74, 6.75]
-        ref_heights = [3.71, 3.89, 4.8, 4.99, 5.06, 5.29]
-        if act_width not in ref_widths:
-            assert False, '{0} not in {1}'.format(act_width, ref_widths)
-        if act_height not in ref_heights:
-            assert False, '{0} not in {1}'.format(act_height, ref_heights)
+        ref_heights = [3.71, 3.89, 4.8, 4.9125, 4.99, 5.06, 5.29]
+        comp_num(act_width, ref_widths)
+        comp_num(act_height, ref_heights)
 
     @pytest.mark.figure
     def test_str_exceptions(self, default_panel, negative_panel):
@@ -366,7 +364,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_height is None
         obj = pplot.Figure(panels=default_panel)
-        comp_num(obj.fig_height, 4.31 if MVER == 1 else [3.61])
+        comp_num(obj.fig_height, 4.31 if MVER == 1 else [4.9125])
         obj.fig_height = 5
         assert obj.fig_height == 5
 
@@ -508,16 +506,11 @@ class TestFigure(object):
             'axis because panel 0, series 0 contains negative independent '
             'data points'
         )
-        for flag in [True, False]:
-            obj = pplot.Figure(log_indep_axis=True)
-            obj.panels = negative_panel
-            if flag:
-                with pytest.raises(ValueError) as excinfo:
-                    obj.indep_axis_tick_labels
-            else:
-                with pytest.raises(ValueError) as excinfo:
-                    obj.indep_axis_tick_labels = ['1', '2', '3']
-            assert GET_EXMSG(excinfo) == exmsg
+        obj = pplot.Figure(log_indep_axis=True)
+        obj.panels = negative_panel
+        with pytest.raises(ValueError) as excinfo:
+            obj.indep_axis_tick_labels
+        assert GET_EXMSG(excinfo) == exmsg
         exmsg = 'Number of tick locations and number of tick labels mismatch'
         for flag in [True, False]:
             obj = pplot.Figure()
@@ -610,7 +603,7 @@ class TestFigure(object):
         # Continuous integration image is 5.61in wide
         exmsg = (
             'Figure size is too small: minimum width [6.2|6.55]*, '
-            'minimum height 3.89'
+            'minimum height 4.9125.*'
         )
         kwargs = dict(title='My graph', fig_width=0.1, fig_height=200)
         AE(FOBJ, RE, exmsg, default_panel, 'Input', 'Amps', **kwargs)

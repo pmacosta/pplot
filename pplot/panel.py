@@ -124,7 +124,6 @@ class _Axis(object):
         self._get_bottom()
         self._get_right()
         self._get_top()
-        #self._get_axis_bbox()
         self._get_min_spine_bbox()
         self._get_title_plus_pad()
         self._get_xlabel_plus_pad()
@@ -376,7 +375,8 @@ class _Axis(object):
             return axis_box_dim
         width = core(xaxis=True)
         height = core(xaxis=False)
-        return Bbox([[0, 0], [width, height]])
+        ret = Bbox([[0, 0], [width, height]])
+        return ret
 
     # Managed attributes
     bottom = property(_get_bottom)
@@ -1283,6 +1283,32 @@ class Panel(object):
                 getattr(sec, prop) if self._axis_sec else -INF
             )
         zero = lambda x: x if x is not None else 0
+        axis_sec = None
+        tobjs = None
+        if self._has_sec_axis:
+            axis_sec = plt.axes(
+                axis_prim.get_position(), frameon=not self._has_prim_axis)
+        # Grid control
+        if self._has_sec_axis:
+            axis_prim.xaxis.grid(False)
+            axis_prim.yaxis.grid(False)
+            axis_prim.set_zorder(axis_sec.get_zorder()+1)
+            axis_prim.patch.set_visible(False)
+            axis_sec.xaxis.grid(True, which='both', zorder=GRID_ZORDER)
+            axis_sec.yaxis.grid(True, which='both', zorder=GRID_ZORDER)
+        else:
+            axis_prim.xaxis.grid(True, which='both', zorder=GRID_ZORDER)
+            axis_prim.yaxis.grid(True, which='both', zorder=GRID_ZORDER)
+        # Place data series in their appropriate axis (primary or secondary)
+        # Reverse series list so that first series is drawn on top
+        prim_series = [
+            series for series in self.series if not series.secondary_axis
+        ]
+        sec_series = [
+            series for series in self.series if series.secondary_axis
+        ]
+        self._draw_series(sec_series, axis_sec, indep_axis_dict)
+        self._draw_series(prim_series, axis_prim, indep_axis_dict)
         if self._has_prim_axis:
             self._setup_axis(
                 'PRIMARY',
@@ -1296,11 +1322,7 @@ class Panel(object):
                 indep_axis_dict['indep_axis_unit_scale'],
                 True
             )
-        axis_sec = None
-        tobjs = None
         if self._has_sec_axis:
-            axis_sec = plt.axes(
-                axis_prim.get_position(), frameon=not self._has_prim_axis)
             self._setup_axis(
                 'SECONDARY',
                 axis_sec,
@@ -1325,27 +1347,6 @@ class Panel(object):
                 axis_sec.tick_params(
                     axis='x', which='both', length=0, labelbottom='off'
                 )
-        # Grid control
-        if self._has_sec_axis:
-            axis_prim.xaxis.grid(False)
-            axis_prim.yaxis.grid(False)
-            axis_prim.set_zorder(axis_sec.get_zorder()+1)
-            axis_prim.patch.set_visible(False)
-            axis_sec.xaxis.grid(True, which='both', zorder=GRID_ZORDER)
-            axis_sec.yaxis.grid(True, which='both', zorder=GRID_ZORDER)
-        else:
-            axis_prim.xaxis.grid(True, which='both', zorder=GRID_ZORDER)
-            axis_prim.yaxis.grid(True, which='both', zorder=GRID_ZORDER)
-        # Place data series in their appropriate axis (primary or secondary)
-        # Reverse series list so that first series is drawn on top
-        prim_series = [
-            series for series in self.series if not series.secondary_axis
-        ]
-        sec_series = [
-            series for series in self.series if series.secondary_axis
-        ]
-        self._draw_series(sec_series, axis_sec, indep_axis_dict)
-        self._draw_series(prim_series, axis_prim, indep_axis_dict)
         prim_log_axis = len(prim_series) and self.log_dep_axis
         sec_log_axis = len(sec_series) and self.log_dep_axis
         # Print legend
@@ -1419,8 +1420,8 @@ class Panel(object):
         # is a secondary axis, then the independent axis bounding boxes
         # are all stacked up in the same spot
         axis_prim.display_indep_axis = disp_indep_axis
-        axis_prim.yaxis.log_axis = prim_log_axis
         axis_prim.xaxis.log_axis = indep_axis_dict['log_indep']
+        axis_prim.yaxis.log_axis = prim_log_axis
         if axis_sec:
             axis_sec.xaxis.log_axis = indep_axis_dict['log_indep']
             axis_sec.yaxis.log_axis = sec_log_axis

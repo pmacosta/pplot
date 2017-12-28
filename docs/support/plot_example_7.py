@@ -50,5 +50,5 @@ def figure_iterator_example(no_print):
             print('Panel {0}:'.format(num+1))
             print(panel)
             print('')
-    else:
-        return figure
+        figure = None
+    return figure

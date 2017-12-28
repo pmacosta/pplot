@@ -427,6 +427,15 @@ class Figure(object):
             sum([panel._min_bbox.height*self.dpi for panel in self.panels])+
             ((npanels-1)*PANEL_SEP)
         )
+        # Check that dimensions are "pleasing", width-to-height aspect ratio
+        # no worst that 4:3
+        ratio = 4.0/3.0
+        if self._min_fig_width/self._min_fig_height > ratio:
+            self._min_fig_width, self._min_fig_height = (
+                (self._min_fig_width, self._min_fig_width/ratio)
+                if self._min_fig_width > self._min_fig_height else
+                (self._min_fig_height*ratio, self._min_fig_height)
+            )
 
     def _check_figure_spec(self, fig_width=None, fig_height=None):
         """ Validates given figure size against minimum dimension """
@@ -469,8 +478,6 @@ class Figure(object):
             self._draw()
             self._draw()
             bbox = self._fig_bbox()
-            #self._min_fig_width = math.floor(self.dpi*bbox.width)/self.dpi
-            #self._min_fig_height = math.floor(self.dpi*bbox.height)/self.dpi
             fig_width, fig_height = self._fig_dims()
             self._fig.set_size_inches(fig_width, fig_height, forward=True)
             self._need_redraw = False
@@ -532,12 +539,12 @@ class Figure(object):
             }
             self._scaling_done = True
         # Create required number of panels
-        self._draw_panels(self._indep_axis_dict)
+        self._draw_panels()
         # Draw figure otherwise some bounding boxes return NaN
         FigureCanvasAgg(self._fig).draw()
         self._calculate_min_figure_size()
 
-    def _draw_panels(self, indep_axis_dict, fbbox=None):
+    def _draw_panels(self, fbbox=None):
         def init_figure(num_panels, fbbox=None):
             fig_width, fig_height = self._fig_dims()
             figsize = (fig_width, fig_height) if fig_width and fig_height else None
@@ -545,7 +552,7 @@ class Figure(object):
             self._fig, axesh = plt.subplots(
                 nrows=num_panels, ncols=1, dpi=self.dpi, figsize=figsize
             )
-            plt.tight_layout(rect=fbbox, pad=0, h_pad=2)
+            plt.tight_layout(pad=0, h_pad=2, rect=fbbox)
             axesh = [axesh] if num_panels == 1 else axesh
             return axesh, fig_width, fig_height
         num_panels = len(self.panels)
@@ -558,7 +565,7 @@ class Figure(object):
         for num, (panel, axish) in enumerate(zip(self.panels, axesh)):
             title = self.title if not num else None
             disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
-            panel._draw(disp_indep_axis, indep_axis_dict, title, axish)
+            panel._draw(disp_indep_axis, self._indep_axis_dict, title, axish)
             left = min(left, panel._panel_bbox.xmin)
             bottom = min(bottom, panel._panel_bbox.ymin)
             right = max(right, panel._panel_bbox.xmax)
@@ -575,7 +582,9 @@ class Figure(object):
             for num, (panel, axish) in enumerate(zip(self.panels, axesh)):
                 title = self.title if not num else None
                 disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
-                panel._draw(disp_indep_axis, indep_axis_dict, title, axish)
+                panel._draw(
+                    disp_indep_axis, self._indep_axis_dict, title, axish
+                )
 
     def _fig_bbox(self):
         """ Returns bounding box of figure """
@@ -731,9 +740,10 @@ class Figure(object):
 
     @pexdoc.pcontracts.contract(indep_axis_tick_labels='None|list(str)')
     def _set_indep_axis_tick_labels(self, indep_axis_tick_labels):
-        self._indep_axis_tick_labels = indep_axis_tick_labels
-        self._need_redraw = True
-        self._create_figure()
+        if not self._log_indep_axis:
+            self._indep_axis_tick_labels = indep_axis_tick_labels
+            self._need_redraw = True
+            self._create_figure()
 
     @pexdoc.pcontracts.contract(indep_var_label='None|str')
     def _set_indep_var_label(self, indep_var_label):

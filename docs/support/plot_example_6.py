@@ -38,5 +38,5 @@ def panel_iterator_example(no_print):
             print('Series {0}:'.format(num+1))
             print(series)
             print('')
-    else:
-        return panel
+        panel = None
+    return panel
