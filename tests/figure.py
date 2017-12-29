@@ -131,8 +131,8 @@ class TestFigure(object):
         assert ref_invariant == actual_invariant
         act_width = float(actual.split('\n')[-3][14:])
         act_height = float(actual.split('\n')[-2][15:])
-        ref_widths = [6.08, 6.4, 6.55, 6.71, 6.67, 6.74, 6.75]
-        ref_heights = [3.71, 3.89, 4.8, 4.9125, 4.99, 5.06, 5.29]
+        ref_widths = [6.08, 6.4, 6.54, 6.55, 6.71, 6.67, 6.74, 6.75]
+        ref_heights = [3.71, 3.89, 4.8, 4.905, 4.9125, 4.99, 5.06, 5.29]
         comp_num(act_width, ref_widths)
         comp_num(act_height, ref_heights)
 
@@ -330,7 +330,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=default_panel)
         comp_num(
             obj.fig_width,
-            [6.08, 6.71] if MVER == 1 else [6.4, 6.55, 6.74, 6.75]
+            [6.08, 6.71] if MVER == 1 else [6.4, 6.54, 6.55, 6.74, 6.75]
         )
         obj.fig_width = 7
         assert obj.fig_width == 7
@@ -364,7 +364,7 @@ class TestFigure(object):
         obj = pplot.Figure(panels=None)
         assert obj.fig_height is None
         obj = pplot.Figure(panels=default_panel)
-        comp_num(obj.fig_height, 4.31 if MVER == 1 else [4.9125])
+        comp_num(obj.fig_height, 4.31 if MVER == 1 else [4.905, 4.9125])
         obj.fig_height = 5
         assert obj.fig_height == 5
 
@@ -602,8 +602,8 @@ class TestFigure(object):
         """ Test requested figure size is too small behavior """
         # Continuous integration image is 5.61in wide
         exmsg = (
-            'Figure size is too small: minimum width [6.2|6.55]*, '
-            'minimum height 4.9125.*'
+            'Figure size is too small: minimum width [6.2|6.54|6.55]*, '
+            'minimum height [4.905|4.9125].*'
         )
         kwargs = dict(title='My graph', fig_width=0.1, fig_height=200)
         AE(FOBJ, RE, exmsg, default_panel, 'Input', 'Amps', **kwargs)
