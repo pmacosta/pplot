@@ -63,7 +63,6 @@ Description
 .. _Funcsigs: https://pypi.python.org/pypi/funcsigs
 .. _Matplotlib: http://matplotlib.org
 .. _Mock: http://www.voidspace.org.uk/python/mock
-.. _Nose: http://nose.readthedocs.org
 .. _Numpy: http://www.numpy.org
 .. _Pcsv: http://pcsv.readthedocs.org
 .. _Peng: http://peng.readthedocs.org
@@ -329,8 +328,7 @@ Contributing
     .. ]]]
 
 
-    * `Astroid`_ (Python 2.6: older than 1.4, Python 2.7 or newer: 1.3.8
-      or newer)
+    * `Astroid`_ (1.3.8 or newer)
 
     * `Cog`_ (2.4 or newer)
 
@@ -338,37 +336,25 @@ Contributing
 
     * `Decorator`_ (3.4.2 or newer)
 
-    * `Docutils`_ (Python 2.6: 0.12 or newer and older than 0.13, Python
-      2.7: 0.12 or newer, Python 3.3: 0.12 or newer and older than 0.13,
-      Python 3.4: 0.12 or newer, Python 3.5: 0.12 or newer, Python 3.6:
-      0.12 or newer)
+    * `Docutils`_ (0.12 or newer)
 
     * `Funcsigs`_ (Python 2.x only, 0.4 or newer)
 
     * `Inline Syntax Highlight Sphinx Extension`_ (0.2 or newer)
 
-    * `Matplotlib`_ (Python 2.6: 1.4.1 or newer and older than 2.0,
-      Python 2.7: 1.4.1 or newer, Python 3.3: 1.4.1 or newer and older
-      than 2.0, Python 3.4: 1.4.1 or newer, Python 3.5: 1.4.1 or newer,
-      Python 3.6: 1.4.1 or newer)
+    * `Matplotlib`_ (1.4.1 or newer)
 
     * `Mock`_ (Python 2.x only, 1.0.1 or newer)
 
-    * `Nose`_ (Python 2.6: 1.0.0 or newer)
+    * `Numpy`_ (1.8.2 or newer)
 
-    * `Numpy`_ (Python 2.6: 1.8.2 or newer and older than 1.12, Python
-      2.7: 1.8.2 or newer, Python 3.3: 1.8.2 or newer and older than
-      1.12, Python 3.4: 1.8.2 or newer, Python 3.5: 1.8.2 or newer,
-      Python 3.6: 1.8.2 or newer)
-
-    * `Pcsv`_ (1.0.5 or newer)
+    * `Pcsv`_ (1.0.6 or newer)
 
     * `Peng`_ (1.0.6 or newer)
 
     * `Pexdoc`_ (1.0.9 or newer)
 
-    * `Pillow`_ (Python 2.6: 2.6.1 or newer and older than 4.0, Python
-      2.7 or newer: 2.6.1 or newer)
+    * `Pillow`_ (2.6.1 or newer)
 
     * `Pmisc`_ (1.2.2 or newer)
 
@@ -376,8 +362,7 @@ Contributing
 
     * `PyContracts`_ (1.7.2 or newer except 1.7.7)
 
-    * `Pylint`_ (Python 2.6: 1.3 or newer and older than 1.4, Python 2.7
-      or newer: 1.3.1 or newer)
+    * `Pylint`_ (1.3.1 or newer)
 
     * `Pytest-coverage`_ (1.8.0 or newer)
 
@@ -385,17 +370,11 @@ Contributing
 
     * `ReadTheDocs Sphinx theme`_ (0.1.9 or newer)
 
-    * `Scipy`_ (Python 2.6: 0.13.3 or newer and older than 0.18, Python
-      2.7: 0.13.3 or newer, Python 3.3: 0.13.3 or newer and older than
-      0.18, Python 3.4: 0.13.3 or newer, Python 3.5: 0.13.3 or newer,
-      Python 3.6: 0.13.3 or newer)
+    * `Scipy`_ (0.13.3 or newer)
 
     * `Six`_ (1.4.0 or newer)
 
-    * `Sphinx`_ (Python 2.6: 1.2.3 or newer and 1.4.9 or older, Python
-      2.7: 1.5 or newer, Python 3.3: 1.2.3 or newer and 1.4.9 or older,
-      Python 3.4: 1.5 or newer, Python 3.5: 1.5 or newer, Python 3.6:
-      1.5 or newer)
+    * `Sphinx`_ (1.5 or newer)
 
     * `Tox`_ (1.9.0 or newer)
 
@@ -527,7 +506,7 @@ Contributing
 	      -h, --help            show this help message and exit
 	      -d DIRECTORY, --directory DIRECTORY
 	                            specify source file directory
-	                            (default ../peng)
+	                            (default ../pplot)
 	      -r, --rebuild         rebuild exceptions documentation.
 	                            If no module name is given all
 	                            modules with auto-generated
