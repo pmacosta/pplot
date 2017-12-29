@@ -15,7 +15,7 @@ import sys
 ###
 # Global variables
 ###
-SUPPORTED_VERS = ['2.6', '2.7', '3.3', '3.4', '3.5', '3.6']
+SUPPORTED_VERS = ['2.7', '3.5', '3.6']
 
 
 ###

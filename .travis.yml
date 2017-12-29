@@ -1,4 +1,4 @@
-# .travis.yml
+ .travis.yml
 # Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
 
@@ -14,13 +14,11 @@ language: python
 
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
 
 env:
   # - JNAME="2.7"
-  # - JNAME="3.4"
   # - JNAME="3.5"
   # - JNAME="3.6"
 
@@ -191,13 +189,10 @@ script:
   - ${SBIN_DIR}/cprint.sh line cyan "Testing project code compliance"
   - ${SBIN_DIR}/check_files_compliance.py -tps -d ${SOURCE_DIR} -m ${EXTRA_DIR}
   - ${SBIN_DIR}/cprint.sh line cyan "Testing Pylint compliance";
-  # pylint 1.6.x appears to have a bug in Python 3.6 that is only going to be fixed with Pylint 2.0
-  - if [ "${TRAVIS_PYTHON_VERSION}" != "3.6" ]; then
-        pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${SOURCE_DIR};
-        pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${SBIN_DIR};
-        pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${EXTRA_DIR}/tests;
-        pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${EXTRA_DIR}/docs/support;
-    fi
+  - pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${SOURCE_DIR}
+  - pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${SBIN_DIR}
+  - pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${EXTRA_DIR}/tests
+  - pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${EXTRA_DIR}/docs/support
   - ${SBIN_DIR}/cprint.sh line cyan "Testing reStructuredText files"
   - if [ ${PYTESTCMD} --collect-only --doctest-glob="*.rst" ${EXTRA_DIR}/docs ]; then
         ${PYTESTCMD} --doctest-glob="*.rst" ${EXTRA_DIR}/docs;
