@@ -1,7 +1,8 @@
 # panel.py
 # Copyright (c) 2013-2017 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,C1801,R0912,R0913,R0914,R0915,W0105,W0212
+# pylint: disable=C0111,C0302,C1801,R0902,R0903,R0912,R0913,R0914,R0915
+# pylint: disable=W0105,W0212
 
 # Standard library imports
 import sys
@@ -95,7 +96,6 @@ def _turn_off_axis(axis, atype='x'):
 # Classes
 ###
 class _Axis(object):
-    # pylint: disable=R0902,R0903
     def __init__(self, axis, atype, ticklabels=None):
         self.axis = axis
         self.prim = atype.lower() == 'prim'
@@ -171,7 +171,7 @@ class _Axis(object):
         bottom = self._bbox(self.axis.spines['bottom']).ymin
         right = self._bbox(self.axis.spines['right']).xmax
         top = self._bbox(self.axis.spines['top']).ymax
-        # Create dummy bbox in the midle of the spine so as to not limit
+        # Create dummy bbox in the middle of the spine so as to not limit
         # measurements in any dimension
         xcenter = (left+right)/2.0
         ycenter = (top+bottom)/2.0
@@ -502,7 +502,7 @@ class Panel(object):
 
     .. [[[end]]]
     """
-    # pylint: disable=R0902,R0903,W0102
+    # pylint: disable=W0102
     def __init__(self, series=None, primary_axis_label='',
                  primary_axis_units='', primary_axis_ticks=None,
                  secondary_axis_label='', secondary_axis_units='',

@@ -241,25 +241,25 @@ Contributing
     .. ]]]
 
 
-    * `Astroid`_ (1.3.8 or newer)
+    * `Astroid`_ (1.5.3 or newer)
 
-    * `Cog`_ (2.4 or newer)
+    * `Cog`_ (2.5.1 or newer)
 
-    * `Coverage`_ (3.7.1 or newer)
+    * `Coverage`_ (4.4.1 or newer)
 
-    * `Decorator`_ (3.4.2 or newer)
+    * `Decorator`_ (4.0.11 or newer)
 
-    * `Docutils`_ (0.12 or newer)
+    * `Docutils`_ (0.13.1 or newer)
 
-    * `Funcsigs`_ (Python 2.x only, 0.4 or newer)
+    * `Funcsigs`_ (Python 2.x only, 1.0.2 or newer)
 
     * `Inline Syntax Highlight Sphinx Extension`_ (0.2 or newer)
 
-    * `Matplotlib`_ (1.4.1 or newer)
+    * `Matplotlib`_ (2.0.0 or newer)
 
-    * `Mock`_ (Python 2.x only, 1.0.1 or newer)
+    * `Mock`_ (Python 2.x only, 2.0.0 or newer)
 
-    * `Numpy`_ (1.8.2 or newer)
+    * `Numpy`_ (1.13.1 or newer)
 
     * `Pcsv`_ (1.0.6 or newer)
 
@@ -267,31 +267,31 @@ Contributing
 
     * `Pexdoc`_ (1.0.9 or newer)
 
-    * `Pillow`_ (2.6.1 or newer)
+    * `Pillow`_ (4.0.0 or newer)
 
     * `Pmisc`_ (1.2.2 or newer)
 
-    * `Py.test`_ (2.7.0 or newer)
+    * `Py.test`_ (3.1.2 or newer)
 
-    * `PyContracts`_ (1.7.2 or newer except 1.7.7)
+    * `PyContracts`_ (1.7.15 or newer)
 
-    * `Pylint`_ (1.3.1 or newer)
+    * `Pylint`_ (1.7.1 or newer)
 
-    * `Pytest-coverage`_ (1.8.0 or newer)
+    * `Pytest-coverage`_ (2.5.1 or newer)
 
-    * `Pytest-xdist`_ (optional, 1.8.0 or newer)
+    * `Pytest-xdist`_ (optional, 1.21.0 or newer)
 
-    * `ReadTheDocs Sphinx theme`_ (0.1.9 or newer)
+    * `ReadTheDocs Sphinx theme`_ (0.2.4 or newer)
 
-    * `Scipy`_ (0.13.3 or newer)
+    * `Scipy`_ (1.0.0 or newer)
 
-    * `Six`_ (1.4.0 or newer)
+    * `Six`_ (1.11.0 or newer)
 
-    * `Sphinx`_ (1.5 or newer)
+    * `Sphinx`_ (1.6.5 or newer)
 
-    * `Tox`_ (1.9.0 or newer)
+    * `Tox`_ (2.9.1 or newer)
 
-    * `Virtualenv`_ (13.1.2 or newer)
+    * `Virtualenv`_ (15.1.0 or newer)
 
     .. [[[end]]]
 

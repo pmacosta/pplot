@@ -69,7 +69,8 @@ class Figure(object):
     :param indep_axis_tick_labels: Independent axis tick labels. If not None
                                    overrides ticks automatically generated
                                    or as given by the **indep_axis_ticks**
-                                   argument
+                                   argument (ignored for figures with a
+                                   logarithmic independent axis)
     :type  indep_axis_tick_labels: list of strings or None
 
     :param indep_axis_ticks: Independent axis tick marks. If not None
@@ -80,14 +81,16 @@ class Figure(object):
     :type  indep_axis_ticks: list, Numpy vector or None
 
     :param fig_width: Hard copy plot width in inches. If None the width is
-                      automatically calculated so that there is no horizontal
-                      overlap between any two text elements in the figure
+                      automatically calculated so that the figure has a 4:3
+                      aspect ratio and there is no horizontal overlap between
+                      any two text elements in the figure
     :type  fig_width: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
                       stable/ptypes.html#positiverealnum>`_ or None
 
     :param fig_height: Hard copy plot height in inches. If None the height is
-                       automatically calculated so that there is no vertical
-                       overlap between any two text elements in the figure
+                       automatically calculated so that the figure has a 4:3
+                       aspect ratio and there is no vertical overlap between
+                       any two text elements in the figure
     :type  fig_height: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
                        stable/ptypes.html#positiverealnum>`_ or None
 
@@ -1077,7 +1080,8 @@ class Figure(object):
         doc='Independent axis tick labels'
     )
     r"""
-    Gets or sets the independent axis tick labels
+    Gets or sets the independent axis tick labels; these are ignored for
+    figures with a logarithmic independent axis
 
     :type: list of strings
 

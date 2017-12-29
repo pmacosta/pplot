@@ -1,10 +1,10 @@
-decorator>=3.4.2
-funcsigs>=0.4
-mock>=1.0.1
-pycontracts>=1.7.2,!=1.7.7
-pytest>=2.7.0
-six>=1.4.0
-sphinx>=1.5
+decorator>=4.0.11
+funcsigs>=1.0.2
+mock>=2.0.0
+pycontracts>=1.7.15
+pytest>=3.1.2
+six>=1.11.0
+sphinx>=1.6.5
 sphinxcontrib-inlinesyntaxhighlight>=0.2
 pmisc>=1.2.2
 pexdoc>=1.0.9

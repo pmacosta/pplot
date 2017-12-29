@@ -27,6 +27,8 @@ aline
 alist
 allclose
 alphanums
+amax
+amin
 antiquewhite
 anumber
 aobj
@@ -76,6 +78,7 @@ ATOL
 atto
 attr
 AttributeError
+atype
 autoclass
 autodata
 autodoc
@@ -85,7 +88,9 @@ autouse
 avec
 avector
 axarr
+axesh
 axisbelow
+axish
 backend
 BaseClass
 basename
@@ -101,6 +106,7 @@ bcd
 bdist
 bfrac
 bgrcmykw
+bheight
 BinOp
 Bitbucket
 bitwise
@@ -298,6 +304,7 @@ dimgray
 dir
 dirname
 dirs
+disp
 distutils
 ditem
 divmod
@@ -427,7 +434,9 @@ expr
 extb
 extype
 exvalue
+facecolor
 fargs
+fbbox
 fchars
 fcount
 fdata
@@ -492,6 +501,8 @@ fpointers
 fproc
 fprog
 frac
+framealpha
+frameon
 fref
 frobj
 fromfile
@@ -538,6 +549,7 @@ getpid
 getsourcelines
 getter
 Getter
+getters
 ghostwhite
 ghz
 gHz
@@ -671,6 +683,7 @@ kwarg
 kwargs
 kwonlyargs
 kxs
+labelbottom
 labelsize
 LambdaType
 lang
@@ -740,6 +753,7 @@ lrange
 lsec
 lsep
 lshift
+lsize
 lstrip
 lt
 ltr
@@ -747,6 +761,7 @@ lue
 lvars
 lvec
 lvector
+lwidth
 makedir
 makedirs
 Makefile
@@ -840,6 +855,7 @@ naverage
 nCallable
 ncmu
 ncol
+ncols
 ncruel
 ndarray
 ndata
@@ -897,6 +913,7 @@ npz
 nref
 nReference
 nresult
+nrows
 nsep
 nSeries
 nsys
@@ -1214,6 +1231,7 @@ rU
 runtests
 RuntimeError
 rvalue
+rwidth
 rwtb
 rxor
 saa
@@ -1370,9 +1388,11 @@ textwrap
 TextWrapper
 tfuncs
 th
+theight
 tHrEe
 thresholding
 ticklabels
+ticklines
 ticklocs
 TickProps
 timeit
@@ -1387,6 +1407,7 @@ tmpfile
 TmpFile
 tnodes
 tobj
+tobjs
 toctree
 TODO
 toDocClass
@@ -1507,11 +1528,13 @@ xmin
 xml
 xobj
 xoffset
+xoverhang
 xrange
 xsep
 xstart
 xstop
 xtick
+xticklabels
 xyz
 yaxes
 yaxis
@@ -1533,14 +1556,19 @@ ymin
 yml
 yocto
 yotta
+yoverhang
 ystart
 ystop
 ytick
+yticklabels
 yticks
 YY
 yzafpnum
 zepto
 zetta
+zlist
+zmax
 zorder
+ZORDER
 zvec
 zzz

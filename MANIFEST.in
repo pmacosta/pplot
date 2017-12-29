@@ -7,7 +7,6 @@ include LICENSE
 include Makefile
 include MANIFEST.in
 include README.rst
-include setup.cfg
 include setup.py
 include TODO.rst
 include tox.ini
@@ -29,28 +28,6 @@ recursive-include tests/support *.py
 recursive-include tests/support/ref_images_1 *.png
 recursive-include tests/support/ref_images_2 *.png
 recursive-include tests/support/ref_images_3 *.png
-recursive-include tests/support/ref_images_4 *.png
-recursive-include tests/support/ref_images_5 *.png
-recursive-include tests/support/ref_images_6 *.png
-recursive-include tests/support/ref_images_7 *.png
-recursive-include tests/support/ref_images_8 *.png
-recursive-include tests/support/ref_images_9 *.png
-recursive-include tests/support/ref_images_10 *.png
-recursive-include tests/support/ref_images_11 *.png
-recursive-include tests/support/ref_images_12 *.png
-recursive-include tests/support/ref_images_13 *.png
-recursive-include tests/support/ref_images_14 *.png
-recursive-include tests/support/ref_images_15 *.png
-recursive-include tests/support/ref_images_16 *.png
-recursive-include tests/support/ref_images_17 *.png
-recursive-include tests/support/ref_images_18 *.png
-recursive-include tests/support/ref_images_19 *.png
-recursive-include tests/support/ref_images_20 *.png
-recursive-include tests/support/ref_images_21 *.png
-recursive-include tests/support/ref_images_22 *.png
-recursive-include tests/support/ref_images_23 *.png
-recursive-include tests/support/ref_images_24 *.png
-recursive-include tests/support/ref_images_25 *.png
 recursive-include sbin *.sh
 recursive-include sbin *.py
 recursive-include requirements *

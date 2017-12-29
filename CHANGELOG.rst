@@ -5,6 +5,13 @@
 Changelog
 =========
 
+* 1.1.0 [2017-12-29]: Added support for specifying independent axis tick labels
+  (ignored for figures with logarithmic independent axis). Improved minimum
+  image size computation, which now maintains a 4:3 maximum aspect ratio.
+  Removed all padding around the exterior of the image. Dropped support for
+  Python interpreter versions 2.6, 3.3 and 3.4. Updated dependencies versions
+  to their current versions
+
 * 1.0.4 [2017-02-25]: Fixed tick marks labels in the [0, 1] range. Closed image
   tests escapes
 
