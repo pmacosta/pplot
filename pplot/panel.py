@@ -1,5 +1,5 @@
 # panel.py
-# Copyright (c) 2013-2017 Pablo Acosta-Serafini
+# Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0111,C0302,C1801,R0902,R0903,R0912,R0913,R0914,R0915
 # pylint: disable=W0105,W0212

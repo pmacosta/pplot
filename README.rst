@@ -1,5 +1,5 @@
 .. README.rst
-.. Copyright (c) 2013-2017 Pablo Acosta-Serafini
+.. Copyright (c) 2013-2018 Pablo Acosta-Serafini
 .. See LICENSE for details
 
 
@@ -252,7 +252,7 @@ Example
         output_fname = os.path.join(wdir, fname)
         if not no_print:
             print('Saving image to file {0}'.format(output_fname))
-        fig_obj.save(output_fname)
+        fig_obj.save(output_fname, compress=True)
 
     def series1_proc_func(indep_var, dep_var, xoffset):
         """ Process data 1 series """
@@ -548,7 +548,7 @@ License
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2017 Pablo Acosta-Serafini
+Copyright (c) 2013-2018 Pablo Acosta-Serafini
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

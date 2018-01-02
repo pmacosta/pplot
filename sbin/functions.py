@@ -1,5 +1,5 @@
 # functions.py
-# Copyright (c) 2013-2017 Pablo Acosta-Serafini
+# Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0111,E0602,E1111,R0904,W0201,W0621
 
@@ -105,7 +105,7 @@ def gen_manifest(make_wheel=False):
     fdata = json_load(os.path.join('data', 'data_files.json'))
     ret = [
         '# MANIFEST.in',
-        '# Copyright (c) 2013-2017 Pablo Acosta-Serafini',
+        '# Copyright (c) 2013-2018 Pablo Acosta-Serafini',
         '# See LICENSE for details'
     ]
     if not make_wheel:

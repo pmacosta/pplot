@@ -56,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Pplot'
-copyright = u'2013-2017, Pablo Acosta-Serafini'
+copyright = u'2013-2018, Pablo Acosta-Serafini'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -286,7 +286,7 @@ texinfo_documents = [
 epub_title = u'Pplot module'
 epub_author = u'Pablo Acosta-Serafini'
 epub_publisher = u'Pablo Acosta-Serafini'
-epub_copyright = u'2013-2017, Pablo Acosta-Serafini'
+epub_copyright = u'2013-2018, Pablo Acosta-Serafini'
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = u'src'

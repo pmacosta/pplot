@@ -1,6 +1,6 @@
 #!/bin/bash
 # rtest.sh
-# Copyright (c) 2013-2017 Pablo Acosta-Serafini
+# Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
 
 opath=${PATH}

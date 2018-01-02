@@ -1,5 +1,5 @@
 # figure.py
-# Copyright (c) 2013-2017 Pablo Acosta-Serafini
+# Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0111,C0302,R0201,R0914,R0915,W0105,W0212
 
