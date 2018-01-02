@@ -366,6 +366,99 @@ def unittest_panel_images(mode=None, test_dir=None):
     return olist
 
 
+def unittest_sizing_images(mode=None, test_dir=None):
+    """ Images for minimum figure size """
+    mode, ref_dir, test_dir = setup_env(mode, test_dir)
+    title_list = ['yes', 'no']
+    indep_axis_list = ['yes', 'no']
+    indep_axis_type_list = ['linear', 'log']
+    series_in_axis_list = ['primary', 'secondary', 'both']
+    master_list = [
+        title_list, indep_axis_list, indep_axis_type_list, series_in_axis_list
+    ]
+    comb1_list = itertools.product(*master_list)
+    ds1_obj = pplot.BasicSource(
+        indep_var=numpy.array([100, 200, 300, 400]),
+        dep_var=numpy.array([1, 2, 3, 4])
+    )
+    ds2_obj = pplot.BasicSource(
+        indep_var=numpy.array([300, 400, 500, 600, 700]),
+        dep_var=numpy.array([3, 4, 5, 6, 7])
+    )
+    ds3_obj = pplot.BasicSource(
+        indep_var=numpy.array([100, 200, 300]),
+        dep_var=numpy.array([20, 40, 50])
+    )
+    series1_obj = pplot.Series(
+        data_source=ds1_obj,
+        label='series 1',
+        marker='o',
+        interp='STRAIGHT',
+        line_style='-',
+        color='k'
+    )
+    series2_obj = pplot.Series(
+        data_source=ds2_obj,
+        label='series 2',
+        marker='o',
+        interp='STRAIGHT',
+        line_style='-',
+        color='b'
+    )
+    series3_obj = pplot.Series(
+        data_source=ds3_obj,
+        label='series 3',
+        marker='o',
+        interp='STRAIGHT',
+        line_style='-',
+        color='g',
+        secondary_axis=True
+    )
+    ltext = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in'
+    vartext = lambda x, y: None if x == 'no' else (y if x == 'short' else ltext)
+    olist = []
+    print('')
+    for title, indep_axis, indep_axis_type, series in comb1_list:
+        title_list = ['short', 'long'] if title == 'yes' else ['no']
+        indep_axis_list = ['short', 'long'] if indep_axis == 'yes' else ['no']
+        prim_axis_list = (
+            ['short', 'long'] if series in ['primary', 'both'] else ['no']
+        )
+        sec_axis_list = (
+            ['short', 'long'] if series in ['secondary', 'both'] else ['no']
+        )
+        master_list = [
+            title_list, indep_axis_list, prim_axis_list, sec_axis_list
+        ]
+        comb2_list = itertools.product(*master_list)
+        for tlength, ilength, plength, slength in comb2_list:
+            img_name = (
+                'size_title_{0}_indep_{1}_{2}_prim_{3}_sec_{4}.png'.format(
+                    tlength, ilength, indep_axis_type, plength, slength
+                )
+            )
+            fname = def_file_names(mode, ref_dir, test_dir, img_name, olist)
+            panel1_obj = pplot.Panel(series=series1_obj)
+            panel2_obj = pplot.Panel(
+                series=(
+                    [series2_obj, series3_obj]
+                    if series == 'both' else (
+                        series2_obj if series == 'primary' else series3_obj
+                    )
+                ),
+                primary_axis_label=vartext(plength, 'Primary axis'),
+                secondary_axis_label=vartext(slength, 'Secondary axis'),
+                log_dep_axis=False
+            )
+            fig_obj = pplot.Figure(
+                panels=[panel1_obj, panel2_obj],
+                indep_var_label=vartext(ilength, 'Independent axis'),
+                log_indep_axis=indep_axis_type == 'log',
+                title=vartext(tlength, 'Title'),
+            )
+            fig_obj.save(fname)
+
+
 def unittest_figure_images(mode=None, test_dir=None):
     """ Images for Figure() class """
     mode, ref_dir, test_dir = setup_env(mode, test_dir)
@@ -485,10 +578,12 @@ def main(argv):
         unittest_series_images(mode='ref')
         unittest_panel_images(mode='ref')
         unittest_figure_images(mode='ref')
+        unittest_sizing_images(mode='ref')
     else:
         unittest_series_images(mode='ref', test_dir=argv[0])
         unittest_panel_images(mode='ref', test_dir=argv[0])
         unittest_figure_images(mode='ref', test_dir=argv[0])
+        unittest_sizing_images(mode='ref', test_dir=argv[0])
 
 
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ addex
 addfinalizer
 adict
 adicts
+adipiscing
 AE
 Agg
 aguments
@@ -28,7 +29,9 @@ alist
 allclose
 alphanums
 amax
+amet
 amin
+annot
 antiquewhite
 anumber
 aobj
@@ -190,6 +193,7 @@ config
 configurability
 conftest
 congruency
+consectetur
 const
 consts
 contextmanager
@@ -352,6 +356,7 @@ efile
 efiles
 efunc
 elif
+elit
 emsg
 encodings
 encprop
@@ -538,6 +543,7 @@ gcf
 ge
 genindex
 getattr
+getcolors
 getcwd
 getfile
 getframe
@@ -593,6 +599,7 @@ ihas
 iheader
 iitem
 ilabel
+ilength
 iline
 ilines
 imag
@@ -743,6 +750,7 @@ loc
 locs
 lOg
 loglog
+Lorem
 loren
 lpar
 lparent
@@ -756,6 +764,7 @@ lshift
 lsize
 lstrip
 lt
+ltext
 ltr
 lue
 lvars
@@ -773,6 +782,7 @@ markerfacecolor
 markersize
 matplotlib
 Matplotlib
+maxcolors
 mdict
 mdir
 mediumaquamarine
@@ -797,6 +807,8 @@ mFrame
 mhz
 midnightblue
 milli
+minorticklabels
+minorticklines
 mintcream
 minwidth
 MINWIDTH
@@ -855,6 +867,7 @@ naverage
 nCallable
 ncmu
 ncol
+ncolors
 ncols
 ncruel
 ndarray
@@ -1030,6 +1043,7 @@ pipcmd
 pkgdir
 pkgs
 pkl
+plength
 plist
 plottable
 plst
@@ -1064,6 +1078,7 @@ PREC
 prf
 priv
 proc
+Proin
 prt
 ps
 ptxt
@@ -1113,6 +1128,7 @@ radd
 radians
 radix
 raiex
+rasterized
 rb
 rbranch
 rc
@@ -1292,6 +1308,7 @@ slateblue
 slategray
 slaveinput
 slaveoutput
+slength
 slist
 smant
 smf
@@ -1355,6 +1372,7 @@ sysconfig
 tanh
 tb
 tbobj
+tbottom
 tchk
 tdata
 tdict
@@ -1397,6 +1415,8 @@ ticklocs
 TickProps
 timeit
 tlabels
+tleft
+tlength
 tlist
 tmax
 tmin
@@ -1426,11 +1446,13 @@ Traceback
 tregexp
 triang
 trie
+tright
 truediv
 tstart
 tstop
 tstr
 ttext
+ttop
 ttuple
 tup
 tuple
@@ -1470,6 +1492,7 @@ va
 ValueError
 vararg
 varargs
+vartext
 vchars
 vdata
 ver

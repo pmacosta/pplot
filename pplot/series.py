@@ -530,6 +530,7 @@ class Series(object):
                     ),
                     label=self.label,
                     zorder=zorder,
+                    rasterized=False
                 )
             # Plot markers
             if self._marker_spec != '':
@@ -549,6 +550,7 @@ class Series(object):
                     markerfacecolor=self._ref_markerfacecolor,
                     label=self.label if self.line_style is None else None,
                     zorder=zorder+1,
+                    rasterized=False
                 )
 
     # Managed attributes

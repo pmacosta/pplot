@@ -101,7 +101,7 @@ def main(fname, no_print):
     output_fname = os.path.join(wdir, fname)
     if not no_print:
         print('Saving image to file {0}'.format(output_fname))
-    fig_obj.save(output_fname)
+    fig_obj.save(output_fname, compress=True)
 
 def series1_proc_func(indep_var, dep_var, xoffset):
     """ Process data 1 series """

@@ -10,6 +10,7 @@ import os
 import sys
 # import warnings
 # PyPI imports
+import PIL
 import numpy
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -19,6 +20,7 @@ import pexdoc.exh
 import pexdoc.pcontracts
 import peng
 # Intra-package imports
+from .constants import TITLE_FONT_SIZE
 from .panel import Panel
 from .functions import _F, _MF, _intelligent_ticks
 
@@ -183,6 +185,7 @@ class Figure(object):
         self._axes_list = []
         self._scaling_done = False
         self._indep_axis_dict = None
+        self._title_obj = None
         # Assignment of arguments to attributes
         self._set_dpi(dpi)
         self._set_indep_var_label(indep_var_label)
@@ -416,23 +419,48 @@ class Figure(object):
         ret += 'Figure height: {0}\n'.format(fig_height)
         return ret
 
+    def _bbox(self, obj):
+        """ Returns bounding box of an object """
+        renderer = self._fig.canvas.get_renderer()
+        return obj.get_window_extent(renderer=renderer).transformed(
+            self._fig.dpi_scale_trans.inverted()
+        )
+
     def _calculate_min_figure_size(self):
         """ Calculates minimum panel and figure size """
         dround = lambda x: math.floor(x)/self.dpi
-        min_width = (
-            max(panel._left_overhang for panel in self.panels)+
-            max(panel._min_spine_bbox.width for panel in self.panels)+
-            max(panel._right_overhang for panel in self.panels)
+        title_width = title_height = 0
+        if self.title not in [None, '']:
+            title_bbox = self._bbox(self._title_obj)
+            title_width = title_bbox.width
+            title_height = title_bbox.height
+        min_width = max(
+            [
+                (
+                    max(panel._left_overhang for panel in self.panels)+
+                    max(panel._min_spine_bbox.width for panel in self.panels)+
+                    max(panel._right_overhang for panel in self.panels)
+                ),
+                max(
+                    panel._prim_yaxis_annot+
+                    panel._indep_label_width+
+                    panel._sec_yaxis_annot
+                    for panel in self.panels
+                ),
+                title_width
+            ]
         )
         self._min_fig_width = dround(min_width*self.dpi)
         npanels = len(self.panels)
         self._min_fig_height = dround(
-            sum([panel._min_bbox.height*self.dpi for panel in self.panels])+
+            npanels*max(
+                [panel._min_bbox.height*self.dpi for panel in self.panels]
+            )+
             ((npanels-1)*PANEL_SEP)
         )
         # Check that dimensions are "pleasing", width-to-height aspect ratio
-        # no worst that 4:3
-        ratio = 4.0/3.0
+        # no worst that 4:3 per panel
+        ratio = 4.0/(len(self.panels)*3.0)
         if self._min_fig_width/self._min_fig_height > ratio:
             self._min_fig_width, self._min_fig_height = (
                 (self._min_fig_width, self._min_fig_width/ratio)
@@ -553,10 +581,19 @@ class Figure(object):
             figsize = (fig_width, fig_height) if fig_width and fig_height else None
             plt.close('all')
             self._fig, axesh = plt.subplots(
-                nrows=num_panels, ncols=1, dpi=self.dpi, figsize=figsize
+                nrows=num_panels, ncols=1, dpi=self.dpi, figsize=figsize,
             )
             plt.tight_layout(pad=0, h_pad=2, rect=fbbox)
             axesh = [axesh] if num_panels == 1 else axesh
+            if self.title not in ['', None]:
+                self._title_obj = self._fig.suptitle(
+                    self.title,
+                    fontsize=TITLE_FONT_SIZE,
+                    horizontalalignment='center',
+                    verticalalignment='top',
+                    multialignment='center',
+                    y=1.0,
+                )
             return axesh, fig_width, fig_height
         num_panels = len(self.panels)
         axesh, fig_width, fig_height = init_figure(num_panels, fbbox)
@@ -565,36 +602,48 @@ class Figure(object):
         bottom = left = +INF
         if all(not panel.display_indep_axis for panel in self.panels):
             self.panels[-1]._display_indep_axis = True
-        for num, (panel, axish) in enumerate(zip(self.panels, axesh)):
-            title = self.title if not num else None
+        for panel, axish in zip(self.panels, axesh):
             disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
-            panel._draw(disp_indep_axis, self._indep_axis_dict, title, axish)
+            panel._draw(disp_indep_axis, self._indep_axis_dict, axish)
             left = min(left, panel._panel_bbox.xmin)
             bottom = min(bottom, panel._panel_bbox.ymin)
             right = max(right, panel._panel_bbox.xmax)
             top = max(top, panel._panel_bbox.ymax)
+        if self._title_obj:
+            title_bbox = self._bbox(self._title_obj)
+            left = min(title_bbox.xmin, left)
+            right = max(title_bbox.xmax, right)
         if fig_width and fig_height:
             xdelta_left = -left/fig_width
             ydelta_bot = -bottom/fig_height
-            xdelta_right = (right-fig_width)/fig_width
-            ydelta_top = (top-fig_height)/fig_height
+            xdelta_right = 1-((right-fig_width)/fig_width)
+            ydelta_top = (
+                title_bbox.ymin/top
+                if self._title_obj else
+                1-((top-fig_height)/fig_height)
+            )
             fbbox = [
-                0+xdelta_left, 0+ydelta_bot, 1-xdelta_right, 1-ydelta_top
+                xdelta_left, ydelta_bot, xdelta_right, ydelta_top
             ]
             axesh, _, _ = init_figure(num_panels, fbbox)
-            for num, (panel, axish) in enumerate(zip(self.panels, axesh)):
-                title = self.title if not num else None
+            for panel, axish in zip(self.panels, axesh):
                 disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
-                panel._draw(
-                    disp_indep_axis, self._indep_axis_dict, title, axish
-                )
+                panel._draw(disp_indep_axis, self._indep_axis_dict, axish)
 
     def _fig_bbox(self):
         """ Returns bounding box of figure """
-        left = min(pobj._left for pobj in self.panels)
-        bottom = min(pobj._bottom for pobj in self.panels)
-        top = max(pobj._top for pobj in self.panels)
-        right = max(pobj._right for pobj in self.panels)
+        tleft = tbottom = +INF
+        tright = ttop = -INF
+        if self._title_obj:
+            title_bbox = self._bbox(self._title_obj)
+            tleft = title_bbox.xmin
+            tright = title_bbox.xmax
+            ttop = title_bbox.ymax
+            tbottom = title_bbox.ymin
+        left = min(tleft, min(pobj._left for pobj in self.panels))
+        bottom = min(tbottom, min(pobj._bottom for pobj in self.panels))
+        top = max(ttop, max(pobj._top for pobj in self.panels))
+        right = max(tright, max(pobj._right for pobj in self.panels))
         fig_bbox = Bbox([[left, bottom], [right, top]])
         return fig_bbox
 
@@ -791,8 +840,8 @@ class Figure(object):
             invalid_ex(not isinstance(obj, Panel))
             specified_ex(not obj._complete, _F('panel_num', num))
 
-    @pexdoc.pcontracts.contract(fname='file_name', ftype=str)
-    def save(self, fname, ftype='PNG'):
+    @pexdoc.pcontracts.contract(fname='file_name', ftype=str, compress=bool)
+    def save(self, fname, ftype='PNG', compress=True):
         r"""
         Saves the figure to a file
 
@@ -808,11 +857,18 @@ class Figure(object):
                       Vector_graphics>`_ format
         :type  ftype: string
 
+        :param compress: Flag that indicates whether the file saved is to be
+                         compressed (True) or not (False). Only relevant for
+                         PNG file type
+        :type  compress: boolean
+
         .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
         .. Auto-generated exceptions documentation for
         .. pplot.figure.Figure.save
 
         :raises:
+         * RuntimeError (Argument \`compress\` is not valid)
+
          * RuntimeError (Argument \`fname\` is not valid)
 
          * RuntimeError (Argument \`ftype\` is not valid)
@@ -849,8 +905,26 @@ class Figure(object):
         fname = os.path.expanduser(fname)
         pmisc.make_dir(fname)
         self._fig_width, self._fig_height = self._fig_dims()
-        self._fig.savefig(fname, dpi=dpi, bbox='tight', format=ftype)
+        self._fig.savefig(
+            fname,
+            dpi=dpi,
+            bbox='tight',
+            format=ftype,
+            bbox_extra_artists=(self._title_obj, )
+        )
         plt.close('all')
+        if (ftype == 'PNG') and compress:
+            img = PIL.Image.open(fname)
+            # Remove alpha channel
+            img = img.convert('RGB')
+            # Move to index image if possible (maximum number of colors used
+            # has to be less that 256 as the palette is 8 bits)
+            # getcolors returns None if the number of colors exceeds the
+            # maxcolors argument
+            ncolors = img.getcolors(maxcolors=256)
+            if ncolors is not None:
+                img = img.convert('P', palette=PIL.Image.ADAPTIVE)
+            img.save(fname, quality=100, optimize=True)
 
     def show(self):
         """
