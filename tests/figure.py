@@ -20,15 +20,20 @@ from pmisc import AI, AE, AROPROP, GET_EXMSG, RE
 import matplotlib
 # Intra-package imports
 import pplot
-from .fixtures import compare_image_set
+from .fixtures import compare_image_set, ref_panels, ref_size_series
 from .functions import comp_num
 sys.path.append('..')
-from tests.gen_ref_images import unittest_figure_images
+from tests.gen_ref_images import (
+    create_axis_display_images,
+    create_basic_figure_image,
+    create_sizing_image
+)
 
 
 ###
 # Global variables
 ###
+DPI = 100
 FOBJ = pplot.Figure
 MVER = int(matplotlib.__version__.split('.')[0])
 
@@ -203,9 +208,12 @@ class TestFigure(object):
             AI(obj.save, 'fname', fname=item)
         AI(obj.save, 'ftype', 'myfile', 5)
         AE(obj.save, RE, 'Unsupported file type: bmp', 'myfile', 'bmp')
+        AE(obj.save, RE, 'Could not determine file type', 'myfile')
+        exmsg = 'Incongruent file type and file extension'
+        AE(obj.save, RE, exmsg, 'myfile.png', 'pdf')
         obj = pplot.Figure(panels=None)
         exmsg = 'Figure object is not fully specified'
-        AE(obj.save, RE, exmsg, 'myfile')
+        AE(obj.save, RE, exmsg, 'myfile.png')
         exmsg = (
             'Figure cannot be plotted with a logarithmic independent '
             'axis because panel 0, series 0 contains negative independent '
@@ -213,14 +221,14 @@ class TestFigure(object):
         )
         obj = pplot.Figure(log_indep_axis=True)
         obj.panels = negative_panel
-        AE(obj.save, ValueError, exmsg, 'myfile')
+        AE(obj.save, ValueError, exmsg, 'myfile.png')
         exmsg = 'Number of tick locations and number of tick labels mismatch'
         obj = pplot.Figure()
         # Order of assignment of indep_axis_tick_labels and panels is important
         # in order to raise desired exception when save method is called
         obj.indep_axis_tick_labels = []
         obj.panels = default_panel
-        AE(obj.save, RE, exmsg, 'myfile')
+        AE(obj.save, RE, exmsg, 'myfile.png')
 
     def test_show(self, default_panel, capsys):
         """ Test that show method behavior """
@@ -633,10 +641,81 @@ class TestFigure(object):
         for prop in props:
             AROPROP(obj, prop)
 
-    def test_images(self, tmpdir):
-        """ Compare images to verify correct plotting of figure """
+    ### Functional
+    @pytest.mark.parametrize('display_indep_axis1', ['no', 'yes'])
+    @pytest.mark.parametrize('display_indep_axis2', ['no', 'yes'])
+    @pytest.mark.parametrize('display_indep_axis4', ['no', 'yes'])
+    def test_axis_display(
+            self,
+            display_indep_axis1,
+            display_indep_axis2,
+            display_indep_axis4,
+            tmpdir,
+            ref_panels,
+    ):
+        """
+        Compare multi-panel images with independent axis shown in
+        many or not of them
+        """
+        # pylint: disable=R0913,R0914
         tmpdir.mkdir('test_images')
-        images_dict_list = unittest_figure_images(
-            mode='test', test_dir=str(tmpdir)
+        olist = []
+        mode = 'test'
+        test_dir = str(tmpdir)
+        create_axis_display_images(
+            mode, test_dir, ref_panels,
+            display_indep_axis1, display_indep_axis2, display_indep_axis4,
+            olist, False
         )
-        assert compare_image_set(tmpdir, images_dict_list, 'figure')
+        assert compare_image_set(tmpdir, olist, 'figure')
+
+    def test_basic_figure(self, tmpdir):
+        """
+        Test figure without anything but tick marks and series without
+        predetermined size
+        """
+        tmpdir.mkdir('test_images')
+        olist = []
+        mode = 'test'
+        test_dir = str(tmpdir)
+        create_basic_figure_image(mode, test_dir, olist, False)
+        assert compare_image_set(tmpdir, olist, 'figure')
+
+
+    @pytest.mark.parametrize('tlist', ['short', 'long', 'no'])
+    @pytest.mark.parametrize('ilength', ['short', 'long', 'no'])
+    @pytest.mark.parametrize('itype', ['linear', 'log'])
+    @pytest.mark.parametrize('plength', ['short', 'long', 'no'])
+    @pytest.mark.parametrize('slength', ['short', 'long', 'no'])
+    def test_min_sizing(
+        self,
+        tlength,
+        ilength,
+        itype,
+        plength,
+        slength,
+        tmpdir,
+        ref_size_series,
+    ):
+        """
+        Compare multi-panel images with independent axis shown in
+        many or not of them
+        """
+        # pylint: disable=R0913,R0914
+        tmpdir.mkdir('test_images')
+        olist = []
+        mode = 'test'
+        test_dir = str(tmpdir)
+        create_sizing_image(
+            mode,
+            test_dir,
+            ref_size_series,
+            tlength,
+            ilength,
+            itype,
+            plength,
+            slength,
+            olist,
+            False
+        )
+        assert compare_image_set(tmpdir, olist, 'figure')

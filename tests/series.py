@@ -2,7 +2,7 @@
 # Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0103,C0111,C0411,C0413
-# pylint: disable=F0401,R0201,R0204,R0903,W0201,W0212,W0232,W0621
+# pylint: disable=F0401,R0201,R0204,R0903,R0913,W0201,W0212,W0232,W0621
 
 # Standard library imports
 from __future__ import print_function
@@ -16,8 +16,12 @@ import matplotlib
 import pplot
 from .fixtures import compare_image_set
 sys.path.append('..')
-from tests.gen_ref_images import DPI, FHEIGHT, FWIDTH, unittest_series_images
-
+from tests.gen_ref_images import (
+    DPI,
+    FHEIGHT,
+    FWIDTH,
+    create_marker_line_type_image
+)
 
 ###
 # Global variables
@@ -309,13 +313,28 @@ class TestSeries(object):
         for prop in props:
             AROPROP(obj, prop)
 
-    def test_images(self, tmpdir):
+    @pytest.mark.parametrize('marker', [False, True])
+    @pytest.mark.parametrize(
+        'interp', ['STRAIGHT', 'STEP', 'CUBIC', 'LINREG']
+    )
+    @pytest.mark.parametrize('line_style', [None, '-', '--', '-.', ':'])
+    def test_images(
+        self, marker, interp, line_style, tmpdir, ref_source
+    ):
         """ Compare images to verify correct plotting of series """
-        tmpdir.mkdir('test_images')
-        images_dict_list = unittest_series_images(
-            mode='test', test_dir=str(tmpdir)
-        )
         isize = (int(DPI*FWIDTH), int(DPI*FHEIGHT))
-        assert compare_image_set(
-            tmpdir, images_dict_list, 'series', isize=isize
+        tmpdir.mkdir('test_images')
+        olist = []
+        mode = 'test'
+        test_dir = str(tmpdir)
+        create_marker_line_type_image(
+            mode,
+            test_dir,
+            ref_source,
+            marker,
+            interp,
+            line_style,
+            olist,
+            False
         )
+        assert compare_image_set(tmpdir, olist, 'series', isize=isize)

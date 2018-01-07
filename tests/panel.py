@@ -1,7 +1,7 @@
 # panel.py
 # Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0411,C0413,F0401,R0915,W0212
+# pylint: disable=C0111,C0411,C0413,F0401,R0912,R0914,R0915,W0212
 
 # Standard library imports
 from __future__ import print_function
@@ -13,9 +13,15 @@ import peng
 import pytest
 # Intra-package imports
 import pplot
-from .fixtures import compare_image_set
+from .fixtures import compare_image_set, ref_series
 sys.path.append('..')
-from tests.gen_ref_images import DPI, FHEIGHT, FWIDTH, unittest_panel_images
+from tests.gen_ref_images import (
+    DPI,
+    FHEIGHT,
+    FWIDTH,
+    create_axis_type_display_images,
+    create_simple_panel_image,
+)
 
 
 ###
@@ -1157,13 +1163,33 @@ class TestPanel(object):
         for prop in props:
             AROPROP(obj, prop)
 
-    def test_images(self, tmpdir):
+    ### Functional
+    @pytest.mark.parametrize(
+        'axis_type', ['single', 'linear', 'log', 'filter']
+    )
+    @pytest.mark.parametrize(
+        'series_in_axis', ['primary', 'secondary', 'both']
+    )
+    def test_axis_type_display(
+        self, axis_type, series_in_axis, tmpdir, ref_series
+    ):
         """ Compare images to verify correct plotting of panel """
-        tmpdir.mkdir('test_images')
-        images_dict_list = unittest_panel_images(
-            mode='test', test_dir=str(tmpdir)
-        )
         isize = (int(DPI*FWIDTH), int(DPI*FHEIGHT))
-        assert compare_image_set(
-            tmpdir, images_dict_list, 'panel', isize=isize
+        tmpdir.mkdir('test_images')
+        mode = 'test'
+        test_dir = str(tmpdir)
+        olist = []
+        create_axis_type_display_images(
+            mode, test_dir, ref_series, axis_type, series_in_axis, olist, False
         )
+        assert compare_image_set(tmpdir, olist, 'panel', isize=isize)
+
+    def test_basic_panel(self, tmpdir, ref_series):
+        """ Test simple panel drawing """
+        isize = (int(DPI*FWIDTH), int(DPI*FHEIGHT))
+        tmpdir.mkdir('test_images')
+        mode = 'test'
+        test_dir = str(tmpdir)
+        olist = []
+        create_simple_panel_image(mode, test_dir, ref_series, olist, False)
+        assert compare_image_set(tmpdir, olist, 'panel', isize=isize)

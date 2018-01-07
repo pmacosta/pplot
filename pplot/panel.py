@@ -517,6 +517,8 @@ class Panel(object):
         self._sec_xlabel_plus_pad = None
         self._prim_yaxis_annot = None
         self._sec_yaxis_annot = None
+        self._legend_width = None
+        self._legend_height = None
         # Private attributes
         self._legend_pos_list = [
             'best', 'upper right', 'upper left', 'lower left', 'lower right',
@@ -1333,9 +1335,22 @@ class Panel(object):
                 axis_sec.tick_params(
                     axis='x', which='both', length=0, labelbottom='off'
                 )
+        # Delete labels so that they are not counted in sizing computations
+        if (not disp_indep_axis) and axis_prim:
+            axis_prim.xaxis.set_ticklabels([])
+        if (disp_indep_axis and self._axis_prim and
+            self._axis_prim.xticklabels and self._axis_sec and
+            self._axis_sec.xticklabels):
+            axis_prim.xaxis.set_ticklabels([])
+        if (not disp_indep_axis) and axis_sec:
+            axis_sec.xaxis.set_ticklabels([])
+        if (not len(prim_series)) and len(sec_series) and axis_prim:
+            axis_prim.yaxis.set_ticklabels([])
+        #
         prim_log_axis = len(prim_series) and self.log_dep_axis
         sec_log_axis = len(sec_series) and self.log_dep_axis
         # Print legend
+        legend_width = legend_height = 0
         if (len(self.series) > 1) and (len(self.legend_props) > 0):
             _, primary_labels = (
                 axis_prim.get_legend_handles_labels()
@@ -1391,6 +1406,13 @@ class Panel(object):
                     framealpha=1.0,
                 )
                 lobj.set_zorder(top_zorder)
+                fig = top_axis.figure
+                legend_bbox = lobj.get_window_extent(
+                    renderer=fig.canvas.get_renderer()
+                ).transformed(fig.dpi_scale_trans.inverted())
+                ratio = (101.25/100)
+                legend_width = ratio*legend_bbox.width
+                legend_height = ratio*legend_bbox.height
         # This is necessary because if there is no primary axis but there
         # is a secondary axis, then the independent axis bounding boxes
         # are all stacked up in the same spot
@@ -1477,7 +1499,9 @@ class Panel(object):
             prim_xlabel_plus_pad, sec_bottom_overhang
         )
         panel_min_width = (
-            left_overhang+self._min_spine_bbox.width+right_overhang
+            left_overhang+
+            max(legend_width, self._min_spine_bbox.width)+
+            right_overhang
         )
         panel_min_width = max(
             [
@@ -1488,9 +1512,11 @@ class Panel(object):
         panel_min_height = (
             xlabel_plus_pad+
             bottom_overhang+
-            max(self._min_spine_bbox.height, dep_label_height)+
+            max(legend_height, self._min_spine_bbox.height, dep_label_height)+
             top_overhang
         )
+        self._legend_width = legend_width
+        self._legend_height = legend_height
         self._indep_label_width = indep_label_width
         self._prim_xlabel_plus_pad = prim_xlabel_plus_pad
         self._sec_xlabel_plus_pad = sec_xlabel_plus_pad

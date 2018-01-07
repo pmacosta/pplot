@@ -429,16 +429,18 @@ class Figure(object):
     def _calculate_min_figure_size(self):
         """ Calculates minimum panel and figure size """
         dround = lambda x: math.floor(x)/self.dpi
-        title_width = title_height = 0
+        title_width = 0
         if self.title not in [None, '']:
             title_bbox = self._bbox(self._title_obj)
             title_width = title_bbox.width
-            title_height = title_bbox.height
         min_width = max(
             [
                 (
                     max(panel._left_overhang for panel in self.panels)+
-                    max(panel._min_spine_bbox.width for panel in self.panels)+
+                    max(
+                        max(panel._min_spine_bbox.width, panel._legend_width)
+                        for panel in self.panels
+                    )+
                     max(panel._right_overhang for panel in self.panels)
                 ),
                 max(
@@ -458,15 +460,6 @@ class Figure(object):
             )+
             ((npanels-1)*PANEL_SEP)
         )
-        # Check that dimensions are "pleasing", width-to-height aspect ratio
-        # no worst that 4:3 per panel
-        ratio = 4.0/(len(self.panels)*3.0)
-        if self._min_fig_width/self._min_fig_height > ratio:
-            self._min_fig_width, self._min_fig_height = (
-                (self._min_fig_width, self._min_fig_width/ratio)
-                if self._min_fig_width > self._min_fig_height else
-                (self._min_fig_height*ratio, self._min_fig_height)
-            )
 
     def _check_figure_spec(self, fig_width=None, fig_height=None):
         """ Validates given figure size against minimum dimension """
@@ -840,8 +833,10 @@ class Figure(object):
             invalid_ex(not isinstance(obj, Panel))
             specified_ex(not obj._complete, _F('panel_num', num))
 
-    @pexdoc.pcontracts.contract(fname='file_name', ftype=str, compress=bool)
-    def save(self, fname, ftype='PNG', compress=True):
+    @pexdoc.pcontracts.contract(
+        fname='file_name', ftype='None|str', compress=bool
+    )
+    def save(self, fname, ftype=None, compress=True):
         r"""
         Saves the figure to a file
 
@@ -889,15 +884,27 @@ class Figure(object):
         unsupported_ex = pexdoc.exh.addex(
             RuntimeError, 'Unsupported file type: *[file_type]*'
         )
-        unsupported_ex(
-            ftype.lower() not in ['png', 'eps'], _F('file_type', ftype)
+        no_ftype_ex = pexdoc.exh.addex(
+            RuntimeError, 'Could not determine file type'
         )
-        _, extension = os.path.splitext(fname)
-        if (not extension) or (extension == '.'):
-            fname = '{file_name}.{extension}'.format(
-                file_name=fname.rstrip('.'),
-                extension=ftype.lower()
-            )
+        incongruent_ftype = pexdoc.exh.addex(
+            RuntimeError, 'Incongruent file type and file extension'
+        )
+        sup_ftypes = ['png', 'eps', 'pdf']
+        unsupported_ex(
+            (ftype is not None) and (ftype.lower() not in sup_ftypes),
+            _F('file_type', ftype)
+        )
+        basename, extension = os.path.splitext(fname)
+        extension = extension.lstrip('.')
+        no_ftype_ex((ftype is None) and (extension.lower() not in sup_ftypes))
+        incongruent_ftype(
+            (ftype is not None) and extension and
+            (ftype.upper() != extension.upper())
+        )
+        ftype = (ftype or extension).upper()
+        extension = extension or ftype.lower()
+        fname = '{0}.{1}'.format(basename, extension)
         bbox = self._create_figure(raise_exception=True)
         dpi = self.dpi if ftype == 'PNG' else None
         bbox = bbox if ftype == 'PNG' else 'tight'
