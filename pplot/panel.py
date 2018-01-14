@@ -9,6 +9,7 @@ import sys
 # PyPI imports
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.text import Text
 from matplotlib.transforms import Bbox
 import pmisc
 import pexdoc.exh
@@ -51,6 +52,14 @@ TICK_ZORDER = 4
 ###
 # Functions
 ###
+def _bbox(axis, obj):
+    fig = axis.figure
+    bbox = obj.get_window_extent(
+        renderer=fig.canvas.get_renderer()
+    ).transformed(fig.dpi_scale_trans.inverted())
+    return bbox
+
+
 def _legend_position_validation(obj):
     """ Validate if a string is a valid legend position """
     options = [
@@ -110,6 +119,7 @@ class _Axis(object):
         self.fig = axis.figure
         self.renderer = self.fig.canvas.get_renderer()
         self.ticklabels = ticklabels
+        self.dummy_bbox = None
         # This call needs to happen first because it calculates the
         # dummy bounding box used for other getters
         self._get_spine_bbox()
@@ -140,7 +150,12 @@ class _Axis(object):
         bbox = axis.get_tightbbox(renderer=self.renderer)
         if bbox:
             obj = bbox.transformed(self.fig.dpi_scale_trans.inverted())
-            return getattr(obj, prop)
+            axis_dim = getattr(obj, prop)
+            if prop in ['ymin', 'ymax']:
+                spine_dim = getattr(self.spine_bbox, prop)
+                func = _lmin if prop == 'ymin' else _lmax
+                return func(axis_dim, spine_dim)
+            return axis_dim
         return None
 
     def _bbox(self, obj):
@@ -172,11 +187,12 @@ class _Axis(object):
         bottom = self._bbox(self.axis.spines['bottom']).ymin
         right = self._bbox(self.axis.spines['right']).xmax
         top = self._bbox(self.axis.spines['top']).ymax
-        # Create dummy bbox in the middle of the spine so as to not limit
-        # measurements in any dimension
-        xcenter = (left+right)/2.0
-        ycenter = (top+bottom)/2.0
-        self.dummy_bbox = Bbox([[xcenter, ycenter], [xcenter, ycenter]])
+        if self.dummy_bbox is None:
+            # Create dummy bbox in the middle of the spine so as to not limit
+            # measurements in any dimension
+            xcenter = (left+right)/2.0
+            ycenter = (top+bottom)/2.0
+            self.dummy_bbox = Bbox([[xcenter, ycenter], [xcenter, ycenter]])
         return Bbox([[left, bottom], [right, top]])
 
     def _get_top(self):
@@ -337,6 +353,13 @@ class _Axis(object):
             else:
                 tick_labels = self.ticklabels
             bboxes = [self._bbox(label) for label in tick_labels]
+            # Get rid of NaNs in bboxes
+            for num, (bbox, label) in enumerate(zip(bboxes[:], tick_labels)):
+                if not (-INF <= getattr(bbox, dim) <= INF):
+                    obj = Text(
+                        x=0.5, y=0.5, text=label, figure=self.fig
+                    )
+                    bboxes[num] = self._bbox(obj)
             bboxes = [
                 bbox for bbox in bboxes if -INF <= getattr(bbox, dim) <= INF
             ]
@@ -1260,6 +1283,12 @@ class Panel(object):
     def _draw(self, disp_indep_axis, indep_axis_dict, axis_prim):
         """ Draw panel series """
         # pylint: disable=W0612
+        axis_sec = None
+        tobjs = None
+        if self._has_sec_axis:
+            axis_sec = plt.axes(
+                axis_prim.get_position(), frameon=not self._has_prim_axis)
+        zero = lambda x: x if x is not None else 0
         def amin(prim, sec, prop):
             return min(
                 getattr(prim, prop) if self._axis_prim else INF,
@@ -1270,13 +1299,7 @@ class Panel(object):
                 getattr(prim, prop) if self._axis_prim else -INF,
                 getattr(sec, prop) if self._axis_sec else -INF
             )
-        zero = lambda x: x if x is not None else 0
-        axis_sec = None
-        tobjs = None
-        if self._has_sec_axis:
-            axis_sec = plt.axes(
-                axis_prim.get_position(), frameon=not self._has_prim_axis)
-        # Grid control
+         # Grid control
         if self._has_sec_axis:
             axis_prim.xaxis.grid(False)
             axis_prim.yaxis.grid(False)
@@ -1405,14 +1428,10 @@ class Panel(object):
                     facecolor='white',
                     framealpha=1.0,
                 )
-                lobj.set_zorder(top_zorder)
-                fig = top_axis.figure
-                legend_bbox = lobj.get_window_extent(
-                    renderer=fig.canvas.get_renderer()
-                ).transformed(fig.dpi_scale_trans.inverted())
-                ratio = (101.25/100)
-                legend_width = ratio*legend_bbox.width
-                legend_height = ratio*legend_bbox.height
+                lobj.set_zorder(top_zorder+1000)
+                ratio = 101.25/100.00
+                legend_width = ratio*lobj.handlelength
+                legend_height = ratio*lobj.handleheight
         # This is necessary because if there is no primary axis but there
         # is a secondary axis, then the independent axis bounding boxes
         # are all stacked up in the same spot

@@ -16,7 +16,6 @@ import numpy as np
 import pplot
 from fixtures import ref_panels, ref_series, ref_size_series, ref_source
 
-
 ###
 # Global variables
 ###
@@ -432,9 +431,9 @@ def unittest_figure_images(mode=None, test_dir=None):
 def main(argv):
     """ Main function, generate images """
     if argv:
-        #unittest_series_images(mode='ref')
-        #unittest_panel_images(mode='ref')
-        #unittest_figure_images(mode='ref')
+        unittest_series_images(mode='ref')
+        unittest_panel_images(mode='ref')
+        unittest_figure_images(mode='ref')
         unittest_sizing_images(mode='ref')
     else:
         unittest_series_images(mode='ref', test_dir=argv[0])
