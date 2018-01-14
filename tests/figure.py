@@ -2,7 +2,7 @@
 # Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
 # pylint: disable=C0103,C0111,C0411,C0413,E0611,E1129,F0401
-# pylint: disable=R0201,W0104,W0212,W0621
+# pylint: disable=R0201,R0913,R0914,W0104,W0212,W0621
 
 # Standard library imports
 from __future__ import print_function
@@ -657,7 +657,6 @@ class TestFigure(object):
         Compare multi-panel images with independent axis shown in
         many or not of them
         """
-        # pylint: disable=R0913,R0914
         tmpdir.mkdir('test_images')
         olist = []
         mode = 'test'
@@ -701,7 +700,6 @@ class TestFigure(object):
         Compare multi-panel images with independent axis shown in
         many or not of them
         """
-        # pylint: disable=R0913,R0914
         tmpdir.mkdir('test_images')
         olist = []
         mode = 'test'

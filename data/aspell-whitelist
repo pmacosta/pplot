@@ -522,6 +522,7 @@ fticklabels
 fticks
 ftime
 ftype
+ftypes
 fuc
 fui
 func
@@ -567,6 +568,8 @@ GnBu
 greenyellow
 gridline
 gridlines
+handleheight
+handlelength
 hasattr
 Hettinger
 hexversion
@@ -613,6 +616,7 @@ importlib
 imread
 iname
 incfile
+incongruent
 Incongruent
 increasingrealnumpyvector
 IncreasingRealNumpyVector
@@ -861,6 +865,7 @@ NamespaceTestClass
 NamespaceTestClosureClass
 NaN
 nano
+NaNs
 nargs
 navajowhite
 naverage
@@ -1280,7 +1285,9 @@ semilogy
 sep
 SEP
 Serafini
+seriesa
 seriesA
+seriesb
 seriesB
 setattr
 setitem

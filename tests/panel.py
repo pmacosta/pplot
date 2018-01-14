@@ -766,7 +766,6 @@ class TestPanel(object):
     ### Miscellaneous
     def test_series(self):
         """ Test panel dependent axis calculation """
-        # pylint: disable=R0914
         ds1_obj = pplot.BasicSource(
             indep_var=numpy.array([100, 200, 300, 400]),
             dep_var=numpy.array([1, 2, 3, 4])

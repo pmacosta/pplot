@@ -75,7 +75,7 @@ def create_axis_type_display_images(
         olist,
         verbose=True
     ):
-    """ Create panels with differnt type of axis types """
+    """ Create panels with different type of axis types """
     (
         series1_obj, series2_obj, series3_obj, series4_obj,
         series5_obj, series6_obj, series7_obj, series8_obj,
@@ -180,7 +180,7 @@ def create_marker_line_type_image(
         verbose=True
     ):
     """
-    Create figure testing differnet marker and series line style options
+    Create figure testing different marker and series line style options
     """
     mode, ref_dir, test_dir = setup_env(mode, test_dir)
     line_style_desc = {'-':'solid', '--':'dashed', '-.':'dash-dot', ':':'dot'}
