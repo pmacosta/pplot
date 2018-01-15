@@ -186,6 +186,7 @@ script:
   ###
   # Run tests
   ###
+  - export NUM_CPUS=$(python -c "from __future__ import print_function; import multiprocessing; print(multiprocessing.cpu_count())")
   - ${SBIN_DIR}/cprint.sh line cyan "Testing project code compliance"
   - ${SBIN_DIR}/check_files_compliance.py -tps -d ${SOURCE_DIR} -m ${EXTRA_DIR}
   - ${SBIN_DIR}/cprint.sh line cyan "Testing Pylint compliance";
@@ -195,16 +196,16 @@ script:
   - pylint --rcfile=${EXTRA_DIR}/.pylintrc -f colorized -r no ${EXTRA_DIR}/docs/support
   - ${SBIN_DIR}/cprint.sh line cyan "Testing reStructuredText files"
   - if [ ${PYTESTCMD} --collect-only --doctest-glob="*.rst" ${EXTRA_DIR}/docs ]; then
-        ${PYTESTCMD} --doctest-glob="*.rst" ${EXTRA_DIR}/docs;
+        ${PYTESTCMD} -n ${NUM_CPUS} --doctest-glob="*.rst" ${EXTRA_DIR}/docs;
     fi
   - ${SBIN_DIR}/cprint.sh line cyan "Testing docstrings"
-  - ${PYTESTCMD} --doctest-modules ${SOURCE_DIR}
+  - ${PYTESTCMD} -n ${NUM_CPUS} --doctest-modules ${SOURCE_DIR}
   # Coverage tests runs all the unit tests, no need to run the non-coverage
   # tests since the report is not being used
   # - ${SBIN_DIR}/cprint.sh line cyan "Testing code"
   # - ${PYTESTCMD} -s -vv --junitxml=${RESULTS_DIR}/testresults/pytest.xml
   - ${SBIN_DIR}/cprint.sh line cyan "Testing coverage"
-  - ${PYTESTCMD} --cov-config ${COV_FILE} --cov ${SOURCE_DIR} --cov-report xml
+  - ${PYTESTCMD} -n ${NUM_CPUS} --cov-config ${COV_FILE} --cov ${SOURCE_DIR} --cov-report xml
   - ${SBIN_DIR}/cprint.sh line cyan "Testing documentation"
   - ${SBIN_DIR}/build_docs.py -r -t -d ${SOURCE_DIR}
 

@@ -484,8 +484,8 @@ class DataSource(object):
             >>> import numpy, docs.support.plot_example_2
             >>> obj = docs.support.plot_example_2.MySource()
             >>> obj.dep_var = numpy.array([-1, 1, -1])
-            >>> obj.dep_var
-            array([-1.,  1., -1.])
+            >>> repr(obj.dep_var).replace(' ', '')
+            'array([-1.,1.,-1.])'
         """
         self._dep_var = dep_var.astype(float)
 
@@ -499,8 +499,8 @@ class DataSource(object):
             >>> import numpy, docs.support.plot_example_2
             >>> obj = docs.support.plot_example_2.MySource()
             >>> obj.indep_var = numpy.array([1, 2, 3])
-            >>> obj.indep_var
-            array([ 1.,  2.,  3.])
+            >>> repr(obj.indep_var).replace(' ', '')
+            'array([1.,2.,3.])'
         """
         self._indep_var = indep_var.astype(float)
 

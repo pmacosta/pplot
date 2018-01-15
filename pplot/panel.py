@@ -52,14 +52,6 @@ TICK_ZORDER = 4
 ###
 # Functions
 ###
-def _bbox(axis, obj):
-    fig = axis.figure
-    bbox = obj.get_window_extent(
-        renderer=fig.canvas.get_renderer()
-    ).transformed(fig.dpi_scale_trans.inverted())
-    return bbox
-
-
 def _legend_position_validation(obj):
     """ Validate if a string is a valid legend position """
     options = [
@@ -354,12 +346,12 @@ class _Axis(object):
                 tick_labels = self.ticklabels
             bboxes = [self._bbox(label) for label in tick_labels]
             # Get rid of NaNs in bboxes
-            for num, (bbox, label) in enumerate(zip(bboxes[:], tick_labels)):
-                if not (-INF <= getattr(bbox, dim) <= INF):
-                    obj = Text(
-                        x=0.5, y=0.5, text=label, figure=self.fig
-                    )
-                    bboxes[num] = self._bbox(obj)
+            bboxes = [
+                self._bbox(Text(x=0.5, y=0.5, text=label, figure=self.fig))
+                if not (-INF <= getattr(bbox, dim) <= INF) else
+                bbox
+                for bbox, label in zip(bboxes[:], tick_labels)
+            ]
             bboxes = [
                 bbox for bbox in bboxes if -INF <= getattr(bbox, dim) <= INF
             ]

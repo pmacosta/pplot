@@ -868,6 +868,8 @@ class Figure(object):
 
          * RuntimeError (Argument \`ftype\` is not valid)
 
+         * RuntimeError (Could not determine file type)
+
          * RuntimeError (Figure object is not fully specified)
 
          * RuntimeError (Incongruent file type and file extension)
