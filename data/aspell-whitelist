@@ -1086,6 +1086,7 @@ proc
 Proin
 prt
 ps
+PseudoTmpFile
 ptxt
 ptype
 ptypes
@@ -1494,6 +1495,7 @@ url
 urows
 usr
 utf
+uuid
 uvec
 va
 ValueError

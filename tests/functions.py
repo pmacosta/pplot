@@ -1,10 +1,14 @@
 # functions.py
 # Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0103,C0111,R0201,R0903,W0621
+# pylint: disable=C0103,C0111,E1129,R0201,R0903,R1710,W0621
 
+# Standard library imports
+import os
+import platform
+import uuid
 # PyPI imports
-from pmisc import AE, AI, GET_EXMSG
+from pmisc import ignored, AE, AI, GET_EXMSG
 import pytest
 # Intra-package imports
 import pplot
@@ -24,6 +28,24 @@ def comp_num(act, ref, prec=1E-10):
     ref_list = ref if isinstance(ref, list) else [ref]
     if not any(abs(act-item) < prec for item in ref_list):
         assert False, '{0} not in {1}'.format(act, ref_list)
+
+
+class PseudoTmpFile(object):
+    def __init__(self, fname='', ext=''):
+        fname = fname or 'test_file_{0}'.format(uuid.uuid4())
+        ext = '.'+(ext.lstrip('.')) if ext else ext
+        self._fname = '{0}{1}'.format(fname, ext)
+        if platform.system().lower() == 'windows':
+            self._fname = self._fname.replace(os.sep, '/')
+
+    def __enter__(self):
+        return self._fname
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        with ignored(OSError):
+            os.remove(self._fname)
+        if exc_type is not None:
+            return False
 
 
 ###

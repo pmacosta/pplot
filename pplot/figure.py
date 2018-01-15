@@ -870,6 +870,8 @@ class Figure(object):
 
          * RuntimeError (Figure object is not fully specified)
 
+         * RuntimeError (Incongruent file type and file extension)
+
          * RuntimeError (Number of tick locations and number of tick labels
            mismatch)
 
@@ -892,15 +894,19 @@ class Figure(object):
         )
         sup_ftypes = ['png', 'eps', 'pdf']
         unsupported_ex(
-            (ftype is not None) and (ftype.lower() not in sup_ftypes),
+            bool((ftype is not None) and (ftype.lower() not in sup_ftypes)),
             _F('file_type', ftype)
         )
         basename, extension = os.path.splitext(fname)
         extension = extension.lstrip('.')
-        no_ftype_ex((ftype is None) and (extension.lower() not in sup_ftypes))
+        no_ftype_ex(
+            bool((ftype is None) and (extension.lower() not in sup_ftypes))
+        )
         incongruent_ftype(
-            (ftype is not None) and extension and
-            (ftype.upper() != extension.upper())
+            bool(
+                (ftype is not None) and extension and
+                (ftype.upper() != extension.upper())
+            )
         )
         ftype = (ftype or extension).upper()
         extension = extension or ftype.lower()

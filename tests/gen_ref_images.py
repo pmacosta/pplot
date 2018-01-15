@@ -2,7 +2,7 @@
 # gen_ref_images.py
 # Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0103,C0111,R0912,R0913,R0914,R0915
+# pylint: disable=C0103,C0111,E0401,R0912,R0913,R0914,R0915,W0403
 
 # Standard library imports
 from __future__ import print_function
@@ -14,7 +14,7 @@ import sys
 import numpy as np
 # Intra-package imports
 import pplot
-from fixtures import ref_panels, ref_series, ref_size_series, ref_source
+from .fixtures import ref_panels, ref_series, ref_size_series, ref_source
 
 ###
 # Global variables
