@@ -603,7 +603,7 @@ class TestFigure(object):
         """ Test requested figure size is too small behavior """
         # Continuous integration image is 5.61in wide
         exmsg = (
-            'Figure size is too small: minimum width [6.55]*, '
+            'Figure size is too small: minimum width [6.55|6.54]*, '
             'minimum height [3.84].*'
         )
         kwargs = dict(title='My graph', fig_width=0.1, fig_height=200)
