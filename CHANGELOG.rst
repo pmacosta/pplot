@@ -5,6 +5,8 @@
 Changelog
 =========
 
+* 1.1.1 [2018-01-16]: Corrected PyPI Python interpreter version
+
 * 1.1.0 [2018-01-16]: Added support for specifying independent axis tick labels
   (ignored for figures with logarithmic independent axis). Improved minimum
   image size computation.  Removed all padding around the exterior of the image.
