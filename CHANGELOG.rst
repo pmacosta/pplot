@@ -5,6 +5,8 @@
 Changelog
 =========
 
+* 1.1.2 [2018-01-16]: Hosted documentation build fixes
+
 * 1.1.1 [2018-01-16]: Corrected PyPI Python interpreter version
 
 * 1.1.0 [2018-01-16]: Added support for specifying independent axis tick labels
