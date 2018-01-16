@@ -81,8 +81,9 @@ REM test_script:
 REM ###
 REM # Run tests
 REM ###
-- python -c "from __future__ import print_function; import multiprocessing; print(multiprocessing.cpu_count())" > num_cpus.txt
-- SET /p NUM_CPUS=<num_cpus.txt
+python -c "from __future__ import print_function; import multiprocessing; print(multiprocessing.cpu_count())" > num_cpus.txt
+SET /p NUM_CPUS=<num_cpus.txt
+echo "NUM_CPUS=%NUM_CPUS%"
 REM # Omitted tests are not Windows-specific and are handled by Travis-CI
 python %SBIN_DIR%\check_files_compliance.py -tps -d %SOURCE_DIR% -m %EXTRA_DIR%
 REM # pylint 1.6.x appears to have a bug in Python 3.6 that is only going to be fixed with Pylint 2.0

@@ -187,6 +187,7 @@ script:
   # Run tests
   ###
   - export NUM_CPUS=$(python -c "from __future__ import print_function; import multiprocessing; print(multiprocessing.cpu_count())")
+  - echo "NUM_CPUS=${NUM_CPUS}"
   - ${SBIN_DIR}/cprint.sh line cyan "Testing project code compliance"
   - ${SBIN_DIR}/check_files_compliance.py -tps -d ${SOURCE_DIR} -m ${EXTRA_DIR}
   - ${SBIN_DIR}/cprint.sh line cyan "Testing Pylint compliance";

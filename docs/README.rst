@@ -179,8 +179,8 @@ Example
 Interpreter
 ===========
 
-The package has been developed and tested with Python 2.6, 2.7, 3.3, 3.4
-and 3.5 under Linux (Debian, Ubuntu), Apple OS X and Microsoft Windows
+The package has been developed and tested with Python 2.7, 3.5 and 3.6 under
+Linux (Debian, Ubuntu), Apple OS X and Microsoft Windows
 
 Installing
 ==========
@@ -322,13 +322,12 @@ Contributing
             ...
 
    Tox (or Setuptools via Tox) runs with the following default environments:
-   ``py26-pkg``, ``py27-pkg``, ``py33-pkg``, ``py34-pkg`` and ``py35-pkg``
-   [#f3]_. These use the Python 2.6, 2.7, 3.3, 3.4 and 3.5 interpreters,
-   respectively, to test all code in the documentation (both in Sphinx
-   ``*.rst`` source files and in docstrings), run all unit tests, measure test
-   coverage and re-build the exceptions documentation. To pass arguments to
-   Py.test (the test runner) use a double dash (``--``) after all the Tox
-   arguments, for example:
+   ``py27-pkg``, ``py35-pkg`` and ``py36-pkg`` [#f3]_. These use the 2.7, 3.5
+   and 3.6 interpreters, respectively, to test all code in the documentation
+   (both in Sphinx ``*.rst`` source files and in docstrings), run all unit
+   tests, measure test coverage and re-build the exceptions documentation. To
+   pass arguments to Py.test (the test runner) use a double dash (``--``) after
+   all the Tox arguments, for example:
 
 	.. code-block:: bash
 
@@ -348,38 +347,39 @@ Contributing
 
    There are other convenience environments defined for Tox [#f4]_:
 
-    * ``py26-repl``, ``py27-repl``, ``py33-repl``, ``py34-repl`` and
-      ``py35-repl`` run the Python 2.6, 2.7, 3.3, 3.4 or 3.5 REPL,
-      respectively, in the appropriate virtual environment. The ``pplot``
+    * ``py27-repl``, ``py35-repl`` and ``py36-repl`` run the 2.7, 3.6 or 3.6
+      REPL, respectively, in the appropriate virtual environment. The ``pplot``
       package is pip-installed by Tox when the environments are created.
-      Arguments to the interpreter can be passed in the command line
-      after a double dash (``--``)
+      Arguments to the interpreter can be passed in the command line after a
+      double dash (``--``)
 
-    * ``py26-test``, ``py27-test``, ``py33-test``, ``py34-test`` and
-      ``py35-test`` run py.test using the Python 2.6, 2.7, 3.3, 3.4
-      or Python 3.5 interpreter, respectively, in the appropriate virtual
-      environment. Arguments to py.test can be passed in the command line
-      after a double dash (``--``) , for example:
+    * ``py27-test``, ``py35-test`` and ``py36-test`` run py.test using the
+      Python 2.7, 3.5 or Python 3.6 interpreter, respectively, in the
+      appropriate virtual environment. Arguments to py.test can be passed in the
+      command line after a double dash (``--``) , for example:
 
 	.. code-block:: bash
 
-	    $ tox -e py34-test -- -x test_pplot.py
+	    $ tox -e py36-test -- -x test_pplot.py
             GLOB sdist-make: [...]/pplot/setup.py
-            py34-test inst-nodeps: [...]/pplot/.tox/dist/pplot-[...].zip
-            py34-test runtests: PYTHONHASHSEED='680528711'
-            py34-test runtests: commands[0] | [...]py.test -x test_pplot.py
+            py36-test inst-nodeps: [...]/pplot/.tox/dist/pplot-1.1rc1.zip
+            py36-test installed: -f file:[...]
+            py36-test runtests: PYTHONHASHSEED='1264622266'
+            py36-test runtests: commands[0] | [...]py.test -x test_pplot.py
             ===================== test session starts =====================
-            platform linux -- Python 3.4.2 -- py-1.4.30 -- [...]
+            platform linux -- Python 3.6.4, pytest-3.3.1, py-1.5.2, pluggy-0.6.0
+            rootdir: [...]/pplot/.tox/py36/share/pplot/tests, inifile: pytest.ini
+            plugins: xdist-1.21.0, forked-0.2, cov-2.5.1
+            collected 414 items
             ...
 
-    * ``py26-cov``, ``py27-cov``, ``py33-cov``, ``py34-cov`` and
-      ``py35-cov`` test code and branch coverage using the Python 2.6,
-      2.7, 3.3, 3.4 or 3.5 interpreter, respectively, in the appropriate
+    * ``py27-cov``, ``py35-cov`` and ``py36-cov`` test code and branch coverage
+      using the 2.7, 3.5 or 3.6 interpreter, respectively, in the appropriate
       virtual environment. Arguments to py.test can be passed in the command
       line after a double dash (``--``). The report can be found in
       :bash:`${PPLOT_DIR}/.tox/py[PV]/usr/share/pplot/tests/htmlcov/index.html`
-      where ``[PV]`` stands for ``26``, ``27``, ``33``, ``34`` or ``35``
-      depending on the interpreter used
+      where ``[PV]`` stands for ``27``, ``35`` or ``36`` depending on the
+      interpreter used
 
 8. Verify that continuous integration tests pass. The package has continuous
    integration configured for Linux (via `Travis <http://www.travis-ci.org>`_)

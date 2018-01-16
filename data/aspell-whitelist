@@ -627,6 +627,7 @@ IndexError
 indianred
 infixNotation
 ini
+inifile
 init
 Init
 instantiation
@@ -1224,6 +1225,7 @@ rnum
 ro
 robj
 r'obj
+rootdir
 ror
 rosybrown
 roundtrip

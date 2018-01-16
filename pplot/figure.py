@@ -500,7 +500,8 @@ class Figure(object):
             # or the user-given dimensions, provided they are equal or greater
             # than the minimum dimensions
             self._draw()
-            self._draw()
+            if not self._size_given:
+                self._draw()
             bbox = self._fig_bbox()
             fig_width, fig_height = self._fig_dims()
             self._fig.set_size_inches(fig_width, fig_height, forward=True)
