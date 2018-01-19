@@ -3,10 +3,10 @@
 print=1
 non_ascii_file_names=1
 trailing_white_space=1
-pep8=0
-email=1
+pep8=1
+email=0
 personal_repo=1
-code_standard=0
+code_standard=1
 # }}}
 # Redirect output to stderr {{{ STDOUT redirection
 exec 1>&2
@@ -77,7 +77,13 @@ if [ "${pep8}" == 1 ]; then
     python_files=$(git diff --name-only --cached -- *.py)
     pep8_output=""
     for file in "${python_files[@]}"; do
-        file_output=$(pylint --rcfile="${pkg_dir}/.pylintrc" -r n "${file}")
+        tfile="$(mktemp)"
+        pylint --rcfile="${pkg_dir}/.pylintrc" -r n "${file}" &> "${tfile}"
+        file_output=""
+        if [ "$?" != 0 ]; then
+            file_output=$(cat "${tfile}")
+            rm -rf "${tfile}"
+        fi
         if [ "${file_output}" != "" ]; then
             pep8_output=${pep8_output}"\n"${file_output}
         fi
@@ -133,7 +139,7 @@ if [ "${code_standard}" == 1 ]; then
     fi
     files=$(git diff --name-only --cached)
     pkg_dir=$(git rev-parse --show-toplevel)
-    if ! "${pkg_dir}/pframe/check_files_compliance.py" -qstp "${files}"; then
+    if ! "${pkg_dir}/sbin/check_files_compliance.py" -qstp "${files}"; then
         echo -e "Error: files do not comply with package code standard"
         exit 1
     fi
