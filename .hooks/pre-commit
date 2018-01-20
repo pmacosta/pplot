@@ -77,15 +77,17 @@ if [ "${pep8}" == 1 ]; then
     python_files=$(git diff --name-only --cached -- *.py)
     pep8_output=""
     for file in "${python_files[@]}"; do
-        tfile="$(mktemp)"
-        pylint --rcfile="${pkg_dir}/.pylintrc" -r n "${file}" &> "${tfile}"
-        file_output=""
-        if [ "$?" != 0 ]; then
-            file_output=$(cat "${tfile}")
-            rm -rf "${tfile}"
-        fi
-        if [ "${file_output}" != "" ]; then
-            pep8_output=${pep8_output}"\n"${file_output}
+        if [ "${file}" != "" ]; then
+            tfile="$(mktemp)"
+            file_output=""
+            pylint --rcfile="${pkg_dir}/.pylintrc" -r n "${file}" &> "${tfile}"
+            if [ "$?" != 0 ]; then
+                file_output=$(cat "${tfile}")
+                rm -rf "${tfile}"
+            fi
+            if [ "${file_output}" != "" ]; then
+                pep8_output=${pep8_output}"\n"${file_output}
+            fi
         fi
     done
     if [ "${pep8_output}" != "" ]; then
