@@ -37,15 +37,13 @@ if [ "$#" != 0 ]; then
 	exit 1
 fi
 
-ctags -V --tag-relative \
-      -f "${pkg_dir}"/tags \
-      -R "${pkg_dir}"/"${pkg_name}"/*.py \
-         "${pkg_dir}"/"${pkg_name}"/csv/*.py \
-         "${pkg_dir}"/"${pkg_name}"/plot/*.py \
-	 "${pkg_dir}"/docs/*.py \
-	 "${pkg_dir}"/docs/support/*.py \
-	 "${pkg_dir}"/sbin/*.py \
-	 "${pkg_dir}"/tests/*.py \
-	 "${pkg_dir}"/tests/csv/*.py
-	 "${pkg_dir}"/tests/plot/*.py
-	 "${pkg_dir}"/tests/support/*.py
+sdirs=$(find . -name "*.py" -exec dirname {} + | sort -u )
+fdirs=()
+for sdir in ${sdirs[*]}; do
+    fdirs+=("$(readlink -f "${sdir}")")
+done
+cmd="ctags -V --tag-relative -f ${pkg_dir}/tags -R"
+for fdir in ${fdirs[*]}; do
+    cmd="${cmd} ${fdir}/*.py"
+done
+eval "${cmd}"
