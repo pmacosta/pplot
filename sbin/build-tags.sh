@@ -1,49 +1,65 @@
 #!/bin/bash
+# shellcheck disable=SC1090,SC1091
 # build-tags.sh
 # Copyright (c) 2013-2018 Pablo Acosta-Serafini
 # See LICENSE for details
 
-source $(dirname "${BASH_SOURCE[0]}")/functions.sh
+#
+#/ build-tags.sh
+#/ Usage:
+#/   build-tags.sh -h
+#/   build-tags.sh
+#/ Options:
+#/   -h  show this help message and exit
 
-print_usage_message () {
-	echo -e "build-tags.sh\n" >&2
-	echo -e "Usage:" >&2
-	echo -e "  build-tags.sh -h" >&2
-	echo -e "  build-tags.sh\n" >&2
-	echo -e "Options:" >&2
-	echo -e "  -h  show this help message and exit" >&2
-}
 
-pkg_dir=$(dirname $(current_dir "${BASH_SOURCE[0]}"))
-pkg_name=$(basename "${pkg_dir}")
+source "$(dirname "${BASH_SOURCE[0]}")/functions.sh"
+pkg_dir=$(dirname "$(current_dir "${BASH_SOURCE[0]}")")
+sname=$(basename "$0")
 
-# Read command line options
+if [ "${BASH_SOURCE[0]}" != "$0" ]; then
+    exit 0
+fi
+### Unofficial strict mode
+set -euo pipefail
+IFS=$'\n\t'
+### Help message
+usage() { grep '^#/' "$0" | cut -c4- ; }
+### Parse arguments
+OPTIND=1
 while getopts ":h" opt; do
 	case ${opt} in
 		h)
-			print_usage_message
+			usage
 			exit 0
 			;;
 		\?)
-			echo "build-tags.sh: invalid option" >&2
-			print_usage_message
+            echo -e "${sname}: invalid option -${OPTARG}\n" >&2
+			usage
 			exit 1
 			;;
 	esac
 done
 shift $((OPTIND - 1))
 if [ "$#" != 0 ]; then
-	echo "build-tags.sh: too many command line arguments" >&2
+    echo "${sname}: invalid number of arguments"
 	exit 1
 fi
 
-sdirs=$(find . -name "*.py" -exec dirname {} + | sort -u )
+sdirs=$(\
+    find \
+    "${pkg_dir}" \
+    -path "${pkg_dir}/.tox" -prune \
+    -o -name "*.py" \
+    -exec dirname {} + | \
+    sort -u \
+)
 fdirs=()
 for sdir in ${sdirs[*]}; do
     fdirs+=("$(readlink -f "${sdir}")")
 done
 cmd="ctags -V --tag-relative -f ${pkg_dir}/tags -R"
 for fdir in ${fdirs[*]}; do
-    cmd="${cmd} ${fdir}/*.py"
+    cmd="${cmd} \"${fdir}\"/*.py"
 done
 eval "${cmd}"
