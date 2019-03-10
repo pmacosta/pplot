@@ -3,7 +3,7 @@
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2013-2018 Pablo Acosta-Serafini
+# Copyright (c) 2013-2019 Pablo Acosta-Serafini
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -44,22 +44,31 @@ current_dir() {
     echo "${udir}"
 }
 
-
+strcat() {
+  local IFS=""
+  echo -n "$*"
+}
 # Options {{{
 print=0
 non_ascii_file_names=0
 trailing_white_space=0
-pep8=0
 email=0
 personal_repo=0
 code_standard=0
-source "$(current_dir "${BASH_SOURCE[0]}")/repo-cfg.sh"
+pep257=0
+cfg_fname="$(current_dir "${BASH_SOURCE[0]}")/repo-cfg.sh"
+if [ -f "${cfg_fname}" ]; then
+    source "$(current_dir "${BASH_SOURCE[0]}")/repo-cfg.sh"
+else
+    echo -e "\tConfiguration file not found, using defaults"
+fi
+pkg_dir=$(git rev-parse --show-toplevel)
 if [ "${print}" == 1 ]; then
     echo -e "\tGit pre-commit setup"
     echo -e "\t\tprint=${print}"
     echo -e "\t\tnon_ascii_file_names=${non_ascii_file_names}"
     echo -e "\t\ttrailing_white_space=${trailing_white_space}"
-    echo -e "\t\tpep8=${pep8}"
+    echo -e "\t\tpep257=${pep257}"
     echo -e "\t\temail=${email}"
     echo -e "\t\tpersonal_repo=${personal_repo}"
     echo -e "\t\tcode_standard=${code_standard}"
@@ -97,18 +106,16 @@ if [ "${non_ascii_file_names}" == 1 ]; then
             wc -c \
         )" != 0
     then
-        cat <<\EOF
-Error: attempt to add a non-ASCII file name.
-
-This can cause problems if you want to work with people on other platforms.
-
-To be portable it is advisable to rename the file.
-
-If you know what you are doing you can disable this check using:
-
-  git config hooks.allownonascii true
-EOF
-    exit 1
+        msg=$(strcat \
+            "Error: attempt to add a non-ASCII file name.\n" \
+            "This can cause problems if you want to work with people on\n" \
+            "other platforms. To be portable it is advisable to rename\n" \
+            "the file. If you know what you are doing you can disable\n" \
+            " this check using:\n" \
+            "    git config hooks.allownonascii true\n" \
+        )
+        >&2 echo "${msg}"
+        exit 1
     fi
 fi
 # }}}
@@ -125,20 +132,61 @@ if [ "${trailing_white_space}" == 1 ]; then
     fi
 fi
 # }}}
-# Check for Python PEP8 compliance {{{
-if [ "${pep8}" == 1 ]; then
+# Check for Python PEP8 (code style) compliance {{{
+if [ "${code_standard}" == 1 ]; then
+    config_fname="${pkg_dir}/.pylintrc"
+    if [ ! -f "${config_fname}" ]; then
+        >&2 echo -e "Pylint config file ${config_fname} not found"
+        exit 1
+    fi
     if [ "${print}" == 1 ]; then
         echo -e "\tValidating Python PEP8 compliance with Pylint"
     fi
-    pkg_dir=$(git rev-parse --show-toplevel)
     python_files=$(git diff --name-only --cached -- *.py)
+    cmd=$(strcat \
+        "from __future__ import print_function;" \
+        "import os;" \
+        "plugin_dir = os.path.join(os.environ.get('REPO_DIR', ''), 'pylint_plugins');" \
+        "print(plugin_dir if os.path.isdir(plugin_dir) else '')" \
+    )
+    PYLINT_PLUGINS_DIR=$(python -c "${cmd}")
+    export PYLINT_PLUGINS_DIR
+    cmd=$(strcat \
+        "from __future__ import print_function;" \
+        "import glob;" \
+        "import os;" \
+        "sdir = os.environ.get('PYLINT_PLUGINS_DIR', '');" \
+        "print(" \
+            "','.join(" \
+                "[" \
+                    "os.path.basename(fname).replace('.py', '')" \
+                    "for fname in glob.glob(os.path.join(sdir, '*.py'))" \
+                "]"\
+            ")" \
+            "if sdir else ''" \
+        ")" \
+    )
+    PYLINT_PLUGINS_LIST=$(python -c "${cmd}")
+    export PYLINT_PLUGINS_LIST
+    cmd=$(strcat \
+        "from __future__ import print_function;" \
+        "import os;" \
+        "svar=os.environ.get('PYLINT_PLUGINS_LIST', '');" \
+        "print('--load-plugins='+svar if svar else '')" \
+    )
+    PYLINT_CLI_APPEND=$(python -c "${cmd}")
+    export PYLINT_CLI_APPEND
     pep8_output=""
     # shellcheck disable=SC2068
     for file in ${python_files[@]}; do
         if [ "${file}" != "" ]; then
             tfile="$(mktemp)"
             file_output=""
-            pylint --rcfile="${pkg_dir}/.pylintrc" -r n "${file}" &> "${tfile}"
+            PYTHONPATH="${PYTHONPATH}:${PYLINT_PLUGINS_DIR}" \
+                pylint \
+                    --rcfile="${config_fname}" \
+                    "${PYLINT_CLI_APPEND}" \
+                    "${file}" &> "${tfile}"
             if [ "$?" != 0 ]; then
                 file_output=$(cat "${tfile}")
                 rm -rf "${tfile}"
@@ -149,7 +197,7 @@ if [ "${pep8}" == 1 ]; then
         fi
     done
     if [ "${pep8_output}" != "" ]; then
-        echo -e "${pep8_output}"
+        >&2 echo -e "${pep8_output}"
         exit 1
     fi
     #if [ "${python_files}" != "" ]; then
@@ -157,50 +205,70 @@ if [ "${pep8}" == 1 ]; then
     #fi
 fi
 # }}}
-# Check for author/email congruence {{{
-if [ "${email}" == 1 ]; then
-    msg="(work repository)"
-    if [ "${personal_repo}" == 1 ]; then
-        msg="(personal repository)"
-    fi
-    if [ "${print}" == 1 ]; then
-        echo -e "\tValidating author name and email ${msg}"
-    fi
-    if [ "${personal_repo}" == 1 ]; then
-        if [ "${PERSONAL_NAME}" == "" ] || [ "$PERSONAL_EMAIL}" == "" ]; then
-            echo -e "Error: personal information not present"
-            exit 1
-        fi
-        history_name="${PERSONAL_NAME}"
-        history_email="${PERSONAL_EMAIL}"
-    else
-        if [ "${WORK_NAME}" == "" ] || [ "$WORKL_EMAIL}" == "" ]; then
-            echo -e "Error: personal information not present"
-            exit 1
-        fi
-        history_name="${WORK_NAME}"
-        history_email="${WORK_EMAIL}"
-    fi
-    current_name=$(git config --global user.name)
-    current_email=$(git config --global user.email)
-    if [ "${history_name}" != "${current_name}" ] || \
-        [ "${history_email}" != "${current_email}" ]; then
-        echo -e "Error: incongruent commit author information"
-        echo -e "    Current is ${current_name} <${current_email}>"
-        echo -e "    Reference is ${history_name} <${history_email}>"
+# Check for Python PEP257 (docstring style) compliance {{{
+if [ "${pep257}" == 1 ]; then
+    config_fname="${pkg_dir}/.pydocstyle"
+    if [ ! -f "${config_fname}" ]; then
+        >&2 echo -e "Pydocstyle config file ${config_fname} not found"
         exit 1
     fi
+    if [ "${print}" == 1 ]; then
+        echo -e "\tValidating Python PEP257 compliance with pydocstyle"
+    fi
+    python_files=$(git diff --name-only --cached -- *.py)
+    pep257_output=""
+    # shellcheck disable=SC2068
+    for file in ${python_files[@]}; do
+        if [ "${file}" != "" ]; then
+            tfile="$(mktemp)"
+            file_output=""
+            pydocstyle --config="${config_fname}" "${file}" &> "${tfile}"
+            if [ "$?" != 0 ]; then
+                file_output=$(cat "${tfile}")
+                rm -rf "${tfile}"
+            fi
+            if [ "${file_output}" != "" ]; then
+                pep257_output=${pep257_output}"\n"${file_output}
+            fi
+        fi
+    done
+    if [ "${pep257_output}" != "" ]; then
+        >&2 echo -e "${pep257_output}"
+        exit 1
+    fi
+    #if [ "${python_files}" != "" ]; then
+    #   echo -e "All Python files are PEP257 compliant"
+    #fi
 fi
 # }}}
-# Check for code "standard" compliance {{{
-if [ "${code_standard}" == 1 ]; then
-    if [ "${print}" == 1 ]; then
-        echo -e "\tChecking code standard compliance"
+# Check for congruence between author file and Git contact information {{{
+if [ "${email}" == 1 ]; then
+    fname=${pkg_dir}/AUTHORS.rst
+    if [ ! -f "${fname}" ]; then
+        >&2 echo -e "Email check could not be done, ${fname} not found"
+        exit 1
     fi
-    files=$(git diff --name-only --cached)
-    pkg_dir=$(git rev-parse --show-toplevel)
-    if ! "${pkg_dir}/sbin/check_files_compliance.py" -qstp "${files}"; then
-        echo -e "Error: files do not comply with package code standard"
+    git_author="$(git config user.name) <$(git config user.email)>"
+    names=$(\
+        grep -E '^\s*.*\s+<.*>\s*$' "${fname}" | \
+        sed -r -e 's/(\s*\*\s+)(.*)/\2/g' | \
+        sed -r -e 's/\s+/ /g' \
+    )
+    names=${names//[$'\t\r\n']}
+    sep=">"
+    found=0
+    while [ "${names}" != "${names#*${sep}}" ]; do
+        name="${names%%${sep}*}${sep}"
+        name="${name## }"
+        echo "|${name}|"
+        if [ "${name}" == "${git_author}" ]; then
+            found=1
+            break
+        fi
+        names="${names#*${sep}}"
+    done
+    if [ "${found}" == 0 ]; then
+        >&2 echo -e "Error: git author ${git_author} not found in ${fname}"
         exit 1
     fi
 fi

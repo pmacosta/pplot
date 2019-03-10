@@ -1,0 +1,2 @@
+{EXTRA_DIR}/pylint_plugins/*.py
+{EXTRA_DIR}/pypkg/*.py

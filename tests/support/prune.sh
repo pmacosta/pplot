@@ -1,6 +1,6 @@
 #!/bin/bash
 # prune.sh
-# Copyright (c) 2013-2018 Pablo Acosta-Serafini
+# Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
 
 dest_dir=

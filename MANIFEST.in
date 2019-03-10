@@ -1,5 +1,5 @@
 # MANIFEST.in
-# Copyright (c) 2013-2018 Pablo Acosta-Serafini
+# Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
 include AUTHORS.rst
 include CHANGELOG.rst
@@ -10,8 +10,12 @@ include README.rst
 include setup.py
 include TODO.rst
 include tox.ini
-include .travis.yml
+include .headerrc
 include .pylintrc
+include .pydocstyle
+recursive-include pylint_plugins *.py
+recursive-include pylint_plugins/dicts *
+recursive-include pylint_plugins *.sh
 recursive-include data *
 include docs/make.bat
 include docs/Makefile
@@ -22,12 +26,13 @@ recursive-include docs/support *.py
 recursive-include docs/support *.csv
 recursive-include docs/support *.png
 recursive-include docs/support *.odg
+include tests/matplotlibrc
 include tests/pytest.ini
 recursive-include tests *.py
 recursive-include tests/support *.py
 recursive-include tests/support/ref_images_1 *.png
 recursive-include tests/support/ref_images_2 *.png
 recursive-include tests/support/ref_images_3 *.png
-recursive-include sbin *.sh
-recursive-include sbin *.py
+recursive-include pypkg *.sh
+recursive-include pypkg *.py
 recursive-include requirements *

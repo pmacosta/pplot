@@ -1,34 +1,6 @@
-# figure.py
-# Copyright (c) 2013-2018 Pablo Acosta-Serafini
-# See LICENSE for details
-# pylint: disable=C0111,C0302,R0201,R0914,R0915,W0105,W0212
-
-# Standard library imports
-from __future__ import print_function
-import math
-import os
-import sys
-# import warnings
-# PyPI imports
-import PIL
-import numpy
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.transforms import Bbox
-import pmisc
-import pexdoc.exh
-import pexdoc.pcontracts
-import peng
-# Intra-package imports
-from .constants import TITLE_FONT_SIZE
-from .panel import Panel
-from .functions import _F, _MF, _intelligent_ticks
-
-
-###
-# Exception tracing initialization code
-###
 """
+Generate presentation-quality plots.
+
 [[[cog
 import os, sys
 if sys.hexversion < 0x03000000:
@@ -41,14 +13,44 @@ exobj_plot = trace_ex_plot_figure.trace_module(no_print=True)
 ]]]
 [[[end]]]
 """
+# figure.py
+# Copyright (c) 2013-2019 Pablo Acosta-Serafini
+# See LICENSE for details
+# pylint: disable=C0111,C0302,R0201,R0205,R0914,R0915,W0105,W0212
+
+# Standard library imports
+from __future__ import print_function
+import math
+import os
+import sys
+import warnings
+
+# import warnings
+# PyPI imports
+import PIL
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.transforms import Bbox
+import pmisc
+import pexdoc.exh
+import pexdoc.pcontracts
+import peng
+
+# Intra-package imports
+from .constants import TITLE_FONT_SIZE
+from .panel import Panel
+from .functions import _F, _MF, _intelligent_ticks
 
 
 ###
 # Global variables
 ###
 INF = sys.float_info.max
-SPACER = 0.2 # in inches
-PANEL_SEP = 10*SPACER
+SPACER = 0.2  # in inches
+PANEL_SEP = 10 * SPACER
 
 
 ###
@@ -56,7 +58,7 @@ PANEL_SEP = 10*SPACER
 ###
 class Figure(object):
     r"""
-    Generates presentation-quality plots
+    Generate presentation-quality plots.
 
     :param panels: One or more data panels
     :type  panels: :py:class:`pplot.Panel` *or list of*
@@ -86,14 +88,14 @@ class Figure(object):
                       automatically calculated so that the figure has a 4:3
                       aspect ratio and there is no horizontal overlap between
                       any two text elements in the figure
-    :type  fig_width: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
+    :type  fig_width: `PositiveRealNum <https://pexdoc.readthedocs.io/en/
                       stable/ptypes.html#positiverealnum>`_ or None
 
     :param fig_height: Hard copy plot height in inches. If None the height is
                        automatically calculated so that the figure has a 4:3
                        aspect ratio and there is no vertical overlap between
                        any two text elements in the figure
-    :type  fig_height: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
+    :type  fig_height: `PositiveRealNum <https://pexdoc.readthedocs.io/en/
                        stable/ptypes.html#positiverealnum>`_ or None
 
     :param title: Plot title
@@ -145,24 +147,40 @@ class Figure(object):
 
     .. [[[end]]]
     """
+
     # pylint: disable=R0902,R0913
-    def __init__(self, panels=None, indep_var_label='', indep_var_units='',
-        indep_axis_tick_labels=None, indep_axis_ticks=None, fig_width=None,
-        fig_height=None, title='', log_indep_axis=False, dpi=100.0):
+    def __init__(
+        self,
+        panels=None,
+        indep_var_label="",
+        indep_var_units="",
+        indep_axis_tick_labels=None,
+        indep_axis_ticks=None,
+        fig_width=None,
+        fig_height=None,
+        title="",
+        log_indep_axis=False,
+        dpi=100.0,
+    ):  # noqa
         pexdoc.exh.addai(
-            'indep_axis_ticks',
-            (indep_axis_ticks is not None) and (
-                (not isinstance(indep_axis_ticks, list)) and
-                (not isinstance(indep_axis_ticks, numpy.ndarray))
-            )
+            "indep_axis_ticks",
+            (indep_axis_ticks is not None)
+            and (
+                (not isinstance(indep_axis_ticks, list))
+                and (not isinstance(indep_axis_ticks, np.ndarray))
+            ),
         )
         pexdoc.exh.addai(
-            'indep_axis_tick_labels',
-            (indep_axis_tick_labels is not None) and
-            ((not isinstance(indep_axis_tick_labels, list)) or
-            (isinstance(indep_axis_tick_labels, list) and
-            (indep_axis_ticks is not None) and
-            (len(indep_axis_tick_labels) != len(indep_axis_ticks))))
+            "indep_axis_tick_labels",
+            (indep_axis_tick_labels is not None)
+            and (
+                (not isinstance(indep_axis_tick_labels, list))
+                or (
+                    isinstance(indep_axis_tick_labels, list)
+                    and (indep_axis_ticks is not None)
+                    and (len(indep_axis_tick_labels) != len(indep_axis_ticks))
+                )
+            ),
         )
         # Private attributes
         self._need_redraw = False
@@ -200,11 +218,9 @@ class Figure(object):
         self._set_fig_width(fig_width)
         self._set_fig_height(fig_height)
 
-
-    def __bool__(self): # pragma: no cover
+    def __bool__(self):  # pragma: no cover
         """
-        Returns :code:`True` if the figure has at least a panel associated with
-        it, :code:`False` otherwise
+        Test if the figure has at least a panel associated with it.
 
         .. note:: This method applies to Python 3.x
         """
@@ -212,7 +228,8 @@ class Figure(object):
 
     def __iter__(self):
         r"""
-        Returns an iterator over the panel object(s) in the figure.
+        Return an iterator over the panel object(s) in the figure.
+
         For example:
 
         .. =[=cog
@@ -223,16 +240,17 @@ class Figure(object):
 
             # plot_example_7.py
             from __future__ import print_function
-            import numpy, pplot
+            import numpy as np
+            import pplot
 
             def figure_iterator_example(no_print):
                 source1 = pplot.BasicSource(
-                    indep_var=numpy.array([1, 2, 3, 4]),
-                    dep_var=numpy.array([1, -10, 10, 5])
+                    indep_var=np.array([1, 2, 3, 4]),
+                    dep_var=np.array([1, -10, 10, 5])
                 )
                 source2 = pplot.BasicSource(
-                    indep_var=numpy.array([100, 200, 300, 400]),
-                    dep_var=numpy.array([50, 75, 100, 125])
+                    indep_var=np.array([100, 200, 300, 400]),
+                    dep_var=np.array([50, 75, 100, 125])
                 )
                 series1 = pplot.Series(
                     data_source=source1,
@@ -326,8 +344,7 @@ class Figure(object):
 
     def __nonzero__(self):  # pragma: no cover
         """
-        Returns :code:`True` if the figure has at least a panel associated with
-        it, :code:`False` otherwise
+        Test if the figure has at least a panel associated with it.
 
         .. note:: This method applies to Python 2.x
         """
@@ -335,7 +352,9 @@ class Figure(object):
 
     def __str__(self):
         r"""
-        Prints figure information. For example:
+        Print figure information.
+
+        For example:
 
             >>> from __future__ import print_function
             >>> import docs.support.plot_example_7 as mod
@@ -389,109 +408,104 @@ class Figure(object):
         # pylint: disable=C1801
         self._create_figure()
         fig_width, fig_height = self._fig_dims()
-        ret = ''
+        ret = ""
         if (self.panels is None) or (len(self.panels) == 0):
-            ret += 'Panels: None\n'
+            ret += "Panels: None\n"
         else:
             for num, element in enumerate(self.panels):
-                ret += 'Panel {0}:\n'.format(num)
-                temp = str(element).split('\n')
-                temp = [3*' '+line for line in temp]
-                ret += '\n'.join(temp)
-                ret += '\n'
-        ret += 'Independent variable label: {0}\n'.format(
+                ret += "Panel {0}:\n".format(num)
+                temp = str(element).split("\n")
+                temp = [3 * " " + line for line in temp]
+                ret += "\n".join(temp)
+                ret += "\n"
+        ret += "Independent variable label: {0}\n".format(
             self.indep_var_label
-            if self.indep_var_label not in ['', None] else
-            'not specified'
+            if self.indep_var_label not in ["", None]
+            else "not specified"
         )
-        ret += 'Independent variable units: {0}\n'.format(
+        ret += "Independent variable units: {0}\n".format(
             self.indep_var_units
-            if self.indep_var_units not in ['', None] else
-            'not specified'
+            if self.indep_var_units not in ["", None]
+            else "not specified"
         )
-        ret += 'Logarithmic independent axis: {0}\n'.format(
-            self.log_indep_axis
+        ret += "Logarithmic independent axis: {0}\n".format(self.log_indep_axis)
+        ret += "Title: {0}\n".format(
+            self.title if self.title not in ["", None] else "not specified"
         )
-        ret += 'Title: {0}\n'.format(
-            self.title if self.title not in ['', None] else 'not specified'
-        )
-        ret += 'Figure width: {0}\n'.format(fig_width)
-        ret += 'Figure height: {0}\n'.format(fig_height)
+        ret += "Figure width: {0}\n".format(fig_width)
+        ret += "Figure height: {0}\n".format(fig_height)
         return ret
 
     def _bbox(self, obj):
-        """ Returns bounding box of an object """
+        """Return bounding box of an object."""
         renderer = self._fig.canvas.get_renderer()
         return obj.get_window_extent(renderer=renderer).transformed(
             self._fig.dpi_scale_trans.inverted()
         )
 
     def _calculate_min_figure_size(self):
-        """ Calculates minimum panel and figure size """
-        dround = lambda x: math.floor(x)/self.dpi
+        """Calculate minimum panel and figure size."""
+        dround = lambda x: math.floor(x) / self.dpi
         title_width = 0
-        if self.title not in [None, '']:
+        if self.title not in [None, ""]:
             title_bbox = self._bbox(self._title_obj)
             title_width = title_bbox.width
         min_width = max(
             [
                 (
-                    max(panel._left_overhang for panel in self.panels)+
-                    max(
+                    max(panel._left_overhang for panel in self.panels)
+                    + max(
                         max(panel._min_spine_bbox.width, panel._legend_width)
                         for panel in self.panels
-                    )+
-                    max(panel._right_overhang for panel in self.panels)
+                    )
+                    + max(panel._right_overhang for panel in self.panels)
                 ),
                 max(
-                    panel._prim_yaxis_annot+
-                    panel._indep_label_width+
-                    panel._sec_yaxis_annot
+                    panel._prim_yaxis_annot
+                    + panel._indep_label_width
+                    + panel._sec_yaxis_annot
                     for panel in self.panels
                 ),
-                title_width
+                title_width,
             ]
         )
-        self._min_fig_width = dround(min_width*self.dpi)
+        self._min_fig_width = dround(min_width * self.dpi)
         npanels = len(self.panels)
         self._min_fig_height = dround(
-            npanels*max(
-                [panel._min_bbox.height*self.dpi for panel in self.panels]
-            )+
-            ((npanels-1)*PANEL_SEP)
+            npanels * max([panel._min_bbox.height * self.dpi for panel in self.panels])
+            + ((npanels - 1) * PANEL_SEP)
         )
 
     def _check_figure_spec(self, fig_width=None, fig_height=None):
-        """ Validates given figure size against minimum dimension """
+        """Validate given figure size against minimum dimension."""
         small_ex = pexdoc.exh.addex(
             RuntimeError,
-            'Figure size is too small: minimum width *[min_width]*, '
-            'minimum height *[min_height]*'
+            "Figure size is too small: minimum width *[min_width]*, "
+            "minimum height *[min_height]*",
         )
         small_ex(
             bool(
-                (fig_width and (fig_width < self._min_fig_width)) or
-                (fig_height and (fig_height < self._min_fig_height))
+                (fig_width and (fig_width < self._min_fig_width))
+                or (fig_height and (fig_height < self._min_fig_height))
             ),
             [
-                _F('min_width', self._min_fig_width),
-                _F('min_height', self._min_fig_height)
-            ]
+                _F("min_width", self._min_fig_width),
+                _F("min_height", self._min_fig_height),
+            ],
         )
 
     def _create_figure(self, raise_exception=False):
-        """ Create and resize figure """
+        """Create and resize figure."""
         if raise_exception:
             specified_ex = pexdoc.exh.addex(
-                RuntimeError, 'Figure object is not fully specified'
+                RuntimeError, "Figure object is not fully specified"
             )
             specified_ex(raise_exception and (not self._complete))
         if not self._complete:
             return Bbox([[0, 0], [0, 0]])
         if self._need_redraw:
-            self._size_given = (
-                (self._fig_width is not None) and
-                (self._fig_height is not None)
+            self._size_given = (self._fig_width is not None) and (
+                self._fig_height is not None
             )
             # First _draw call is to calculate approximate figure size, (until
             # matplotlib actually draws the figure, all the bounding boxes of
@@ -516,24 +530,24 @@ class Figure(object):
             bbox = self._fig_bbox()
         fig_width, fig_height = self._fig_dims()
         # Get figure pixel size exact
-        width = int(round(fig_width*self._dpi))
-        lwidth = int(round(width/2.0))
-        rwidth = width-lwidth
-        height = int(round(fig_height*self._dpi))
-        bheight = int(round(height/2.0))
-        theight = height-bheight
-        bbox_xcenter = bbox.xmin+0.5*bbox.width
-        bbox_ycenter = bbox.ymin+0.5*bbox.height
+        width = int(round(fig_width * self._dpi))
+        lwidth = int(round(width / 2.0))
+        rwidth = width - lwidth
+        height = int(round(fig_height * self._dpi))
+        bheight = int(round(height / 2.0))
+        theight = height - bheight
+        bbox_xcenter = bbox.xmin + 0.5 * bbox.width
+        bbox_ycenter = bbox.ymin + 0.5 * bbox.height
         bbox = Bbox(
             [
                 [
-                    bbox_xcenter-(lwidth/self._dpi),
-                    bbox_ycenter-(bheight/self._dpi)
+                    bbox_xcenter - (lwidth / self._dpi),
+                    bbox_ycenter - (bheight / self._dpi),
                 ],
                 [
-                    bbox_xcenter+(rwidth/self._dpi),
-                    bbox_ycenter+(theight/self._dpi)
-                ]
+                    bbox_xcenter + (rwidth / self._dpi),
+                    bbox_ycenter + (theight / self._dpi),
+                ],
             ]
         )
         return bbox
@@ -553,14 +567,14 @@ class Figure(object):
                 self._indep_axis_tick_labels or indep_axis_ticks.labels
             )
             self._indep_axis_dict = {
-                'log_indep':self.log_indep_axis,
-                'indep_var_min':indep_axis_ticks.min,
-                'indep_var_max':indep_axis_ticks.max,
-                'indep_var_locs':indep_axis_ticks.locs,
-                'indep_var_labels':self._indep_axis_tick_labels,
-                'indep_axis_label':self.indep_var_label,
-                'indep_axis_units':self.indep_var_units,
-                'indep_axis_unit_scale':indep_axis_ticks.unit_scale
+                "log_indep": self.log_indep_axis,
+                "indep_var_min": indep_axis_ticks.min,
+                "indep_var_max": indep_axis_ticks.max,
+                "indep_var_locs": indep_axis_ticks.locs,
+                "indep_var_labels": self._indep_axis_tick_labels,
+                "indep_axis_label": self.indep_var_label,
+                "indep_axis_units": self.indep_var_units,
+                "indep_axis_unit_scale": indep_axis_ticks.unit_scale,
             }
             self._scaling_done = True
         # Create required number of panels
@@ -573,22 +587,23 @@ class Figure(object):
         def init_figure(num_panels, fbbox=None):
             fig_width, fig_height = self._fig_dims()
             figsize = (fig_width, fig_height) if fig_width and fig_height else None
-            plt.close('all')
+            plt.close("all")
             self._fig, axesh = plt.subplots(
-                nrows=num_panels, ncols=1, dpi=self.dpi, figsize=figsize,
+                nrows=num_panels, ncols=1, dpi=self.dpi, figsize=figsize
             )
             plt.tight_layout(pad=0, h_pad=2, rect=fbbox)
             axesh = [axesh] if num_panels == 1 else axesh
-            if self.title not in ['', None]:
+            if self.title not in ["", None]:
                 self._title_obj = self._fig.suptitle(
                     self.title,
                     fontsize=TITLE_FONT_SIZE,
-                    horizontalalignment='center',
-                    verticalalignment='top',
-                    multialignment='center',
+                    horizontalalignment="center",
+                    verticalalignment="top",
+                    multialignment="center",
                     y=1.0,
                 )
             return axesh, fig_width, fig_height
+
         num_panels = len(self.panels)
         axesh, fig_width, fig_height = init_figure(num_panels, fbbox)
         self._axes_list = []
@@ -608,24 +623,22 @@ class Figure(object):
             left = min(title_bbox.xmin, left)
             right = max(title_bbox.xmax, right)
         if fig_width and fig_height:
-            xdelta_left = -left/fig_width
-            ydelta_bot = -bottom/fig_height
-            xdelta_right = 1-((right-fig_width)/fig_width)
+            xdelta_left = -left / fig_width
+            ydelta_bot = -bottom / fig_height
+            xdelta_right = 1 - ((right - fig_width) / fig_width)
             ydelta_top = (
-                title_bbox.ymin/top
-                if self._title_obj else
-                1-((top-fig_height)/fig_height)
+                title_bbox.ymin / top
+                if self._title_obj
+                else 1 - ((top - fig_height) / fig_height)
             )
-            fbbox = [
-                xdelta_left, ydelta_bot, xdelta_right, ydelta_top
-            ]
+            fbbox = [xdelta_left, ydelta_bot, xdelta_right, ydelta_top]
             axesh, _, _ = init_figure(num_panels, fbbox)
             for panel, axish in zip(self.panels, axesh):
                 disp_indep_axis = (num_panels == 1) or panel.display_indep_axis
                 panel._draw(disp_indep_axis, self._indep_axis_dict, axish)
 
     def _fig_bbox(self):
-        """ Returns bounding box of figure """
+        """Return bounding box of figure."""
         tleft = tbottom = +INF
         tright = ttop = -INF
         if self._title_obj:
@@ -642,7 +655,7 @@ class Figure(object):
         return fig_bbox
 
     def _fig_dims(self):
-        """ Get actual figure size, given or minimum calculated """
+        """Get actual figure size, given or minimum calculated."""
         fig_width = self._fig_width or self._min_fig_width
         fig_height = self._fig_height or self._min_fig_height
         return fig_width, fig_height
@@ -652,9 +665,7 @@ class Figure(object):
         return self._axes_list
 
     def _get_complete(self):
-        """
-        Returns True if figure is fully specified, otherwise returns False
-        """
+        """Return True if figure is fully specified, otherwise returns False."""
         return (self.panels is not None) and len(self.panels)
 
     def _get_dpi(self):
@@ -679,35 +690,29 @@ class Figure(object):
     def _get_global_xaxis(self):
         log_ex = pexdoc.exh.addex(
             ValueError,
-            'Figure cannot be plotted with a logarithmic '
-            'independent axis because panel *[panel_num]*, series '
-            '*[series_num]* contains negative independent data points'
+            "Figure cannot be plotted with a logarithmic "
+            "independent axis because panel *[panel_num]*, series "
+            "*[series_num]* contains negative independent data points",
         )
         ticks_num_ex = pexdoc.exh.addex(
-            RuntimeError,
-            'Number of tick locations and number of tick labels mismatch'
+            RuntimeError, "Number of tick locations and number of tick labels mismatch"
         )
         glob_indep_var = []
         for panel_num, panel_obj in enumerate(self.panels):
             for series_num, series_obj in enumerate(panel_obj.series):
                 log_ex(
-                    bool(
-                        self.log_indep_axis and
-                        (min(series_obj.indep_var) < 0)
-                    ),
-                    edata=_MF(
-                        'panel_num', panel_num, 'series_num', series_num
-                    )
+                    bool(self.log_indep_axis and (min(series_obj.indep_var) < 0)),
+                    edata=_MF("panel_num", panel_num, "series_num", series_num),
                 )
-                glob_indep_var = numpy.unique(
-                    numpy.append(
+                glob_indep_var = np.unique(
+                    np.append(
                         glob_indep_var,
-                        numpy.array(
+                        np.array(
                             [
                                 peng.round_mantissa(element, 10)
                                 for element in series_obj.indep_var
                             ]
-                        )
+                        ),
                     )
                 )
         indep_axis_ticks = _intelligent_ticks(
@@ -716,17 +721,11 @@ class Figure(object):
             max(glob_indep_var),
             tight=True,
             log_axis=self.log_indep_axis,
-            tick_list=(
-                None if self._log_indep_axis else self._indep_axis_ticks
-            )
+            tick_list=(None if self._log_indep_axis else self._indep_axis_ticks),
         )
         ticks_num_ex(
-            (self._indep_axis_tick_labels is not None) and
-            (
-                len(self._indep_axis_tick_labels)
-                !=
-                len(indep_axis_ticks.labels)
-            )
+            (self._indep_axis_tick_labels is not None)
+            and (len(self._indep_axis_tick_labels) != len(indep_axis_ticks.labels))
         )
         return indep_axis_ticks
 
@@ -757,11 +756,11 @@ class Figure(object):
     def _get_title(self):
         return self._title
 
-    @pexdoc.pcontracts.contract(dpi='None|positive_real_num')
+    @pexdoc.pcontracts.contract(dpi="None|positive_real_num")
     def _set_dpi(self, dpi):
         self._dpi = float(dpi)
 
-    @pexdoc.pcontracts.contract(fig_height='None|positive_real_num')
+    @pexdoc.pcontracts.contract(fig_height="None|positive_real_num")
     def _set_fig_height(self, fig_height):
         if self._complete:
             self._create_figure()
@@ -769,7 +768,7 @@ class Figure(object):
         self._fig_height = fig_height
         self._need_redraw = True
 
-    @pexdoc.pcontracts.contract(fig_width='None|positive_real_num')
+    @pexdoc.pcontracts.contract(fig_width="None|positive_real_num")
     def _set_fig_width(self, fig_width):
         if self._complete:
             self._create_figure()
@@ -777,36 +776,34 @@ class Figure(object):
         self._fig_width = fig_width
         self._need_redraw = True
 
-    @pexdoc.pcontracts.contract(
-        indep_axis_ticks='None|increasing_real_numpy_vector'
-    )
+    @pexdoc.pcontracts.contract(indep_axis_ticks="None|increasing_real_numpy_vector")
     def _set_indep_axis_ticks(self, indep_axis_ticks):
         self._indep_axis_ticks = indep_axis_ticks
         self._need_redraw = True
 
-    @pexdoc.pcontracts.contract(indep_axis_tick_labels='None|list(str)')
+    @pexdoc.pcontracts.contract(indep_axis_tick_labels="None|list(str)")
     def _set_indep_axis_tick_labels(self, indep_axis_tick_labels):
         if not self._log_indep_axis:
             self._indep_axis_tick_labels = indep_axis_tick_labels
             self._need_redraw = True
             self._create_figure()
 
-    @pexdoc.pcontracts.contract(indep_var_label='None|str')
+    @pexdoc.pcontracts.contract(indep_var_label="None|str")
     def _set_indep_var_label(self, indep_var_label):
         self._indep_var_label = indep_var_label
         self._need_redraw = True
 
-    @pexdoc.pcontracts.contract(indep_var_units='None|str')
+    @pexdoc.pcontracts.contract(indep_var_units="None|str")
     def _set_indep_var_units(self, indep_var_units):
         self._indep_var_units = indep_var_units
         self._need_redraw = True
 
-    @pexdoc.pcontracts.contract(log_indep_axis='None|bool')
+    @pexdoc.pcontracts.contract(log_indep_axis="None|bool")
     def _set_log_indep_axis(self, log_indep_axis):
         self._log_indep_axis = log_indep_axis
         self._need_redraw = True
 
-    @pexdoc.pcontracts.contract(title='None|str')
+    @pexdoc.pcontracts.contract(title="None|str")
     def _set_title(self, title):
         self._title = title
         self._need_redraw = True
@@ -814,35 +811,30 @@ class Figure(object):
     def _set_panels(self, panels):
         self._panels = (
             (panels if isinstance(panels, list) else [panels])
-            if panels is not None else
-            panels
+            if panels is not None
+            else panels
         )
         if self.panels is not None:
             self._validate_panels()
         self._need_redraw = True
 
     def _validate_panels(self):
-        """
-        Verifies that elements of panel list are of the right type and
-        fully specified
-        """
-        invalid_ex = pexdoc.exh.addai('panels')
+        """Verify elements of panel list are of the right type and fully specified."""
+        invalid_ex = pexdoc.exh.addai("panels")
         specified_ex = pexdoc.exh.addex(
-            TypeError, 'Panel *[panel_num]* is not fully specified'
+            TypeError, "Panel *[panel_num]* is not fully specified"
         )
         for num, obj in enumerate(self.panels):
             invalid_ex(not isinstance(obj, Panel))
-            specified_ex(not obj._complete, _F('panel_num', num))
+            specified_ex(not obj._complete, _F("panel_num", num))
 
-    @pexdoc.pcontracts.contract(
-        fname='file_name', ftype='None|str', compress=bool
-    )
+    @pexdoc.pcontracts.contract(fname="file_name", ftype="None|str", compress=bool)
     def save(self, fname, ftype=None, compress=True):
         r"""
-        Saves the figure to a file
+        Save the figure to a file.
 
         :param fname: File name
-        :type  fname: `FileName <http://pexdoc.readthedocs.io/en/stable/
+        :type  fname: `FileName <https://pexdoc.readthedocs.io/en/stable/
                       ptypes.html#filename>`_
 
         :param ftype: File type, either 'PNG' or 'EPS' (case insensitive). The
@@ -887,36 +879,33 @@ class Figure(object):
         .. [[[end]]]
         """
         unsupported_ex = pexdoc.exh.addex(
-            RuntimeError, 'Unsupported file type: *[file_type]*'
+            RuntimeError, "Unsupported file type: *[file_type]*"
         )
-        no_ftype_ex = pexdoc.exh.addex(
-            RuntimeError, 'Could not determine file type'
-        )
+        no_ftype_ex = pexdoc.exh.addex(RuntimeError, "Could not determine file type")
         incongruent_ftype = pexdoc.exh.addex(
-            RuntimeError, 'Incongruent file type and file extension'
+            RuntimeError, "Incongruent file type and file extension"
         )
-        sup_ftypes = ['png', 'eps', 'pdf']
+        sup_ftypes = ["png", "eps", "pdf"]
         unsupported_ex(
             bool((ftype is not None) and (ftype.lower() not in sup_ftypes)),
-            _F('file_type', ftype)
+            _F("file_type", ftype),
         )
         basename, extension = os.path.splitext(fname)
-        extension = extension.lstrip('.')
-        no_ftype_ex(
-            bool((ftype is None) and (extension.lower() not in sup_ftypes))
-        )
+        extension = extension.lstrip(".")
+        no_ftype_ex(bool((ftype is None) and (extension.lower() not in sup_ftypes)))
         incongruent_ftype(
             bool(
-                (ftype is not None) and extension and
-                (ftype.upper() != extension.upper())
+                (ftype is not None)
+                and extension
+                and (ftype.upper() != extension.upper())
             )
         )
         ftype = (ftype or extension).upper()
         extension = extension or ftype.lower()
-        fname = '{0}.{1}'.format(basename, extension)
+        fname = "{0}.{1}".format(basename, extension)
         bbox = self._create_figure(raise_exception=True)
-        dpi = self.dpi if ftype == 'PNG' else None
-        bbox = bbox if ftype == 'PNG' else 'tight'
+        dpi = self.dpi if ftype == "PNG" else None
+        bbox = bbox if ftype == "PNG" else "tight"
         # Matplotlib seems to have a problem with ~/, expand it to $HOME
         fname = os.path.expanduser(fname)
         pmisc.make_dir(fname)
@@ -924,27 +913,27 @@ class Figure(object):
         self._fig.savefig(
             fname,
             dpi=dpi,
-            bbox='tight',
+            bbox="tight",
             format=ftype,
-            bbox_extra_artists=(self._title_obj, )
+            bbox_extra_artists=(self._title_obj,),
         )
-        plt.close('all')
-        if (ftype == 'PNG') and compress:
+        plt.close("all")
+        if (ftype == "PNG") and compress:
             img = PIL.Image.open(fname)
             # Remove alpha channel
-            img = img.convert('RGB')
+            img = img.convert("RGB")
             # Move to index image if possible (maximum number of colors used
             # has to be less that 256 as the palette is 8 bits)
             # getcolors returns None if the number of colors exceeds the
             # maxcolors argument
             ncolors = img.getcolors(maxcolors=256)
             if ncolors is not None:
-                img = img.convert('P', palette=PIL.Image.ADAPTIVE)
+                img = img.convert("P", palette=PIL.Image.ADAPTIVE)
             img.save(fname, quality=100, optimize=True)
 
     def show(self):
         """
-        Displays the figure
+        Display the figure.
 
         .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
         .. Auto-generated exceptions documentation for
@@ -969,15 +958,15 @@ class Figure(object):
     # Managed attributes
     _complete = property(_get_complete)
 
-    axes_list = property(
-        _get_axes_list, doc='Matplotlib figure axes handle list'
-    )
+    axes_list = property(_get_axes_list, doc="Matplotlib figure axes handle list")
     """
-    Gets the Matplotlib figure axes handle list or :code:`None` if figure is
-    not fully specified. Useful if annotations or further customizations to
-    the panel(s) are needed. Each panel has an entry in the list, which is
-    sorted in the order the panels are plotted (top to bottom). Each panel
-    entry is a dictionary containing the following key-value pairs:
+    Get Matplotlib figure axes handle list.
+
+    :code:`None` is returned if figure not fully specified.  Useful if
+    annotations or further customizations to the panel(s) are needed.  Each
+    panel has an entry in the list, which is sorted in the order the panels are
+    plotted (top to bottom). Each panel entry is a dictionary containing the
+    following key-value pairs:
 
     * **number** (*integer*) -- panel number, panel 0 is the top-most panel
 
@@ -1005,13 +994,11 @@ class Figure(object):
     .. [[[end]]]
     """
 
-    dpi = property(
-        _get_dpi, _set_dpi, doc='Figure dots per inch (DPI)'
-    )
+    dpi = property(_get_dpi, _set_dpi, doc="Figure dots per inch (DPI)")
     r"""
-    Gets or sets the dots per inch (DPI) of the figure
+    Get or set the dots per inch (DPI) of the figure.
 
-    :type: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
+    :type: `PositiveRealNum <https://pexdoc.readthedocs.io/en/
            stable/ptypes.html#positiverealnum>`_ or None
 
     .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
@@ -1022,11 +1009,12 @@ class Figure(object):
     .. [[[end]]]
     """
 
-    fig = property(_get_fig, doc='Figure handle')
+    fig = property(_get_fig, doc="Figure handle")
     """
-    Gets the Matplotlib figure handle. Useful if annotations or further
-    customizations to the figure are needed. :code:`None` if figure is not
-    fully specified
+    Get the Matplotlib figure handle.
+
+    Useful if annotations or further customizations to the figure are needed.
+    :code:`None` is returned if figure is not fully specified
 
     :type: Matplotlib figure handle or None
 
@@ -1046,13 +1034,14 @@ class Figure(object):
     """
 
     fig_height = property(
-        _get_fig_height, _set_fig_height, doc='height of the hard copy plot'
+        _get_fig_height, _set_fig_height, doc="height of the hard copy plot"
     )
     r"""
-    Gets or sets the height (in inches) of the hard copy plot, :code:`None` if
-    figure is not fully specified.
+    Get or set the height (in inches) of the hard copy plot.
 
-    :type: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
+    :code:`None` is returned if figure is not fully specified.
+
+    :type: `PositiveRealNum <https://pexdoc.readthedocs.io/en/
            stable/ptypes.html#positiverealnum>`_ or None
 
     .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
@@ -1077,13 +1066,14 @@ class Figure(object):
     """
 
     fig_width = property(
-        _get_fig_width, _set_fig_width, doc='Width of the hard copy plot'
+        _get_fig_width, _set_fig_width, doc="Width of the hard copy plot"
     )
     r"""
-    Gets or sets the width (in inches) of the hard copy plot, :code:`None` if
-    figure is not fully specified
+    Get or set the width (in inches) of the hard copy plot.
 
-    :type: `PositiveRealNum <http://pexdoc.readthedocs.io/en/
+    :code:`None` is returned if figure is not fully specified.
+
+    :type: `PositiveRealNum <https://pexdoc.readthedocs.io/en/
            stable/ptypes.html#positiverealnum>`_ or None
 
     .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc()) ]]]
@@ -1107,12 +1097,11 @@ class Figure(object):
     .. [[[end]]]
     """
 
-    indep_axis_scale = property(
-        _get_indep_axis_scale, doc='Independent axis scale'
-    )
+    indep_axis_scale = property(_get_indep_axis_scale, doc="Independent axis scale")
     """
-    Gets the scale of the figure independent axis, :code:`None` if figure is
-    not fully specified
+    Get the scale of the figure independent axis.
+
+    :code:`None` is returned if figure is not fully specified.
 
     :type:  float or None if figure has no panels associated with it
 
@@ -1135,11 +1124,10 @@ class Figure(object):
     indep_axis_ticks = property(
         _get_indep_axis_ticks,
         _set_indep_axis_ticks,
-        doc='Independent axis tick locations'
+        doc="Independent axis tick locations",
     )
     r"""
-    Gets or sets the independent axis (scaled) tick locations, :code:`None` if
-    figure is not fully specified
+    Get or set the independent axis (scaled) tick locations.
 
     :type: list
 
@@ -1167,11 +1155,12 @@ class Figure(object):
     indep_axis_tick_labels = property(
         _get_indep_axis_tick_labels,
         _set_indep_axis_tick_labels,
-        doc='Independent axis tick labels'
+        doc="Independent axis tick labels",
     )
     r"""
-    Gets or sets the independent axis tick labels; these are ignored for
-    figures with a logarithmic independent axis
+    Get or set the independent axis tick labels.
+
+    Labels are ignored for figures with a logarithmic independent axis
 
     :type: list of strings
 
@@ -1204,12 +1193,10 @@ class Figure(object):
     """
 
     indep_var_label = property(
-        _get_indep_var_label,
-        _set_indep_var_label,
-        doc='Figure independent axis label'
+        _get_indep_var_label, _set_indep_var_label, doc="Figure independent axis label"
     )
     r"""
-    Gets or sets the figure independent variable label
+    Get or set the figure independent variable label
 
     :type: string or None
 
@@ -1224,12 +1211,10 @@ class Figure(object):
     """
 
     indep_var_units = property(
-        _get_indep_var_units,
-        _set_indep_var_units,
-        doc='Figure independent axis units'
+        _get_indep_var_units, _set_indep_var_units, doc="Figure independent axis units"
     )
     r"""
-    Gets or sets the figure independent variable units
+    Get or set the figure independent variable units.
 
     :type: string or None
 
@@ -1244,11 +1229,13 @@ class Figure(object):
     """
 
     log_indep_axis = property(
-        _get_log_indep_axis, _set_log_indep_axis, doc='Figure log_indep_axis'
+        _get_log_indep_axis, _set_log_indep_axis, doc="Figure log_indep_axis"
     )
     r"""
-    Gets or sets the figure logarithmic independent axis flag; indicates
-    whether the independent axis is linear (False) or logarithmic (True)
+    Get or set the figure logarithmic independent axis flag.
+
+    This flag indicates whether the independent axis is linear (False) or
+    logarithmic (True)
 
     :type: boolean
 
@@ -1262,10 +1249,11 @@ class Figure(object):
     .. [[[end]]]
     """
 
-    panels = property(_get_panels, _set_panels, doc='Figure panel(s)')
+    panels = property(_get_panels, _set_panels, doc="Figure panel(s)")
     r"""
-    Gets or sets the figure panel(s), :code:`None` if no panels have been
-    specified
+    Get or set the figure panel(s).
+
+    :code:`None` is returned if no panels have been specified
 
     :type: :py:class:`pplot.Panel`, list of
            :py:class:`pplot.panel` or None
@@ -1283,9 +1271,9 @@ class Figure(object):
     .. [[[end]]]
     """
 
-    title = property(_get_title, _set_title, doc='Figure title')
+    title = property(_get_title, _set_title, doc="Figure title")
     r"""
-    Gets or sets the figure title
+    Get or set the figure title.
 
     :type: string or None
 

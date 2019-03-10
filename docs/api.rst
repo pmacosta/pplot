@@ -1,5 +1,5 @@
 .. api.rst
-.. Copyright (c) 2013-2018 Pablo Acosta-Serafini
+.. Copyright (c) 2013-2019 Pablo Acosta-Serafini
 .. See LICENSE for details
 
 ###
@@ -67,7 +67,7 @@ Introduction
 
 The pseudo-types defined below can be used in contracts of the
 `PyContracts <https://andreacensi.github.io/contracts>`_ or
-`Pexdoc <http://pexdoc.readthedocs.org>`_ libraries. As an example, with the
+`Pexdoc <https://pexdoc.readthedocs.org>`_ libraries. As an example, with the
 latter:
 
     .. code-block:: python
@@ -109,7 +109,7 @@ ColorSpaceOption
 ^^^^^^^^^^^^^^^^
 
 Import as :code:`color_space_option`. String representing a `Matplotlib
-<http://matplotlib.org/>`_ color space, one :code:`'binary'`, :code:`'Blues'`,
+<https://matplotlib.org/>`_ color space, one :code:`'binary'`, :code:`'Blues'`,
 :code:`'BuGn'`, :code:`'BuPu'`, :code:`'GnBu'`, :code:`'Greens'`,
 :code:`'Greys'`, :code:`'Oranges'`, :code:`'OrRd'`, :code:`'PuBu'`,
 :code:`'PuBuGn'`, :code:`'PuRd'`, :code:`'Purples'`, :code:`'RdPu'`,

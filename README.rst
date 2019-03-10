@@ -1,43 +1,39 @@
 .. README.rst
-.. Copyright (c) 2013-2018 Pablo Acosta-Serafini
+.. Copyright (c) 2013-2019 Pablo Acosta-Serafini
 .. See LICENSE for details
 
-
 .. image:: https://badge.fury.io/py/pplot.svg
-    :target: https://pypi.python.org/pypi/pplot
+    :target: https://pypi.org/project/pplot
     :alt: PyPI version
 
 .. image:: https://img.shields.io/pypi/l/pplot.svg
-    :target: https://pypi.python.org/pypi/pplot
+    :target: https://pypi.org/project/pplot
     :alt: License
 
 .. image:: https://img.shields.io/pypi/pyversions/pplot.svg
-    :target: https://pypi.python.org/pypi/pplot
+    :target: https://pypi.org/project/pplot
     :alt: Python versions supported
 
 .. image:: https://img.shields.io/pypi/format/pplot.svg
-    :target: https://pypi.python.org/pypi/pplot
+    :target: https://pypi.org/project/pplot
     :alt: Format
 
 |
 
 .. image::
-   https://travis-ci.org/pmacosta/pplot.svg?branch=master
+    https://dev.azure.com/pmasdev/pplot/_apis/build/status/pmacosta.pplot?branchName=master
+    :target: https://dev.azure.com/pmasdev/pplot/_build?definitionId=3&_a=summary
+    :alt: Continuous integration test status
 
 .. image::
-   https://ci.appveyor.com/api/projects/status/
-   7dpk342kxs8kcg5t/branch/master?svg=true
-   :alt: Windows continuous integration
+    https://img.shields.io/azure-devops/coverage/pmasdev/pplot/8.svg
+    :target: https://dev.azure.com/pmasdev/pplot/_build?definitionId=6&_a=summary
+    :alt: Continuous integration test coverage
 
 .. image::
-   https://codecov.io/github/pmacosta/pplot/coverage.svg?branch=master
-   :target: https://codecov.io/github/pmacosta/pplot?branch=master
-   :alt: Continuous integration coverage
-
-.. image::
-   https://readthedocs.org/projects/pip/badge/?version=stable
-   :target: http://pip.readthedocs.org/en/stable/?badge=stable
-   :alt: Documentation status
+    https://readthedocs.org/projects/pip/badge/?version=stable
+    :target: https://pip.readthedocs.io/en/stable/?badge=stable
+    :alt: Documentation status
 
 |
 
@@ -51,38 +47,43 @@ Description
 .. import os, sys, pmisc, docs.support.requirements_to_rst
 .. file_name = sys.modules['docs.support.requirements_to_rst'].__file__
 .. mdir = os.path.join(os.path.realpath(
-..    os.path.dirname(os.path.dirname(os.path.dirname(file_name)))), 'sbin'
+..    os.path.dirname(os.path.dirname(os.path.dirname(file_name)))), 'pypkg'
 .. )
 .. docs.support.requirements_to_rst.def_links(cog)
 .. ]]]
 .. _Astroid: https://bitbucket.org/logilab/astroid
-.. _Cog: http://nedbatchelder.com/code/cog
-.. _Coverage: http://coverage.readthedocs.org/en/coverage-4.0a5
-.. _Decorator: https://pythonhosted.org/decorator
+.. _Cog: https://nedbatchelder.com/code/cog
+.. _Coverage: https://coverage.readthedocs.io
+.. _Decorator: https://decorator.readthedocs.io
 .. _Docutils: http://docutils.sourceforge.net/docs
-.. _Funcsigs: https://pypi.python.org/pypi/funcsigs
-.. _Matplotlib: http://matplotlib.org
-.. _Mock: http://www.voidspace.org.uk/python/mock
+.. _Funcsigs: https://pypi.org/project/funcsigs
+.. _Matplotlib: https://matplotlib.org
+.. _Mock: https://docs.python.org/3/library/unittest.mock.html
 .. _Numpy: http://www.numpy.org
-.. _Pcsv: http://pcsv.readthedocs.org
-.. _Peng: http://peng.readthedocs.org
-.. _Pexdoc: http://pexdoc.readthedocs.org
-.. _Pillow: https://python-pillow.github.io
+.. _Pcsv: https://pcsv.readthedocs.org
+.. _Peng: https://peng.readthedocs.org
+.. _Pexdoc: https://pexdoc.readthedocs.org
+.. _Pillow: https://python-pillow.org
 .. _Pmisc: http://pmisc.readthedocs.org
 .. _PyContracts: https://andreacensi.github.io/contracts
-.. _Pylint: http://www.pylint.org
+.. _Pydocstyle: http://www.pydocstyle.org
+.. _Pylint: https://www.pylint.org
 .. _Py.test: http://pytest.org
-.. _Pytest-coverage: https://pypi.python.org/pypi/pytest-cov
-.. _Pytest-xdist: https://pypi.python.org/pypi/pytest-xdist
-.. _Scipy: http://www.scipy.org
+.. _Pytest-coverage: https://pypi.org/project/pytest-cov
+.. _Pytest-pmisc: https://pytest-pmisc.readthedocs.org
+.. _Pytest-xdist: https://pypi.org/project/pytest-xdist
+.. _Scipy: https://www.scipy.org
 .. _Six: https://pythonhosted.org/six
 .. _Sphinx: http://sphinx-doc.org
-.. _ReadTheDocs Sphinx theme: https://github.com/snide/sphinx_rtd_theme
+.. _ReadTheDocs Sphinx theme: https://github.com/rtfd/sphinx_rtd_theme
 .. _Inline Syntax Highlight Sphinx Extension:
    https://bitbucket.org/klorenz/sphinxcontrib-inlinesyntaxhighlight
+.. _Shellcheck Linter Sphinx Extension: https://pypi.org/project
+   /sphinxcontrib-shellcheck
 .. _Tox: https://testrun.org/tox
-.. _Virtualenv: http://docs.python-guide.org/en/latest/dev/virtualenvs
+.. _Virtualenv: https://docs.python-guide.org/dev/virtualenvs
 .. [[[end]]]
+
 
 This module can be used to create high-quality, presentation-ready X-Y graphs
 quickly and easily
@@ -143,12 +144,15 @@ Example
 *******
 
 .. [[[cog
-.. import pmisc
-.. pmisc.incfile(
+.. import pplot
+.. import sys
+.. sys.path.append('.')
+.. import pypkg.incfile
+.. pypkg.incfile.incfile(
 ..     "plot_example_1.py",
 ..     cog.out,
 ..     "1,6-108",
-..     "../docs/support"
+..     "./docs/support"
 .. )
 .. ]]]
 .. code-block:: python
@@ -157,83 +161,89 @@ Example
     from __future__ import print_function
     import os, sys, numpy, pplot
 
+
     def main(fname, no_print):
-        """
-        Example of how to use the pplot library
-        to generate presentation-quality plots
-        """
+        """Show how to use pplot library to generate presentation-quality plots."""
         ###
         # Series definition (Series class)
         ###
         # Extract data from a comma-separated (csv)
         # file using the CsvSource class
         wdir = os.path.dirname(__file__)
-        csv_file = os.path.join(wdir, 'data.csv')
-        series1_obj = [pplot.Series(
-            data_source=pplot.CsvSource(
-                fname=csv_file,
-                rfilter={'value1':1},
-                indep_col_label='value2',
-                dep_col_label='value3',
-                indep_min=None,
-                indep_max=None,
-                fproc=series1_proc_func,
-                fproc_eargs={'xoffset':1e-3}
-            ),
-            label='Source 1',
-            color='k',
-            marker='o',
-            interp='CUBIC',
-            line_style='-',
-            secondary_axis=False
-        )]
+        csv_file = os.path.join(wdir, "data.csv")
+        series1_obj = [
+            pplot.Series(
+                data_source=pplot.CsvSource(
+                    fname=csv_file,
+                    rfilter={"value1": 1},
+                    indep_col_label="value2",
+                    dep_col_label="value3",
+                    indep_min=None,
+                    indep_max=None,
+                    fproc=series1_proc_func,
+                    fproc_eargs={"xoffset": 1e-3},
+                ),
+                label="Source 1",
+                color="k",
+                marker="o",
+                interp="CUBIC",
+                line_style="-",
+                secondary_axis=False,
+            )
+        ]
         # Literal data can be used with the BasicSource class
-        series2_obj = [pplot.Series(
-            data_source=pplot.BasicSource(
-                indep_var=numpy.array([0e-3, 1e-3, 2e-3]),
-                dep_var=numpy.array([4, 7, 8]),
-            ),
-            label='Source 2',
-            color='r',
-            marker='s',
-            interp='STRAIGHT',
-            line_style='--',
-            secondary_axis=False
-        )]
-        series3_obj = [pplot.Series(
-            data_source=pplot.BasicSource(
-                indep_var=numpy.array([0.5e-3, 1e-3, 1.5e-3]),
-                dep_var=numpy.array([10, 9, 6]),
-            ),
-            label='Source 3',
-            color='b',
-            marker='h',
-            interp='STRAIGHT',
-            line_style='--',
-            secondary_axis=True
-        )]
-        series4_obj = [pplot.Series(
-            data_source=pplot.BasicSource(
-                indep_var=numpy.array([0.3e-3, 1.8e-3, 2.5e-3]),
-                dep_var=numpy.array([8, 8, 8]),
-            ),
-            label='Source 4',
-            color='g',
-            marker='D',
-            interp='STRAIGHT',
-            line_style=None,
-            secondary_axis=True
-        )]
+        series2_obj = [
+            pplot.Series(
+                data_source=pplot.BasicSource(
+                    indep_var=numpy.array([0e-3, 1e-3, 2e-3]),
+                    dep_var=numpy.array([4, 7, 8]),
+                ),
+                label="Source 2",
+                color="r",
+                marker="s",
+                interp="STRAIGHT",
+                line_style="--",
+                secondary_axis=False,
+            )
+        ]
+        series3_obj = [
+            pplot.Series(
+                data_source=pplot.BasicSource(
+                    indep_var=numpy.array([0.5e-3, 1e-3, 1.5e-3]),
+                    dep_var=numpy.array([10, 9, 6]),
+                ),
+                label="Source 3",
+                color="b",
+                marker="h",
+                interp="STRAIGHT",
+                line_style="--",
+                secondary_axis=True,
+            )
+        ]
+        series4_obj = [
+            pplot.Series(
+                data_source=pplot.BasicSource(
+                    indep_var=numpy.array([0.3e-3, 1.8e-3, 2.5e-3]),
+                    dep_var=numpy.array([8, 8, 8]),
+                ),
+                label="Source 4",
+                color="g",
+                marker="D",
+                interp="STRAIGHT",
+                line_style=None,
+                secondary_axis=True,
+            )
+        ]
         ###
         # Panels definition (Panel class)
         ###
         panel_obj = pplot.Panel(
-            series=series1_obj+series2_obj+series3_obj+series4_obj,
-            primary_axis_label='Primary axis label',
-            primary_axis_units='-',
-            secondary_axis_label='Secondary axis label',
-            secondary_axis_units='W',
-            legend_props={'pos':'lower right', 'cols':1}
+            series=series1_obj + series2_obj + series3_obj + series4_obj,
+            primary_axis_label="Primary axis label",
+            primary_axis_units="-",
+            secondary_axis_label="Secondary axis label",
+            secondary_axis_units="W",
+            legend_props={"pos": "lower right", "cols": 1},
         )
         ###
         # Figure definition (Figure class)
@@ -241,22 +251,16 @@ Example
         dim = 2.25
         fig_obj = pplot.Figure(
             panels=panel_obj,
-            indep_var_label='Indep. var.',
-            indep_var_units='S',
+            indep_var_label="Indep. var.",
+            indep_var_units="S",
             log_indep_axis=False,
-            fig_width=4*dim,
-            fig_height=3*dim,
-            title='Library pplot Example'
+            fig_width=4 * dim,
+            fig_height=3 * dim,
+            title="Library pplot Example",
         )
         # Save figure
         output_fname = os.path.join(wdir, fname)
         if not no_print:
-            print('Saving image to file {0}'.format(output_fname))
-        fig_obj.save(output_fname, compress=True)
-
-    def series1_proc_func(indep_var, dep_var, xoffset):
-        """ Process data 1 series """
-        return (indep_var*1e-3)-xoffset, dep_var
 
 .. [[[end]]]
 
@@ -266,8 +270,8 @@ Example
 Interpreter
 ===========
 
-The package has been developed and tested with Python 2.7, 3.5 and 3.6 under
-Linux (Debian, Ubuntu), Apple OS X and Microsoft Windows
+The package has been developed and tested with Python 2.7, 3.5, 3.6 and 3.7
+under Linux (Debian, Ubuntu), Apple macOS and Microsoft Windows
 
 Installing
 ==========
@@ -279,25 +283,26 @@ Installing
 Documentation
 =============
 
-Available at `Read the Docs <https://pplot.readthedocs.org>`_
+Available at `Read the Docs <https://pplot.readthedocs.io>`_
 
 Contributing
 ============
 
 1. Abide by the adopted `code of conduct
-   <http://contributor-covenant.org/version/1/3/0>`_
+   <https://www.contributor-covenant.org/version/1/4/code-of-conduct>`_
 
 2. Fork the `repository <https://github.com/pmacosta/pplot>`_ from
    GitHub and then clone personal copy [#f1]_:
 
-	.. code-block:: bash
+    .. code-block:: bash
 
-		$ git clone \
-		      https://github.com/[github-user-name]/pplot.git
-                Cloning into 'pplot'...
-                ...
-		$ cd pplot
-		$ export PPLOT_DIR=${PWD}
+        $ github_user=myname
+        $ git clone --recursive \
+              https://github.com/"${github_user}"/pplot.git
+        Cloning into 'pplot'...
+        ...
+        $ cd pplot
+        $ export PPLOT_DIR=${PWD}
 
 3. Install the project's Git hooks and build the documentation. The pre-commit
    hook does some minor consistency checks, namely trailing whitespace and
@@ -307,14 +312,14 @@ Contributing
 
 	.. code-block:: bash
 
-		$ ${PPLOT_DIR}/sbin/complete-cloning.sh
+		$ "${PPLOT_DIR}"/pypkg/complete-cloning.sh
                 Installing Git hooks
                 Building pplot package documentation
                 ...
 
 4. Ensure that the Python interpreter can find the package modules
    (update the :bash:`$PYTHONPATH` environment variable, or use
-   `sys.paths() <https://docs.python.org/2/library/sys.html#sys.path>`_,
+   `sys.paths() <https://docs.python.org/3/library/sys.html#sys.path>`_,
    etc.)
 
 	.. code-block:: bash
@@ -324,57 +329,64 @@ Contributing
 5. Install the dependencies (if needed, done automatically by pip):
 
     .. [[[cog
+    .. import docs.support.requirements_to_rst
     .. docs.support.requirements_to_rst.proc_requirements(cog)
     .. ]]]
 
 
-    * `Astroid`_ (1.5.3 or newer)
+    * `Astroid`_ (1.3.8 or newer)
 
-    * `Cog`_ (2.5.1 or newer)
+    * `Cog`_ (2.4 or newer)
 
-    * `Coverage`_ (4.4.1 or newer)
+    * `Coverage`_ (3.7.1 or newer)
 
-    * `Decorator`_ (4.0.11 or newer)
+    * `Decorator`_ (4.2.1 or newer)
 
-    * `Docutils`_ (0.13.1 or newer)
+    * `Docutils`_ (0.12 or newer)
 
-    * `Funcsigs`_ (Python 2.x only, 1.0.2 or newer)
+    * `Funcsigs`_ (1.0.2 or newer)
 
     * `Inline Syntax Highlight Sphinx Extension`_ (0.2 or newer)
 
     * `Matplotlib`_ (2.0.0 or newer)
 
-    * `Mock`_ (Python 2.x only, 2.0.0 or newer)
+    * `Mock`_ (2.0.0 or newer)
 
     * `Numpy`_ (1.13.1 or newer)
 
-    * `Pcsv`_ (1.0.6 or newer)
+    * `Pcsv`_ (1.0.7 or newer)
 
-    * `Peng`_ (1.0.6 or newer)
+    * `Peng`_ (1.0.8 or newer)
 
-    * `Pexdoc`_ (1.0.9 or newer)
+    * `Pexdoc`_ (1.1.1 or newer)
 
     * `Pillow`_ (4.0.0 or newer)
 
-    * `Pmisc`_ (1.2.2 or newer)
+    * `Pmisc`_ (1.5.5 or newer)
 
-    * `Py.test`_ (3.1.2 or newer)
+    * `Py.test`_ (3.3.2 or newer)
 
-    * `PyContracts`_ (1.7.15 or newer)
+    * `PyContracts`_ (1.8.2 or newer)
 
-    * `Pylint`_ (1.7.1 or newer)
+    * `Pydocstyle`_ (3.0.0 or newer)
+
+    * `Pylint`_ (1.8.1 or newer)
 
     * `Pytest-coverage`_ (2.5.1 or newer)
 
-    * `Pytest-xdist`_ (optional, 1.21.0 or newer)
+    * `Pytest-pmisc`_ (1.0.6 or newer)
+
+    * `Pytest-xdist`_ (optional, 1.22.0 or newer)
 
     * `ReadTheDocs Sphinx theme`_ (0.2.4 or newer)
 
     * `Scipy`_ (1.0.0 or newer)
 
+    * `Shellcheck Linter Sphinx Extension`_ (1.0.5 or newer)
+
     * `Six`_ (1.11.0 or newer)
 
-    * `Sphinx`_ (1.6.5 or newer)
+    * `Sphinx`_ (1.6.6 or newer)
 
     * `Tox`_ (2.9.1 or newer)
 
@@ -397,7 +409,7 @@ Contributing
             py26-pkg inst-nodeps: .../pplot/.tox/dist/pplot-...zip
 
    `Setuptools <https://bitbucket.org/pypa/setuptools>`_ can also be used
-   (Tox is configured as its virtual environment manager) [#f2]_:
+   (Tox is configured as its virtual environment manager):
 
 	.. code-block:: bash
 
@@ -409,12 +421,12 @@ Contributing
             ...
 
    Tox (or Setuptools via Tox) runs with the following default environments:
-   ``py27-pkg``, ``py35-pkg`` and ``py36-pkg`` [#f3]_. These use the 2.7, 3.5
-   and 3.6 interpreters, respectively, to test all code in the documentation
-   (both in Sphinx ``*.rst`` source files and in docstrings), run all unit
-   tests, measure test coverage and re-build the exceptions documentation. To
-   pass arguments to Py.test (the test runner) use a double dash (``--``) after
-   all the Tox arguments, for example:
+   ``py27-pkg``, ``py35-pkg``, ``py36-pkg`` and ``py37-pkg`` [#f3]_. These use
+   the 2.7, 3.5, 3.6 and 3.7 interpreters, respectively, to test all code in the
+   documentation (both in Sphinx ``*.rst`` source files and in docstrings), run
+   all unit tests, measure test coverage and re-build the exceptions
+   documentation. To pass arguments to Py.test (the test runner) use a double
+   dash (``--``) after all the Tox arguments, for example:
 
 	.. code-block:: bash
 
@@ -432,18 +444,19 @@ Contributing
             running tests
             ...
 
-   There are other convenience environments defined for Tox [#f4]_:
+   There are other convenience environments defined for Tox [#f3]_:
 
-    * ``py27-repl``, ``py35-repl`` and ``py36-repl`` run the 2.7, 3.6 or 3.6
-      REPL, respectively, in the appropriate virtual environment. The ``pplot``
-      package is pip-installed by Tox when the environments are created.
-      Arguments to the interpreter can be passed in the command line after a
-      double dash (``--``)
+    * ``py27-repl``, ``py35-repl``, ``py36-repl`` and ``py37-repl`` run the 2.7,
+      3.5, 3.6 or 3.7 REPL, respectively, in the appropriate virtual
+      environment. The ``pplot`` package is pip-installed by Tox when the
+      environments are created.  Arguments to the interpreter can be passed in
+      the command line after a double dash (``--``)
 
-    * ``py27-test``, ``py35-test`` and ``py36-test`` run py.test using the
-      Python 2.7, 3.5 or Python 3.6 interpreter, respectively, in the
-      appropriate virtual environment. Arguments to py.test can be passed in the
-      command line after a double dash (``--``) , for example:
+    * ``py27-test``, ``py35-test``, ``py36-test`` and ``py37-test`` run py.test
+      using the Python 2.7, 3.5, Python 3.6 or Python 3.7 interpreter,
+      respectively, in the appropriate virtual environment. Arguments to py.test
+      can be passed in the command line after a double dash (``--``) , for
+      example:
 
 	.. code-block:: bash
 
@@ -460,36 +473,25 @@ Contributing
             collected 414 items
             ...
 
-    * ``py27-cov``, ``py35-cov`` and ``py36-cov`` test code and branch coverage
-      using the 2.7, 3.5 or 3.6 interpreter, respectively, in the appropriate
-      virtual environment. Arguments to py.test can be passed in the command
-      line after a double dash (``--``). The report can be found in
+    * ``py27-cov``, ``py35-cov``, ``py36-cov`` and ``py37-cov`` test code and
+      branch coverage using the 2.7, 3.5, 3.6 or 3.7 interpreter, respectively,
+      in the appropriate virtual environment. Arguments to py.test can be passed
+      in the command line after a double dash (``--``). The report can be found
+      in
       :bash:`${PPLOT_DIR}/.tox/py[PV]/usr/share/pplot/tests/htmlcov/index.html`
-      where ``[PV]`` stands for ``27``, ``35`` or ``36`` depending on the
-      interpreter used
+      where ``[PV]`` stands for ``27``, ``35``, ``36`` or ``37`` depending on
+      the interpreter used
 
 8. Verify that continuous integration tests pass. The package has continuous
-   integration configured for Linux (via `Travis <http://www.travis-ci.org>`_)
-   and for Microsoft Windows (via `Appveyor <http://www.appveyor.com>`_).
-   Aggregation/cloud code coverage is configured via
-   `Codecov <https://codecov.io>`_. It is assumed that the Codecov repository
-   upload token in the Travis build is stored in the :bash:`${CODECOV_TOKEN}`
-   environment variable (securely defined in the Travis repository settings
-   page). Travis build artifacts can be transferred to Dropbox using the
-   `Dropbox Uploader <https://github.com/andreafabrizi/Dropbox-Uploader>`_
-   script (included for convenience in the :bash:`${PPLOT_DIR}/sbin` directory).
-   For an automatic transfer that does not require manual entering of
-   authentication credentials place the APPKEY, APPSECRET, ACCESS_LEVEL,
-   OAUTH_ACCESS_TOKEN and OAUTH_ACCESS_TOKEN_SECRET values required by
-   Dropbox Uploader in the in the :bash:`${DBU_APPKEY}`,
-   :bash:`${DBU_APPSECRET}`, :bash:`${DBU_ACCESS_LEVEL}`,
-   :bash:`${DBU_OAUTH_ACCESS_TOKEN}` and
-   :bash:`${DBU_OAUTH_ACCESS_TOKEN_SECRET}` environment variables,
-   respectively (also securely defined in Travis repository settings page)
-
+   integration configured for Linux, Apple macOS and Microsoft Windows (all via
+   `Azure DevOps <https://dev.azure.com/pmasdev>`_) Aggregation/cloud code
+   coverage is configured via `Codecov <https://codecov.io>`_. It is assumed
+   that the Codecov repository upload token in the build is stored in the
+   :bash:`$(codecovToken)` environment variable (securely defined in the
+   pipeline settings page).
 
 9. Document the new feature or bug fix (if needed). The script
-   :bash:`${PPLOT_DIR}/sbin/build_docs.py` re-builds the whole package
+   :bash:`${PPLOT_DIR}/pypkg/build_docs.py` re-builds the whole package
    documentation (re-generates images, cogs source files, etc.):
 
 	.. [[[cog pmisc.ste('build_docs.py -h', 0, mdir, cog.out) ]]]
@@ -519,7 +521,6 @@ Contributing
 	                            identical, exit code 1 indicates
 	                            file(s) are different)
 
-
 	.. [[[end]]]
 
 .. rubric:: Footnotes
@@ -527,19 +528,12 @@ Contributing
 .. [#f1] All examples are for the `bash <https://www.gnu.org/software/bash/>`_
    shell
 
-.. [#f2] It appears that Scipy dependencies do not include Numpy (as they
-   should) so running the tests via Setuptools will typically result in an
-   error. The pplot requirement file specifies Numpy before Scipy and this
-   installation order is honored by Tox so running the tests via Tox sidesteps
-   Scipy's broken dependency problem but requires Tox to be installed before
-   running the tests (Setuptools installs Tox if needed)
-
-.. [#f3] It is assumed that all the Python interpreters are in the executables
+.. [#f2] It is assumed that all the Python interpreters are in the executables
    path. Source code for the interpreters can be downloaded from Python's main
-   `site <http://www.python.org/downloads>`_
+   `site <https://www.python.org/downloads/>`_
 
-.. [#f4] Tox configuration largely inspired by
-   `Ionel's codelog <http://blog.ionelmc.ro/2015/04/14/
+.. [#f3] Tox configuration largely inspired by
+   `Ionel's codelog <https://blog.ionelmc.ro/2015/04/14/
    tox-tricks-and-patterns/>`_
 
 
@@ -548,7 +542,7 @@ License
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2018 Pablo Acosta-Serafini
+Copyright (c) 2013-2019 Pablo Acosta-Serafini
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

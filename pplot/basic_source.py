@@ -1,22 +1,6 @@
-# basic_source.py
-# Copyright (c) 2013-2018 Pablo Acosta-Serafini
-# See LICENSE for details
-# pylint: disable=C0111,C0302,E1101,E1103,W0105,W0212
-
-# PyPI imports
-import numpy
-import pexdoc.exh
-import pexdoc.pcontracts
-import peng
-# Intra-package imports
-from .constants import PRECISION
-from .functions import _C, _SEL, DataSource
-
-
-###
-# Exception tracing initialization code
-###
 """
+Define basic source class.
+
 [[[cog
 import os, sys
 if sys.hexversion < 0x03000000:
@@ -29,6 +13,25 @@ exobj_plot = trace_ex_plot_basic_source.trace_module(no_print=True)
 ]]]
 [[[end]]]
 """
+# basic_source.py
+# Copyright (c) 2013-2019 Pablo Acosta-Serafini
+# See LICENSE for details
+# pylint: disable=C0111,C0302,E1101,E1103,W0105,W0212
+
+# Standard library imports
+import warnings
+
+# PyPI imports
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    import numpy as np
+import pexdoc.exh
+import pexdoc.pcontracts
+import peng
+
+# Intra-package imports
+from .constants import PRECISION
+from .functions import _C, _SEL, DataSource
 
 
 ###
@@ -36,9 +39,10 @@ exobj_plot = trace_ex_plot_basic_source.trace_module(no_print=True)
 ###
 class BasicSource(DataSource):
     r"""
-    Objects of this class hold a given data set intended for plotting. It is a
-    convenient way to plot manually-entered data or data coming from
-    a source that does not export to a comma-separated values (CSV) file.
+    Hold a given data set intended for plotting.
+
+    It is a convenient way to plot manually-entered data or data coming from a
+    source that does not export to a comma-separated values (CSV) file.
 
     :param indep_var: Independent variable vector
     :type  indep_var: `IncreasingRealNumpyVector <https://peng.readthedocs.io/
@@ -50,12 +54,12 @@ class BasicSource(DataSource):
 
     :param indep_min: Minimum independent variable value. If None no minimum
                       thresholding is applied to the data
-    :type  indep_min: `RealNum <http://pexdoc.readthedocs.io/en/stable/
+    :type  indep_min: `RealNum <https://pexdoc.readthedocs.io/en/stable/
                       ptypes.html#realnum>`_ *or None*
 
     :param indep_max: Maximum independent variable value. If None no maximum
                       thresholding is applied to the data
-    :type  indep_max: `RealNum <http://pexdoc.readthedocs.io/en/stable/
+    :type  indep_max: `RealNum <https://pexdoc.readthedocs.io/en/stable/
                       ptypes.html#realnum>`_ *or None*
 
     :rtype: :py:class:`pplot.BasicSource`
@@ -84,8 +88,9 @@ class BasicSource(DataSource):
 
     .. [[[end]]]
     """
+
     # pylint: disable=R0902,R0903
-    def __init__(self, indep_var, dep_var, indep_min=None, indep_max=None):
+    def __init__(self, indep_var, dep_var, indep_min=None, indep_max=None):  # noqa
         # Private attributes
         super(BasicSource, self).__init__()
         self._exh = pexdoc.exh.get_or_create_exh_obj()
@@ -108,7 +113,9 @@ class BasicSource(DataSource):
 
     def __str__(self):
         """
-        Prints source information. For example:
+        Print source information.
+
+        For example:
 
         .. =[=cog
         .. import pmisc
@@ -117,12 +124,13 @@ class BasicSource(DataSource):
         .. code-block:: python
 
             # plot_example_4.py
-            import numpy, pplot
+            import numpy as np
+            import pplot
 
             def create_basic_source():
                 obj = pplot.BasicSource(
-                    indep_var=numpy.array([1, 2, 3, 4]),
-                    dep_var=numpy.array([1, -10, 10, 5]),
+                    indep_var=np.array([1, 2, 3, 4]),
+                    dep_var=np.array([1, -10, 10, 5]),
                     indep_min=2, indep_max=3
                 )
                 return obj
@@ -140,12 +148,12 @@ class BasicSource(DataSource):
             Independent variable: [ 2.0, 3.0 ]
             Dependent variable: [ -10.0, 10.0 ]
         """
-        ret = ''
-        ret += 'Independent variable minimum: {0}\n'.format(
-            '-inf' if self.indep_min is None else self.indep_min
+        ret = ""
+        ret += "Independent variable minimum: {0}\n".format(
+            "-inf" if self.indep_min is None else self.indep_min
         )
-        ret += 'Independent variable maximum: {0}\n'.format(
-            '+inf' if self.indep_max is None else self.indep_max
+        ret += "Independent variable maximum: {0}\n".format(
+            "+inf" if self.indep_max is None else self.indep_max
         )
         ret += super(BasicSource, self).__str__()
         return ret
@@ -156,60 +164,60 @@ class BasicSource(DataSource):
     def _get_indep_min(self):
         return self._indep_min
 
-    @pexdoc.pcontracts.contract(dep_var='real_numpy_vector')
+    @pexdoc.pcontracts.contract(dep_var="real_numpy_vector")
     def _set_dep_var(self, dep_var):
         pexdoc.exh.addex(
             ValueError,
-            'Arguments `indep_var` and `dep_var` must have'
-            ' the same number of elements',
-            _C(dep_var, self._raw_indep_var) and
-            (self._raw_indep_var.size != dep_var.size)
+            "Arguments `indep_var` and `dep_var` must have"
+            " the same number of elements",
+            _C(dep_var, self._raw_indep_var)
+            and (self._raw_indep_var.size != dep_var.size),
         )
         self._raw_dep_var = peng.round_mantissa(dep_var, PRECISION)
         self._update_dep_var()
 
-    @pexdoc.pcontracts.contract(indep_max='real_num')
+    @pexdoc.pcontracts.contract(indep_max="real_num")
     def _set_indep_max(self, indep_max):
         pexdoc.exh.addex(
             ValueError,
-            'Argument `indep_min` is greater than argument `indep_max`',
-            _C(self.indep_min, indep_max) and (indep_max < self.indep_min)
+            "Argument `indep_min` is greater than argument `indep_max`",
+            _C(self.indep_min, indep_max) and (indep_max < self.indep_min),
         )
         self._indep_max = (
             peng.round_mantissa(indep_max, PRECISION)
-            if not isinstance(indep_max, int) else
-            indep_max
+            if not isinstance(indep_max, int)
+            else indep_max
         )
         # Apply minimum and maximum range bounding and assign it
         # to self._indep_var and thus this is what self.indep_var returns
         self._update_indep_var()
         self._update_dep_var()
 
-    @pexdoc.pcontracts.contract(indep_min='real_num')
+    @pexdoc.pcontracts.contract(indep_min="real_num")
     def _set_indep_min(self, indep_min):
         pexdoc.exh.addex(
             ValueError,
-            'Argument `indep_min` is greater than argument `indep_max`',
-            _C(self.indep_max, indep_min) and (self.indep_max < indep_min)
+            "Argument `indep_min` is greater than argument `indep_max`",
+            _C(self.indep_max, indep_min) and (self.indep_max < indep_min),
         )
         self._indep_min = (
             peng.round_mantissa(indep_min, PRECISION)
-            if not isinstance(indep_min, int) else
-            indep_min
+            if not isinstance(indep_min, int)
+            else indep_min
         )
         # Apply minimum and maximum range bounding and assign it to
         # self._indep_var and thus this is what self.indep_var returns
         self._update_indep_var()
         self._update_dep_var()
 
-    @pexdoc.pcontracts.contract(indep_var='increasing_real_numpy_vector')
+    @pexdoc.pcontracts.contract(indep_var="increasing_real_numpy_vector")
     def _set_indep_var(self, indep_var):
         pexdoc.exh.addex(
             ValueError,
-            'Arguments `indep_var` and `dep_var` must have the '
-            'same number of elements',
-            _C(indep_var, self._raw_dep_var) and
-            (self._raw_dep_var.size != indep_var.size)
+            "Arguments `indep_var` and `dep_var` must have the "
+            "same number of elements",
+            _C(indep_var, self._raw_dep_var)
+            and (self._raw_dep_var.size != indep_var.size),
         )
         self._raw_indep_var = peng.round_mantissa(indep_var, PRECISION)
         # Apply minimum and maximum range bounding and assign it to
@@ -218,10 +226,7 @@ class BasicSource(DataSource):
         self._update_dep_var()
 
     def _update_dep_var(self):
-        """
-        Update dependent variable (if assigned) to match the independent
-        variable range bounding
-        """
+        """Update dependent variable to match independent variable range bounding."""
         self._dep_var = self._raw_dep_var
         if _C(self._indep_var_indexes, self._raw_dep_var):
             super(BasicSource, self)._set_dep_var(
@@ -229,20 +234,18 @@ class BasicSource(DataSource):
             )
 
     def _update_indep_var(self):
-        """
-        Update independent variable according to its minimum and maximum limits
-        """
+        """Update independent variable according to its minimum and maximum limits."""
         empty_ex = pexdoc.exh.addex(
             ValueError,
-            'Argument `indep_var` is empty after `indep_min`/`indep_max`'
-            ' range bounding'
+            "Argument `indep_var` is empty after `indep_min`/`indep_max`"
+            " range bounding",
         )
         if self._raw_indep_var is not None:
             indep_min = _SEL(self.indep_min, self._raw_indep_var[0])
             indep_max = _SEL(self.indep_max, self._raw_indep_var[-1])
             min_indexes = self._raw_indep_var >= indep_min
             max_indexes = self._raw_indep_var <= indep_max
-            self._indep_var_indexes = numpy.where(min_indexes & max_indexes)
+            self._indep_var_indexes = np.where(min_indexes & max_indexes)
             super(BasicSource, self)._set_indep_var(
                 self._raw_indep_var[self._indep_var_indexes]
             )
@@ -250,12 +253,10 @@ class BasicSource(DataSource):
 
     # Managed attributes
     dep_var = property(
-        DataSource._get_dep_var,
-        _set_dep_var,
-        doc='Dependent variable Numpy vector'
+        DataSource._get_dep_var, _set_dep_var, doc="Dependent variable Numpy vector"
     )
     r"""
-    Gets or sets the dependent variable data
+    Get or set the dependent variable data.
 
     :type: `RealNumpyVector <https://peng.readthedocs.io/en/stable/
            api.html#realnumpyvector>`_
@@ -275,13 +276,14 @@ class BasicSource(DataSource):
     """
 
     indep_max = property(
-        _get_indep_max, _set_indep_max, doc='Maximum of independent variable'
+        _get_indep_max, _set_indep_max, doc="Maximum of independent variable"
     )
     r"""
-    Gets or sets the maximum independent variable limit. If :code:`None` no
-    maximum thresholding is applied to the data
+    Get or set the maximum independent variable limit.
 
-    :type: `RealNum <http://pexdoc.readthedocs.io/en/stable/
+    If :code:`None` no maximum thresholding is applied to the data
+
+    :type: `RealNum <https://pexdoc.readthedocs.io/en/stable/
            ptypes.html#realnum>`_ *or None*
 
     .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc())]]]
@@ -302,13 +304,14 @@ class BasicSource(DataSource):
     """
 
     indep_min = property(
-        _get_indep_min, _set_indep_min, doc='Minimum of independent variable'
+        _get_indep_min, _set_indep_min, doc="Minimum of independent variable"
     )
     r"""
-    Gets or sets the minimum independent variable limit. If :code:`None` no
-    minimum thresholding is applied to the data
+    Get or set the minimum independent variable limit.
 
-    :type: `RealNum <http://pexdoc.readthedocs.io/en/stable/
+    If :code:`None` no minimum thresholding is applied to the data
+
+    :type: `RealNum <https://pexdoc.readthedocs.io/en/stable/
            ptypes.html#realnum>`_ *or None*
 
     .. [[[cog cog.out(exobj_plot.get_sphinx_autodoc())]]]
@@ -331,10 +334,10 @@ class BasicSource(DataSource):
     indep_var = property(
         DataSource._get_indep_var,
         _set_indep_var,
-        doc='Independent variable Numpy vector'
+        doc="Independent variable Numpy vector",
     )
     r"""
-    Gets or sets the independent variable data
+    Get or set the independent variable data.
 
     :type: `IncreasingRealNumpyVector <https://peng.readthedocs.io/
            en/stable/api.html#increasingrealnumpyvector>`_
