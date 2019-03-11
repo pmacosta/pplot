@@ -1358,7 +1358,7 @@ class Panel(object):
                 tobjs = axis_sec.xaxis.get_ticklabels()
                 tobjs = [label for label in tobjs if label.get_text().strip()]
                 axis_sec.tick_params(
-                    axis="x", which="both", length=0, labelbottom="off"
+                    axis="x", which="both", length=0, labelbottom=False
                 )
         # Delete labels so that they are not counted in sizing computations
         if (not disp_indep_axis) and axis_prim:

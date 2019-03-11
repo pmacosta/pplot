@@ -30,6 +30,7 @@ with warnings.catch_warnings():
 import pmisc
 import pexdoc.pcontracts
 import peng
+
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     from scipy.stats import linregress
@@ -555,10 +556,14 @@ class Series(object):
                 self.interp_indep_var = np.concatenate(
                     (self.interp_indep_var, [self.indep_var[-1]])
                 )
-                spl = InterpolatedUnivariateSpline(self.indep_var, self.dep_var)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=RuntimeWarning)
+                    spl = InterpolatedUnivariateSpline(self.indep_var, self.dep_var)
                 self.interp_dep_var = spl(self.interp_indep_var)
             elif self.interp == "LINREG":
-                slope, intercept, _, _, _ = linregress(self.indep_var, self.dep_var)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=RuntimeWarning)
+                    slope, intercept, _, _, _ = linregress(self.indep_var, self.dep_var)
                 self.interp_indep_var = self.indep_var
                 self.interp_dep_var = intercept + (slope * self.indep_var)
         self._scale_indep_var(self._scaling_factor_indep_var)

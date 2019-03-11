@@ -238,6 +238,6 @@
 		"url":"http://imageio.github.io",
 		"cat":["tests"],
 		"ver":">=2.5.0",
-		"pos":28
+		"pos":29
 	}
 }

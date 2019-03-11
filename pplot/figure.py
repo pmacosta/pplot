@@ -28,6 +28,7 @@ import warnings
 # import warnings
 # PyPI imports
 import PIL
+
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     import numpy as np

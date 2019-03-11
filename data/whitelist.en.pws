@@ -1,4 +1,4 @@
-personal_ws-1.1 en 2028 utf-8
+personal_ws-1.1 en 2030 utf-8
 aa
 aaa
 abc
@@ -757,6 +757,7 @@ ilength
 iline
 ilines
 imag
+imageio
 imax
 img
 imgtol
@@ -980,6 +981,7 @@ markersize
 mathjax
 matplotlib
 Matplotlib
+matplotlibrc
 maxcolors
 mdict
 mdir

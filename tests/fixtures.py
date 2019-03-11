@@ -1,7 +1,7 @@
 # fixtures.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,E0611,R0903,R0914,W0621
+# pylint: disable=C0111,C0411,E0611,R0903,R0914,W0621
 
 # Standard library imports
 from __future__ import print_function
@@ -9,13 +9,17 @@ import math
 import os
 import shutil
 import subprocess
+import warnings
 
 # PyPI imports
-from PIL import Image
-import numpy as np
-import pytest
-import scipy
 from imageio import imread
+import numpy as np
+from PIL import Image
+import pytest
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    import scipy
 
 # Intra-package imports
 import pplot
@@ -42,10 +46,12 @@ def compare_images(ref_fname, act_fname, no_print=True, isize=None):
         ref_img = imread(ref_fname).astype(float)
         act_img = imread(act_fname).astype(float)
         diff = ref_img - act_img
-        # Manhattan norm
-        m_norm = scipy.sum(np.abs(diff))
-        # Zero norm
-        z_norm = scipy.linalg.norm(diff.ravel(), 0)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
+            # Manhattan norm
+            m_norm = scipy.sum(np.abs(diff))
+            # Zero norm
+            z_norm = scipy.linalg.norm(diff.ravel(), 0)
     result = bool((m_norm < IMGTOL) and (z_norm < IMGTOL))
     if not no_print:
         print(
