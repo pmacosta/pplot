@@ -231,5 +231,13 @@
 		"cat":["tests"],
 		"ver":">=3.0.0",
 		"pos":28
+	},
+	"imageio":{
+		"name":"Imageio",
+		"optional":false,
+		"url":"http://imageio.github.io",
+		"cat":["tests"],
+		"ver":">=2.5.0",
+		"pos":28
 	}
 }

@@ -15,7 +15,7 @@ from PIL import Image
 import numpy as np
 import pytest
 import scipy
-from scipy.misc import imread
+from imageio import imread
 
 # Intra-package imports
 import pplot

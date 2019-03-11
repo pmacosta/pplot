@@ -41,11 +41,11 @@ class TestSeries(object):
             {"value": "o", "string": "o"},
             {
                 "value": mpl.path.Path([(0, 0), (1, 1), (1, 1), (1, 0), (0, 0)]),
-                "string": "mpl.path.Path object",
+                "string": "matplotlib.path.Path object",
             },
             {"value": [(0, 0), (1, 1)], "string": "[(0, 0), (1, 1)]"},
             {"value": r"$a_{b}$", "string": r"$a_{b}$"},
-            {"value": mpl.markers.TICKLEFT, "string": "mpl.markers.TICKLEFT"},
+            {"value": mpl.markers.TICKLEFT, "string": "matplotlib.markers.TICKLEFT"},
         ],
     )
     def test_str(self, default_source, mdict):
