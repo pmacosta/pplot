@@ -250,6 +250,11 @@ jobs:
       fi
       pytest --junitxml="${RESULTS_DIR}"/testresults/test-results.xml --cov-config="${COV_FILE}" --cov="${SOURCE_DIR}" --cov-report=xml --cov-report=html
     displayName: Unit tests
+    continueOnError: true
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'Build artifacts'
+      targetPath: '$(ARTIFACTS_DIR)'
   - bash: |
       export PYTHONPATH="$("${SBIN_DIR}"/winnorm_path.py "${PYTHONPATH}")"
       if [ -f "${SBIN_DIR}"/build_docs.py ]; then
