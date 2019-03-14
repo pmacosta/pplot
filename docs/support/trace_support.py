@@ -83,6 +83,7 @@ def run_trace(
         test_cmd = (
             ["--color=yes"]
             + (["-s", "-vv"] if debug else ["-q", "-q", "-q"])
+            + ["--disable-warnings"]
             + ["-x"]
             + ([par.noption] if par.noption else [])
             + ["-m " + mname]
