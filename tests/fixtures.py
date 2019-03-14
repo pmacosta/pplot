@@ -8,7 +8,6 @@ from __future__ import print_function
 import math
 import os
 import shutil
-import subprocess
 import warnings
 
 # PyPI imports
@@ -128,38 +127,15 @@ def default_panel(default_series):
     )
 
 
-def export_image(fname, method=True):
+def export_image(fname):
     tdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    artifact_dir = os.path.join(tdir, "artifacts")
+    artifact_dir = os.environ.get("ARTIFACTS_DIR", os.path.join(tdir, "artifacts"))
     if not os.path.exists(artifact_dir):
         os.makedirs(artifact_dir)
-    if method:
-        src = fname
-        dst = os.path.join(artifact_dir, os.path.basename(fname))
-        print("Copying image to {0}".format(dst))
-        shutil.copyfile(src, dst)
-    else:
-        if os.environ.get("APPVEYOR", None):
-            proc = subprocess.Popen(
-                ["appveyor", "PushArtifact", os.path.realpath(fname)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            proc.communicate()
-        elif os.environ.get("TRAVIS", None):
-            # If only a few binary files need to be exported a hex dump works,
-            # otherwise the log can grow past 4MB and the process is terminated
-            # by Travis
-            proc = subprocess.Popen(
-                [
-                    os.path.join(tdir, "sbin", "png-to-console.sh"),
-                    os.path.realpath(fname),
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            stdout, _ = proc.communicate()
-            print(stdout)
+    src = fname
+    dst = os.path.join(artifact_dir, os.path.basename(fname))
+    print("Copying image to {0}".format(dst))
+    shutil.copyfile(src, dst)
 
 
 @pytest.fixture

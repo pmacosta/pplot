@@ -75,6 +75,7 @@ jobs:
       export RESULTS_DIR=${REPO_DIR}/results
       export SOURCE_DIR=${PYTHON_SITE_PACKAGES}/${PKG_NAME_DIR}
       export TRACER_DIR=${EXTRA_DIR}/docs/support
+      export ARTIFACTS_DIR=${EXTRA_DIR}/artifacts
       export PYTHONPATH=${PYTHONPATH}:${SBIN_DIR}:${EXTRA_DIR}:${EXTRA_DIR}/tests:${EXTRA_DIR}/docs:${EXTRA_DIR}/docs/support
       export COV_FILE=${SOURCE_DIR}/.coveragerc_ci_${INTERP}
       export LANG="en_US.UTF-8"
@@ -90,6 +91,7 @@ jobs:
       echo "##vso[task.setvariable variable=RESULTS_DIR]$RESULTS_DIR"
       echo "##vso[task.setvariable variable=SOURCE_DIR]$SOURCE_DIR"
       echo "##vso[task.setvariable variable=TRACER_DIR]$TRACER_DIR"
+      echo "##vso[task.setvariable variable=ARTIFACTS_DIR]$ARTIFACTS_DIR"
       echo "##vso[task.setvariable variable=PYTHONPATH]$PYTHONPATH"
       echo "##vso[task.setvariable variable=COV_FILE]$COV_FILE"
       echo "##vso[task.setvariable variable=LANG]$LANG"
@@ -107,6 +109,7 @@ jobs:
       echo "RESULTS_DIR=${RESULTS_DIR}"
       echo "SOURCE_DIR=${SOURCE_DIR}"
       echo "TRACER_DIR=${TRACER_DIR}"
+      echo "ARTIFACTS_DIR=${ARTIFACTS_DIR}"
       echo "PYTHONPATH=${PYTHONPATH}"
       echo "COV_FILE=${COV_FILE}"
       echo "LANG=${LANG}"
@@ -263,3 +266,7 @@ jobs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(RESULTS_DIR)/codecoverage/**/coverage.xml'
       reportDirectory: '$(RESULTS_DIR)/codecoverage/**/htmlcov'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'Build artifacts'
+      targetPath: '$(ARTIFACTS_DIR)'

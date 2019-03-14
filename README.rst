@@ -57,6 +57,7 @@ Description
 .. _Decorator: https://decorator.readthedocs.io
 .. _Docutils: http://docutils.sourceforge.net/docs
 .. _Funcsigs: https://pypi.org/project/funcsigs
+.. _Imageio: http://imageio.github.io
 .. _Matplotlib: https://matplotlib.org
 .. _Mock: https://docs.python.org/3/library/unittest.mock.html
 .. _Numpy: http://www.numpy.org
@@ -78,8 +79,8 @@ Description
 .. _ReadTheDocs Sphinx theme: https://github.com/rtfd/sphinx_rtd_theme
 .. _Inline Syntax Highlight Sphinx Extension:
    https://bitbucket.org/klorenz/sphinxcontrib-inlinesyntaxhighlight
-.. _Shellcheck Linter Sphinx Extension: https://pypi.org/project
-   /sphinxcontrib-shellcheck
+.. _Shellcheck Linter Sphinx Extension:
+   https://pypi.org/project/sphinxcontrib-shellcheck
 .. _Tox: https://testrun.org/tox
 .. _Virtualenv: https://docs.python-guide.org/dev/virtualenvs
 .. [[[end]]]
@@ -345,6 +346,8 @@ Contributing
     * `Docutils`_ (0.12 or newer)
 
     * `Funcsigs`_ (1.0.2 or newer)
+
+    * `Imageio`_ (2.5.0 or newer)
 
     * `Inline Syntax Highlight Sphinx Extension`_ (0.2 or newer)
 

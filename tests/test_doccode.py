@@ -1,13 +1,12 @@
 # test_doccode.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,E1129,R0914,R0915,W0212,W0640
+# pylint: disable=C0111,C0302,C0413,E1129,R0914,R0915,W0212,W0640
 
 # Standard library imports
 from __future__ import print_function
 import glob
 import os
-import shutil
 import subprocess
 
 # PyPI imports
@@ -18,43 +17,13 @@ import matplotlib as mpl
 # matplotlib back-end misconfiguration
 mpl.rcParams["backend"] = "Agg"
 
+# Intra-package imports
+from .fixtures import export_image
+
 
 ###
 # Functions
 ###
-def export_image(fname, method=True):
-    tdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    artifact_dir = os.path.join(tdir, "artifacts")
-    if not os.path.exists(artifact_dir):
-        os.makedirs(artifact_dir)
-    if method:
-        src = fname
-        dst = os.path.join(artifact_dir, os.path.basename(fname))
-        shutil.copyfile(src, dst)
-    else:
-        if os.environ.get("APPVEYOR", None):
-            proc = subprocess.Popen(
-                ["appveyor", "PushArtifact", os.path.realpath(fname)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            proc.communicate()
-        elif os.environ.get("TRAVIS", None):
-            # If only a few binary files need to be exported a hex dump works,
-            # otherwise the log can grow past 4MB and the process is terminated
-            # by Travis
-            proc = subprocess.Popen(
-                [
-                    os.path.join(tdir, "sbin", "png-to-console.sh"),
-                    os.path.realpath(fname),
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            stdout, _ = proc.communicate()
-            print(stdout)
-
-
 def test_plot_doccode(capsys):
     """Test used in plot module."""
     # pylint: disable=E1103,R0204
