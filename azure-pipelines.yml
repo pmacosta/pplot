@@ -147,6 +147,7 @@ jobs:
   - bash: |
       mkdir -p ${RESULTS_DIR}/testresults
       mkdir -p ${RESULTS_DIR}/codecoverage
+      mkdir -p ${ARTIFACTS_DIR}
     displayName: Create directories
   - bash: |
       "${REPO_DIR}"/pypkg/fix_windows_symlinks.py
@@ -250,12 +251,8 @@ jobs:
       fi
       pytest --junitxml="${RESULTS_DIR}"/testresults/test-results.xml --cov-config="${COV_FILE}" --cov="${SOURCE_DIR}" --cov-report=xml --cov-report=html
     displayName: Unit tests
-    continueOnError: true
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'Build artifacts'
-      targetPath: '$(ARTIFACTS_DIR)'
   - bash: |
+      cp "${REPO_DIR}"/matplotlibrc "${SBIN_DIR}"/.
       export PYTHONPATH="$("${SBIN_DIR}"/winnorm_path.py "${PYTHONPATH}")"
       if [ -f "${SBIN_DIR}"/build_docs.py ]; then
           "${SBIN_DIR}"/build_docs.py -r -t -d "$("${SBIN_DIR}"//winnorm_path.py "${SOURCE_DIR}")" || exit 1
@@ -267,11 +264,13 @@ jobs:
       testResultsFiles: '$(RESULTS_DIR)/testresults/**/test-*.xml'
       testRunTitle: 'Publish test results for Python $(python.version)'
   - task: PublishCodeCoverageResults@1
+    condition: succeededOrFailed()
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(RESULTS_DIR)/codecoverage/**/coverage.xml'
       reportDirectory: '$(RESULTS_DIR)/codecoverage/**/htmlcov'
   - task: PublishPipelineArtifact@0
+    condition: succeededOrFailed()
     inputs:
       artifactName: 'Build artifacts'
       targetPath: '$(ARTIFACTS_DIR)'
