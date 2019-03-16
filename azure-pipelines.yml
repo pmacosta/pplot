@@ -17,36 +17,58 @@ jobs:
       linux_python27:
         imageName: 'ubuntu-16.04'
         python.version: '2.7'
+        aname: 'linux'
+        pyname: 'py27'
       linux_python35:
         imageName: 'ubuntu-16.04'
         python.version: '3.5'
+        aname: 'linux'
+        pyname: 'py25'
       linux_python36:
         imageName: 'ubuntu-16.04'
         python.version: '3.6'
+        aname: 'linux'
+        pyname: 'py36'
       linux_python37:
         imageName: 'ubuntu-16.04'
         python.version: '3.7'
+        aname: 'linux'
+        pyname: 'py37'
       mac_python27:
         imageName: 'macos-10.13'
         python.version: '2.7'
+        aname: 'macos'
+        pyname: 'py27'
       mac_python35:
         imageName: 'macos-10.13'
         python.version: '3.5'
+        aname: 'macos'
+        pyname: 'py35'
       mac_python36:
         imageName: 'macos-10.13'
         python.version: '3.6'
+        aname: 'macos'
+        pyname: 'py36'
       mac_python37:
         imageName: 'macos-10.13'
         python.version: '3.7'
+        aname: 'macos'
+        pyname: 'py37'
       windows_python35:
         imageName: 'vs2017-win2016'
         python.version: '3.5'
+        aname: 'windows'
+        pyname: 'py35'
       windows_python36:
         imageName: 'vs2017-win2016'
         python.version: '3.6'
+        aname: 'windows'
+        pyname: 'py36'
       windows_python37:
         imageName: 'vs2017-win2016'
         python.version: '3.7'
+        aname: 'windows'
+        pyname: 'py37'
 
   pool:
     vmImage: $(imageName)
@@ -264,8 +286,12 @@ jobs:
       rootFolderOrFile: '$(ARTIFACTS_DIR)'
       includeRootFolder: true
       archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(aname)-$(pyname).zip'
       replaceExistingArchive: true
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: build_artifacts
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
