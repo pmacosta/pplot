@@ -241,6 +241,7 @@ jobs:
   - bash: |
       cd "${EXTRA_DIR}"/tests || exit 1
       export PYTHONPATH="$("${SBIN_DIR}"/winnorm_path.py "${PYTHONPATH}")"
+      export ARTIFACTS_DIR="$("${SBIN_DIR}"/winnorm_path.py "${ARTIFACTS_DIR}")"
       if pytest --collect-only --doctest-glob="*.rst" "${EXTRA_DIR}"/docs &> /dev/null; then
         echo "Testing reStructuredText files"
         pytest --doctest-glob="*.rst" "${EXTRA_DIR}"/docs || exit 1
@@ -252,12 +253,19 @@ jobs:
       pytest --junitxml="${RESULTS_DIR}"/testresults/test-results.xml --cov-config="${COV_FILE}" --cov="${SOURCE_DIR}" --cov-report=xml --cov-report=html
     displayName: Unit tests
   - bash: |
-      cp "${REPO_DIR}"/matplotlibrc "${SBIN_DIR}"/.
       export PYTHONPATH="$("${SBIN_DIR}"/winnorm_path.py "${PYTHONPATH}")"
       if [ -f "${SBIN_DIR}"/build_docs.py ]; then
           "${SBIN_DIR}"/build_docs.py -r -t -d "$("${SBIN_DIR}"//winnorm_path.py "${SOURCE_DIR}")" || exit 1
       fi
     displayName: Documentation rebuild test
+  - task: ArchiveFiles@2
+    condition: succeededOrFailed()
+    inputs:
+      rootFolderOrFile: '$(ARTIFACTS_DIR)'
+      includeRootFolder: true
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      replaceExistingArchive: true
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
@@ -269,8 +277,3 @@ jobs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(RESULTS_DIR)/codecoverage/**/coverage.xml'
       reportDirectory: '$(RESULTS_DIR)/codecoverage/**/htmlcov'
-  - task: PublishPipelineArtifact@0
-    condition: succeededOrFailed()
-    inputs:
-      artifactName: 'Build artifacts'
-      targetPath: '$(ARTIFACTS_DIR)'
