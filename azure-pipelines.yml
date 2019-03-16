@@ -281,7 +281,7 @@ jobs:
       fi
     displayName: Documentation rebuild test
   - task: ArchiveFiles@2
-    condition: succeededOrFailed()
+    condition: failed()
     inputs:
       rootFolderOrFile: '$(ARTIFACTS_DIR)'
       includeRootFolder: true
@@ -289,7 +289,7 @@ jobs:
       archiveFile: '$(Build.ArtifactStagingDirectory)/$(aname)-$(pyname).zip'
       replaceExistingArchive: true
   - task: PublishBuildArtifacts@1
-    condition: succeededOrFailed()
+    condition: failed()
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: build_artifacts
