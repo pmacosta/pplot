@@ -289,6 +289,7 @@ jobs:
       archiveFile: '$(Build.ArtifactStagingDirectory)/$(aname)-$(pyname).zip'
       replaceExistingArchive: true
   - task: PublishBuildArtifacts@1
+    condition: succeededOrFailed()
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: build_artifacts
