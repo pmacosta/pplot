@@ -34,7 +34,7 @@
 	"decorator":{
 		"name":"Decorator",
 		"optional":false,
-		"url":"https://decorator.readthedocs.io",
+		"url":"https://raw.githubusercontent.com/micheles/decorator/master/docs/documentation.md",
 		"cat":["main", "rtd"],
 		"ver":">=4.2.1",
 		"pos":5
@@ -131,7 +131,7 @@
 	"six":{
 		"name":"Six",
 		"optional":false,
-		"url":"https://pythonhosted.org/six",
+		"url":"https://six.readthedocs.io",
 		"cat":["main", "rtd"],
 		"ver":">=1.11.0",
 		"pos":16

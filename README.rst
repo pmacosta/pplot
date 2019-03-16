@@ -54,7 +54,8 @@ Description
 .. _Astroid: https://bitbucket.org/logilab/astroid
 .. _Cog: https://nedbatchelder.com/code/cog
 .. _Coverage: https://coverage.readthedocs.io
-.. _Decorator: https://decorator.readthedocs.io
+.. _Decorator: https://raw.githubusercontent.com/micheles/decorator/mast
+   er/docs/documentation.md
 .. _Docutils: http://docutils.sourceforge.net/docs
 .. _Funcsigs: https://pypi.org/project/funcsigs
 .. _Imageio: http://imageio.github.io
@@ -74,7 +75,7 @@ Description
 .. _Pytest-pmisc: https://pytest-pmisc.readthedocs.org
 .. _Pytest-xdist: https://pypi.org/project/pytest-xdist
 .. _Scipy: https://www.scipy.org
-.. _Six: https://pythonhosted.org/six
+.. _Six: https://six.readthedocs.io
 .. _Sphinx: http://sphinx-doc.org
 .. _ReadTheDocs Sphinx theme: https://github.com/rtfd/sphinx_rtd_theme
 .. _Inline Syntax Highlight Sphinx Extension:
