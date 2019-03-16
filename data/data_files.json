@@ -32,6 +32,7 @@
 	{"dir":"tests/support/ref_images_2", "file":"*.png"},
 	{"dir":"tests/support/ref_images_3", "file":"*.png"},
 	{"dir":"tests/support/ref_images_4", "file":"*.png"},
+	{"dir":"tests/support/ref_images_5", "file":"*.png"},
 	{"dir":"pypkg", "file":"*.sh"},
 	{"dir":"pypkg", "file":"*.py"},
 	{"dir":"requirements", "file":"*"}
