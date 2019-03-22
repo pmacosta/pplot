@@ -5,6 +5,8 @@
 Changelog
 =========
 
+* 1.1.4 [2019-03-22]: Documentation and dependencies update
+
 * 1.1.3 [2019-03-16]: Adopted lightweight package management framework
 
 * 1.1.2 [2018-01-16]: Hosted documentation build fixes

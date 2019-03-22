@@ -54,7 +54,7 @@ distro: docs clean sdist wheel
 
 docs: FORCE
 	@$(SBIN_DIR)/build_docs.py $(ARGS)
-	@cd $(PKG_DIR)/docs && make linkcheck
+	@cd $(PKG_DIR)/docs && make linkcheck && make lintshell
 
 default:
 	@echo "No default action"

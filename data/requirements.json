@@ -4,72 +4,68 @@
 		"optional":false,
 		"url":"http://docutils.sourceforge.net/docs",
 		"cat":["tests"],
-		"ver":">=0.12",
+		"ver":">=0.14",
 		"pos":0
-	},
-	"astroid":{
-		"name":"Astroid",
-		"optional":false,
-		"url":"https://bitbucket.org/logilab/astroid",
-		"cat":["tests"],
-		"ver":">=1.3.8",
-		"pos":2
-	},
-	"cogapp":{
-		"name":"Cog",
-		"optional":false,
-		"url":"https://nedbatchelder.com/code/cog",
-		"cat":["tests"],
-		"ver":">=2.4",
-		"pos":3
-	},
-	"coverage":{
-		"name":"Coverage",
-		"optional":false,
-		"url":"https://coverage.readthedocs.io",
-		"cat":["tests"],
-		"ver":">=3.7.1",
-		"pos":4
-	},
-	"decorator":{
-		"name":"Decorator",
-		"optional":false,
-		"url":"https://raw.githubusercontent.com/micheles/decorator/master/docs/documentation.md",
-		"cat":["main", "rtd"],
-		"ver":">=4.2.1",
-		"pos":5
-	},
-	"funcsigs":{
-		"name":"Funcsigs",
-		"optional":false,
-		"url":"https://pypi.org/project/funcsigs",
-		"cat":["main", "rtd"],
-		"ver":">=1.0.2",
-		"pos":6
-	},
-	"matplotlib":{
-		"name":"Matplotlib",
-		"optional":false,
-		"url":"https://matplotlib.org",
-		"cat":["main"],
-		"ver":">=2.0.0",
-		"pos":7
-	},
-	"mock":{
-		"name":"Mock",
-		"optional":false,
-		"url":"https://docs.python.org/3/library/unittest.mock.html",
-		"cat":["tests"],
-		"ver":">=2.0.0",
-		"pos":6
 	},
 	"numpy":{
 		"name":"Numpy",
 		"optional":false,
 		"url":"http://www.numpy.org",
 		"cat":["main"],
-		"ver":">=1.13.1",
+		"ver":">=1.16.2",
 		"pos":1
+	},
+	"cogapp":{
+		"name":"Cog",
+		"optional":false,
+		"url":"https://nedbatchelder.com/code/cog",
+		"cat":["tests"],
+		"ver":">=2.5.1",
+		"pos":2
+	},
+	"coverage":{
+		"name":"Coverage",
+		"optional":false,
+		"url":"https://coverage.readthedocs.io",
+		"cat":["tests"],
+		"ver":">=4.5.3",
+		"pos":3
+	},
+	"decorator":{
+		"name":"Decorator",
+		"optional":false,
+		"url":"https://raw.githubusercontent.com/micheles/decorator/master/docs/documentation.md",
+		"cat":["main", "rtd"],
+		"ver":">=4.4.0",
+		"pos":4
+	},
+	"funcsigs":{
+		"name":"Funcsigs",
+		"optional":false,
+		"url":"https://pypi.org/project/funcsigs",
+		"cat":["main", "rtd"],
+		"ver":{
+			"py27":">=1.0.2"
+		},
+		"pos":5
+	},
+	"matplotlib":{
+		"name":"Matplotlib",
+		"optional":false,
+		"url":"https://matplotlib.org",
+		"cat":["main"],
+		"ver":">=3.0.3",
+		"pos":6
+	},
+	"mock":{
+		"name":"Mock",
+		"optional":false,
+		"url":"https://docs.python.org/3/library/unittest.mock.html",
+		"cat":["tests"],
+		"ver":{
+			"py27":">=2.0.0"
+		},
+		"pos":7
 	},
 	"pillow":{
 		"name":"Pillow",
@@ -77,8 +73,8 @@
 		"url":"https://python-pillow.org",
 		"cat":["main"],
 		"cat":["main"],
-		"ver":">=4.0.0",
-		"pos":9
+		"ver":">=5.4.1",
+		"pos":8
 	},
 	"pycontracts":{
 		"name":"PyContracts",
@@ -86,63 +82,68 @@
 		"url":"https://andreacensi.github.io/contracts",
 		"cat":["main", "rtd"],
 		"ver":">=1.8.2",
-		"pos":10
+		"pos":9
 	},
 	"pylint":{
 		"name":"Pylint",
 		"optional":false,
 		"url":"https://www.pylint.org",
 		"cat":["tests"],
-		"ver":">=1.8.1",
-		"pos":11
+		"ver":{
+            "py27":">=1.9.4",
+            "py35":">=2.3.1",
+            "py36":">=2.3.1",
+            "py37":">=2.3.1"
+        },
+		"pos":10
 	},
 	"pytest":{
 		"name":"Py.test",
 		"optional":false,
 		"url":"http://pytest.org",
 		"cat":["tests", "rtd"],
-		"ver":">=3.3.2",
-		"pos":12
+		"ver":">=4.3.1",
+		"pos":11
 	},
 	"pytest-cov":{
 		"name":"Pytest-coverage",
 		"optional":false,
 		"url":"https://pypi.org/project/pytest-cov",
 		"cat":["tests"],
-		"ver":">=2.5.1",
-		"pos":13
+		"ver":">=2.6.1",
+		"pos":12
 	},
 	"pytest-xdist":{
 		"name":"Pytest-xdist",
 		"optional":true,
 		"url":"https://pypi.org/project/pytest-xdist",
 		"cat":["tests"],
-		"ver":">=1.22.0",
-		"pos":14
+		"ver":">=1.26.1",
+		"pos":13
 	},
 	"scipy":{
 		"name":"Scipy",
 		"optional":false,
 		"url":"https://www.scipy.org",
 		"cat":["main"],
-		"ver":">=1.0.0",
-		"pos":15
+		"ver":">=1.2.1",
+		"pos":14
 	},
 	"six":{
 		"name":"Six",
 		"optional":false,
-		"url":"https://six.readthedocs.io",
+		"url":"https://pythonhosted.org/six",
 		"cat":["main", "rtd"],
-		"ver":">=1.11.0",
-		"pos":16
+		"ver":">=1.12.0",
+		"pos":15
 	},
 	"sphinx":{
 		"name":"Sphinx",
 		"optional":false,
 		"url":"http://sphinx-doc.org",
 		"cat":["docs", "rtd"],
-		"ver":">=1.6.6",
-		"pos":17
+		"ver":">=1.8.5",
+		"pos":16
 	},
 	"sphinxcontrib-inlinesyntaxhighlight":{
 		"name":"Inline Syntax Highlight Sphinx Extension",
@@ -150,79 +151,79 @@
 		"url":"https://bitbucket.org/klorenz/sphinxcontrib-inlinesyntaxhighlight",
 		"cat":["docs", "rtd"],
 		"ver":">=0.2",
-		"pos":18
+		"pos":17
 	},
 	"sphinx_rtd_theme":{
 		"name":"ReadTheDocs Sphinx theme",
 		"optional":false,
 		"url":"https://github.com/rtfd/sphinx_rtd_theme",
 		"cat":["docs"],
-		"ver":">=0.2.4",
-		"pos":19
+		"ver":">=0.4.3",
+		"pos":18
 	},
 	"tox":{
 		"name":"Tox",
 		"optional":false,
 		"url":"https://testrun.org/tox",
 		"cat":["tests"],
-		"ver":">=2.9.1",
-		"pos":20
+		"ver":">=3.7.0",
+		"pos":19
 	},
 	"virtualenv":{
 		"name":"Virtualenv",
 		"optional":false,
 		"url":"https://docs.python-guide.org/dev/virtualenvs",
 		"cat":["tests"],
-		"ver":">=15.1.0",
-		"pos":21
+		"ver":">=16.4.3",
+		"pos":20
 	},
 	"pmisc":{
 		"name":"Pmisc",
 		"optional":false,
 		"url":"http://pmisc.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.5.5",
-		"pos":22
+		"ver":">=1.5.8",
+		"pos":21
 	},
 	"pexdoc":{
 		"name":"Pexdoc",
 		"optional":false,
 		"url":"https://pexdoc.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.1.1",
-		"pos":23
+		"ver":">=1.1.4",
+		"pos":22
 	},
 	"peng":{
 		"name":"Peng",
 		"optional":false,
 		"url":"https://peng.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.0.8",
-		"pos":24
+		"ver":">=1.0.9",
+		"pos":23
 	},
 	"pcsv":{
 		"name":"Pcsv",
 		"optional":false,
 		"url":"https://pcsv.readthedocs.org",
 		"cat":["main", "rtd"],
-		"ver":">=1.0.7",
-		"pos":25
+		"ver":">=1.0.8",
+		"pos":24
 	},
 	"pytest-pmisc":{
 		"name":"Pytest-pmisc",
 		"optional":false,
 		"url":"https://pytest-pmisc.readthedocs.org",
 		"cat":["tests"],
-		"ver":">=1.0.6",
-		"pos":26
+		"ver":">=1.0.7",
+		"pos":25
 	},
 	"sphinxcontrib-shellcheck":{
 		"name":"Shellcheck Linter Sphinx Extension",
 		"optional":false,
 		"url":"https://pypi.org/project/sphinxcontrib-shellcheck",
 		"cat":["docs", "rtd"],
-		"ver":">=1.0.5",
-		"pos":27
+		"ver":">=1.0.8",
+		"pos":26
 	},
 	"pydocstyle":{
 		"name":"Pydocstyle",
@@ -230,7 +231,7 @@
 		"url":"http://www.pydocstyle.org",
 		"cat":["tests"],
 		"ver":">=3.0.0",
-		"pos":28
+		"pos":27
 	},
 	"imageio":{
 		"name":"Imageio",
@@ -238,6 +239,6 @@
 		"url":"http://imageio.github.io",
 		"cat":["tests"],
 		"ver":">=2.5.0",
-		"pos":29
+		"pos":28
 	}
 }

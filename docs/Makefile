@@ -44,6 +44,7 @@ help:
 	@echo "  xml        to make Docutils-native XML files"
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
+	@echo "  lintshell to check shell code for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
 clean:
@@ -160,6 +161,12 @@ linkcheck:
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in $(BUILDDIR)/linkcheck/output.txt."
+
+lintshell:
+	$(SPHINXBUILD) -b shellcheck $(ALLSPHINXOPTS) $(BUILDDIR)/shellcheck
+	@echo
+	@echo "Shell check complete; look for any errors in the above output " \
+	      "or in $(BUILDDIR)/shellcheck/output.txt."
 
 doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
