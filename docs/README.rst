@@ -542,7 +542,8 @@ Contributing
 
     * `Inline Syntax Highlight Sphinx Extension`_ (0.2 or newer)
 
-    * `Matplotlib`_ (3.0.3 or newer)
+    * `Matplotlib`_ (Python 2.x: 2.2.4 or newer, Python 3.x: 3.0.3 or
+      newer)
 
     * `Mock`_ (Python 2.x only, 2.0.0 or newer)
 
