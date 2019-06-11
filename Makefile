@@ -9,11 +9,13 @@ SOURCE_DIR ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/$(PKG_NAME)
 EXTRA_DIR ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SBIN_DIR := $(EXTRA_DIR)/pypkg
 ### Custom pylint plugins configuration
+NUM_CPUS := $(shell python -c "from __future__ import print_function; import multiprocessing; print(multiprocessing.cpu_count())")
 PYLINT_PLUGINS_DIR := $(shell if [ -d $(EXTRA_DIR)/pylint_plugins ]; then echo "$(EXTRA_DIR)/pylint_plugins"; fi)
-PYLINT_PLUGINS_LIST := $(shell if [ -d $(EXTRA_DIR)/pylint_plugins ]; then cd $(EXTRA_DIR)/pylint_plugins && ls -m *.py | sed 's|.*/||g' | sed 's|, |,|g' | sed 's|\.py||g'; fi)
+PYLINT_PLUGINS_LIST := $(shell PYLINT_PLUGINS_DIR=$(PYLINT_PLUGINS_DIR) python -c "from __future__ import print_function;import glob; import os; sdir = os.environ.get('PYLINT_PLUGINS_DIR', ''); print(','.join([os.path.basename(fname).replace('.py', '') for fname in glob.glob(os.path.join(sdir, '*.py')) if not os.path.basename(fname).startswith('common')]) if sdir else '')" )
 PYLINT_CLI_APPEND := $(shell if [ -d $(EXTRA_DIR)/pylint_plugins ]; then echo "--load-plugins=$(PYLINT_PLUGINS_LIST)"; fi)
 PYLINT_CMD := pylint \
 	--rcfile=$(EXTRA_DIR)/.pylintrc \
+	-j$(NUM_CPUS) \
 	$(PYLINT_CLI_APPEND) \
 	--output-format=colorized \
 	--reports=no \
@@ -40,7 +42,6 @@ clean: FORCE
 	@find $(PKG_DIR) -name '__pycache__' -delete
 	@find $(PKG_DIR) -name '.coverage*' -delete
 	@find $(PKG_DIR) -name '*.tmp' -delete
-	@find $(PKG_DIR) -name '*.pkl' -delete
 	@find $(PKG_DIR) -name '*.error' -delete
 	@rm -rf $(PKG_DIR)/build
 	@rm -rf	$(PKG_DIR)/dist
@@ -76,6 +77,10 @@ pylint:
 pydocstyle:
 	@echo "Running Pydocstyle on package files"
 	@pydocstyle --config=$(EXTRA_DIR)/.pydocstyle $(LINT_FILES)
+
+rtd:
+	@echo "Testing ReadTheDocs configuration"
+	@READTHEDOCS=True PKG_NAME=$(PKG_NAME) tox -e rtd
 
 sdist: meta
 	@echo "Creating source distribution"

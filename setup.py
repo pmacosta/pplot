@@ -26,6 +26,7 @@ from setuptools.command.test import test as TestCommand
 from pypkg.functions import (
     get_entry_points,
     get_pkg_data_files,
+    get_pkg_submodules,
     load_requirements,
     python_version,
 )
@@ -182,7 +183,7 @@ setup(
     author_email=AUTHOR_EMAIL,
     description=SHORT_DESC,
     long_description=LONG_DESCRIPTION,
-    packages=[PKG_NAME],
+    packages=[PKG_NAME] + [PKG_NAME + "." + item for item in get_pkg_submodules()],
     entry_points=get_entry_points(),
     data_files=DATA_FILES,
     zip_safe=False,

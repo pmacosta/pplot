@@ -22,11 +22,6 @@ import sys
 import sphinx.environment
 from docutils.utils import get_source_line
 
-if sys.hexversion < 0x03000000:
-    from mock import Mock
-else:
-    from unittest.mock import Mock
-
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pypkg.functions import (
@@ -34,6 +29,7 @@ from pypkg.functions import (
     get_pkg_name,
     get_pkg_desc,
     get_pkg_version,
+    get_sphinx_extensions,
 )
 
 PKG_NAME = get_pkg_name()
@@ -45,8 +41,6 @@ COPYRIGHT_RANGE = (
     else "{0}-{1}".format(COPYRIGHT_START_YEAR, CURRENT_YEAR)
 )
 
-
-RTD = os.environ.get("READTHEDOCS", False) == "True"
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -66,7 +60,7 @@ extensions = [
     "sphinxcontrib.inlinesyntaxhighlight",
     "sphinx.ext.doctest",
     "sphinxcontrib.shellcheck",
-]
+] + get_sphinx_extensions()
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -393,36 +387,6 @@ def setup(app):  # noqa: D103
 
 
 autodoc_member_order = "bysource"
-
-if RTD:
-    # Add docs.support module to path
-    for dname, _, fnames in os.walk(os.sep):
-        for fname in fnames:
-            if (fname == "term_echo.py") and ("share" in dname):
-                print(os.path.abspath(os.path.join(dname, fname)))
-                sys.path.append(os.path.dirname(os.path.dirname(dname)))
-
-    # Mock out numpy, matplotlib and scipy modules which are not installed
-    # in ReadTheDocs environment
-    MOCK_MODULES = [
-        "np",
-        "numpy",
-        "matplotlib",
-        "matplotlib.pyplot",
-        "matplotlib.path",
-        "matplotlib.backends",
-        "matplotlib.backends.backend_agg",
-        "matplotlib.text",
-        "matplotlib.transforms",
-        "mpl",
-        "plt",
-        "scipy",
-        "scipy.stats",
-        "scipy.interpolate",
-    ]
-    for MOCK_MODULE in MOCK_MODULES:
-        if MOCK_MODULE in sys.modules:
-            sys.modules.update((MOCK_MODULE, Mock()))
 
 # Eliminate warnings from non-local images (i.e. badges)
 # From https://stackoverflow.com/questions/12772927/
