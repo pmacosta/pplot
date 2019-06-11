@@ -2,7 +2,7 @@
 # compare_images.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111
+# pylint: disable=C0111,E1101
 
 # Standard library imports
 from __future__ import print_function

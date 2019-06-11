@@ -2,7 +2,7 @@
 # compare_image_dirs.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,R1718
+# pylint: disable=C0111,E1101,R1718
 
 # Standard library imports
 from __future__ import print_function
