@@ -16,25 +16,28 @@ exobj_plot = trace_ex_plot_series.trace_module(no_print=True)
 # series.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,E0102,E0611,R0205,W0105
+# pylint: disable=C0111,C0302,C0413,E0102,E0611,R0205,W0105
 
 # Standard library imports
+import os
 import warnings
 
 # PyPI imports
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    import numpy as np
-    import matplotlib.path
-    import matplotlib.pyplot as plt
+if os.environ.get("READTHEDOCS", "") != "True":  # pragma: no cover
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        import numpy as np
+        import matplotlib.path
+        import matplotlib.pyplot as plt
 import pmisc
 import pexdoc.pcontracts
 import peng
 
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    from scipy.stats import linregress
-    from scipy.interpolate import InterpolatedUnivariateSpline
+if os.environ.get("READTHEDOCS", "") != "True":
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        from scipy.stats import linregress
+        from scipy.interpolate import InterpolatedUnivariateSpline
 
 # Intra-package imports
 from .functions import _C

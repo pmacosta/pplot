@@ -16,7 +16,7 @@ exobj_plot = trace_ex_plot_figure.trace_module(no_print=True)
 # figure.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,R0201,R0205,R0914,R0915,W0105,W0212
+# pylint: disable=C0111,C0302,C0413,R0201,R0205,R0914,R0915,W0105,W0212
 
 # Standard library imports
 from __future__ import print_function
@@ -25,16 +25,16 @@ import os
 import sys
 import warnings
 
-# import warnings
 # PyPI imports
-import PIL
+if os.environ.get("READTHEDOCS", "") != "True":  # pragma: no cover
+    import PIL
 
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from matplotlib.backends.backend_agg import FigureCanvasAgg
-    from matplotlib.transforms import Bbox
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        import numpy as np
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        from matplotlib.transforms import Bbox
 import pmisc
 import pexdoc.exh
 import pexdoc.pcontracts

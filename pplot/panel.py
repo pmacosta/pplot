@@ -16,20 +16,22 @@ exobj_plot = trace_ex_plot_panel.trace_module(no_print=True)
 # panel.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,C1801,R0205,R0902,R0903,R0912,R0913,R0914,R0915
+# pylint: disable=C0111,C0302,C0413,C1801,R0205,R0902,R0903,R0912,R0913,R0914,R0915
 # pylint: disable=W0105,W0212
 
 # Standard library imports
+import os
 import sys
 import warnings
 
 # PyPI imports
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from matplotlib.text import Text
-    from matplotlib.transforms import Bbox
+if os.environ.get("READTHEDOCS", "") != "True":  # pragma: no cover
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        import numpy as np
+        import matplotlib.pyplot as plt
+        from matplotlib.text import Text
+        from matplotlib.transforms import Bbox
 import pmisc
 import pexdoc.exh
 import pexdoc.pcontracts

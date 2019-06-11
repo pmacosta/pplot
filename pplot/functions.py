@@ -16,23 +16,25 @@ exobj_plot = trace_ex_plot_functions.trace_module(no_print=True)
 # functions.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,F0401,R0205,R0914,W0105,W0212,W0611
+# pylint: disable=C0111,C0302,C0413,F0401,R0205,R0914,W0105,W0212,W0611
 
 # Standard library imports
 import abc
 import collections
 import itertools
 import math
+import os
 import sys
 import warnings
 
 # PyPI imports
 import six
 
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    import numpy as np
-import matplotlib.pyplot as plt
+if os.environ.get("READTHEDOCS", "") != "True":  # pragma: no cover
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        import numpy as np
+        import matplotlib.pyplot as plt
 import pmisc
 import pexdoc.exh
 import pexdoc.pcontracts

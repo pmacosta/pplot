@@ -16,15 +16,17 @@ exobj_plot = trace_ex_plot_basic_source.trace_module(no_print=True)
 # basic_source.py
 # Copyright (c) 2013-2019 Pablo Acosta-Serafini
 # See LICENSE for details
-# pylint: disable=C0111,C0302,E1101,E1103,W0105,W0212
+# pylint: disable=C0111,C0302,C0413,E1101,E1103,W0105,W0212
 
 # Standard library imports
+import os
 import warnings
 
 # PyPI imports
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    import numpy as np
+if os.environ.get("READTHEDOCS", "") != "True":  # pragma: no cover
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        import numpy as np
 import pexdoc.exh
 import pexdoc.pcontracts
 import peng
