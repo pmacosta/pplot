@@ -81,6 +81,7 @@
 ..         wrap(paragraph)
 ..     else:
 ..         cog.outl("")
+.. cog.outl("")
 .. cog.outl("Interpreter")
 .. cog.outl("===========")
 .. cog.outl("")
@@ -345,7 +346,6 @@ Description
 .. _Funcsigs: https://pypi.org/project/funcsigs
 .. _Imageio: http://imageio.github.io
 .. _Matplotlib: https://matplotlib.org
-.. _Mock: https://docs.python.org/3/library/unittest.mock.html
 .. _Numpy: http://www.numpy.org
 .. _Pcsv: https://pcsv.readthedocs.org
 .. _Peng: https://peng.readthedocs.org
@@ -463,6 +463,7 @@ Example
 
 .. [REMOVE STOP]
 
+
 Interpreter
 ===========
 
@@ -544,8 +545,6 @@ Contributing
 
     * `Matplotlib`_ (Python 2.x: 2.2.4 or newer, Python 3.x: 3.0.3 or
       newer)
-
-    * `Mock`_ (Python 2.x only, 2.0.0 or newer)
 
     * `Numpy`_ (1.16.2 or newer)
 
@@ -640,7 +639,7 @@ Contributing
 
        $ PKG_NAME=pplot tox -e py27-pkg -- -n 4
        GLOB sdist-make: .../pplot/setup.py
-       py27-pkg inst-nodeps: .../pplot/.tox/.tmp/package/1/pplot-1.1.4.zip
+       py27-pkg inst-nodeps: .../pplot/.tox/.tmp/package/1/pplot-1.1.5.zip
        ...
          py27-pkg: commands succeeded
          congratulations :)
@@ -675,7 +674,7 @@ Contributing
 
        $ PKG_NAME=pplot tox -e py27-test -- -x test_pplot.py
        GLOB sdist-make: .../pplot/setup.py
-       py27-pkg inst-nodeps: .../pplot/.tox/.tmp/package/1/pplot-1.1.4.zip
+       py27-pkg inst-nodeps: .../pplot/.tox/.tmp/package/1/pplot-1.1.5.zip
        ...
          py27-pkg: commands succeeded
          congratulations :)

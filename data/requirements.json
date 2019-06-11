@@ -62,16 +62,6 @@
         },
 		"pos":6
 	},
-	"mock":{
-		"name":"Mock",
-		"optional":false,
-		"url":"https://docs.python.org/3/library/unittest.mock.html",
-		"cat":["tests"],
-		"ver":{
-			"py27":">=2.0.0"
-		},
-		"pos":7
-	},
 	"pillow":{
 		"name":"Pillow",
 		"optional":false,
@@ -79,7 +69,7 @@
 		"cat":["main"],
 		"cat":["main"],
 		"ver":">=5.4.1",
-		"pos":8
+		"pos":7
 	},
 	"pycontracts":{
 		"name":"PyContracts",
@@ -87,7 +77,7 @@
 		"url":"https://andreacensi.github.io/contracts",
 		"cat":["main", "rtd"],
 		"ver":">=1.8.2",
-		"pos":9
+		"pos":8
 	},
 	"pylint":{
 		"name":"Pylint",
@@ -100,7 +90,7 @@
             "py36":">=2.3.1",
             "py37":">=2.3.1"
         },
-		"pos":10
+		"pos":9
 	},
 	"pytest":{
 		"name":"Py.test",
@@ -108,7 +98,7 @@
 		"url":"http://pytest.org",
 		"cat":["tests", "rtd"],
 		"ver":">=4.3.1",
-		"pos":11
+		"pos":10
 	},
 	"pytest-cov":{
 		"name":"Pytest-coverage",
@@ -116,7 +106,7 @@
 		"url":"https://pypi.org/project/pytest-cov",
 		"cat":["tests"],
 		"ver":">=2.6.1",
-		"pos":12
+		"pos":11
 	},
 	"pytest-xdist":{
 		"name":"Pytest-xdist",
@@ -124,7 +114,7 @@
 		"url":"https://pypi.org/project/pytest-xdist",
 		"cat":["tests"],
 		"ver":">=1.26.1",
-		"pos":13
+		"pos":12
 	},
 	"scipy":{
 		"name":"Scipy",
@@ -132,7 +122,7 @@
 		"url":"https://www.scipy.org",
 		"cat":["main"],
 		"ver":">=1.2.1",
-		"pos":14
+		"pos":13
 	},
 	"six":{
 		"name":"Six",
@@ -140,7 +130,7 @@
 		"url":"https://pythonhosted.org/six",
 		"cat":["main", "rtd"],
 		"ver":">=1.12.0",
-		"pos":15
+		"pos":14
 	},
 	"sphinx":{
 		"name":"Sphinx",
@@ -148,7 +138,7 @@
 		"url":"http://sphinx-doc.org",
 		"cat":["docs", "rtd"],
 		"ver":">=1.8.5",
-		"pos":16
+		"pos":15
 	},
 	"sphinxcontrib-inlinesyntaxhighlight":{
 		"name":"Inline Syntax Highlight Sphinx Extension",
@@ -156,15 +146,15 @@
 		"url":"https://bitbucket.org/klorenz/sphinxcontrib-inlinesyntaxhighlight",
 		"cat":["docs", "rtd"],
 		"ver":">=0.2",
-		"pos":17
+		"pos":16
 	},
 	"sphinx_rtd_theme":{
 		"name":"ReadTheDocs Sphinx theme",
 		"optional":false,
 		"url":"https://github.com/rtfd/sphinx_rtd_theme",
-		"cat":["docs"],
+		"cat":["docs", "rtd"],
 		"ver":">=0.4.3",
-		"pos":18
+		"pos":17
 	},
 	"tox":{
 		"name":"Tox",
@@ -172,7 +162,7 @@
 		"url":"https://testrun.org/tox",
 		"cat":["tests"],
 		"ver":">=3.7.0",
-		"pos":19
+		"pos":18
 	},
 	"virtualenv":{
 		"name":"Virtualenv",
@@ -180,7 +170,7 @@
 		"url":"https://docs.python-guide.org/dev/virtualenvs",
 		"cat":["tests"],
 		"ver":">=16.4.3",
-		"pos":20
+		"pos":19
 	},
 	"pmisc":{
 		"name":"Pmisc",
@@ -188,7 +178,7 @@
 		"url":"http://pmisc.readthedocs.org",
 		"cat":["main", "rtd"],
 		"ver":">=1.5.8",
-		"pos":21
+		"pos":20
 	},
 	"pexdoc":{
 		"name":"Pexdoc",
@@ -196,7 +186,7 @@
 		"url":"https://pexdoc.readthedocs.org",
 		"cat":["main", "rtd"],
 		"ver":">=1.1.4",
-		"pos":22
+		"pos":21
 	},
 	"peng":{
 		"name":"Peng",
@@ -204,7 +194,7 @@
 		"url":"https://peng.readthedocs.org",
 		"cat":["main", "rtd"],
 		"ver":">=1.0.9",
-		"pos":23
+		"pos":22
 	},
 	"pcsv":{
 		"name":"Pcsv",
@@ -212,7 +202,7 @@
 		"url":"https://pcsv.readthedocs.org",
 		"cat":["main", "rtd"],
 		"ver":">=1.0.8",
-		"pos":24
+		"pos":23
 	},
 	"pytest-pmisc":{
 		"name":"Pytest-pmisc",
@@ -220,7 +210,7 @@
 		"url":"https://pytest-pmisc.readthedocs.org",
 		"cat":["tests"],
 		"ver":">=1.0.7",
-		"pos":25
+		"pos":24
 	},
 	"sphinxcontrib-shellcheck":{
 		"name":"Shellcheck Linter Sphinx Extension",
@@ -228,7 +218,7 @@
 		"url":"https://pypi.org/project/sphinxcontrib-shellcheck",
 		"cat":["docs", "rtd"],
 		"ver":">=1.0.8",
-		"pos":26
+		"pos":25
 	},
 	"pydocstyle":{
 		"name":"Pydocstyle",
@@ -236,7 +226,7 @@
 		"url":"http://www.pydocstyle.org",
 		"cat":["tests"],
 		"ver":">=3.0.0",
-		"pos":27
+		"pos":26
 	},
 	"imageio":{
 		"name":"Imageio",
@@ -244,6 +234,6 @@
 		"url":"http://imageio.github.io",
 		"cat":["tests"],
 		"ver":">=2.5.0",
-		"pos":28
+		"pos":27
 	}
 }
