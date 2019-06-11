@@ -1,4 +1,4 @@
-personal_ws-1.1 en 2060 utf-8
+personal_ws-1.1 en 2077 utf-8
 aa
 aaa
 abc
@@ -472,6 +472,7 @@ eprint
 eps
 EPS
 epub
+Epub
 eq
 eqs
 er
@@ -610,6 +611,7 @@ fn
 fname
 FNAME
 fnames
+FNAMES
 fnmatch
 fnode
 fnum
@@ -700,6 +702,7 @@ github
 GitHub
 gitignore
 globals
+gmail
 gmap
 GnBu
 greenyellow
@@ -729,6 +732,8 @@ htaccess
 html
 htmlcov
 htmlhelp
+http
+https
 hunspell
 Huy
 hvec
@@ -864,6 +869,7 @@ ivector
 IXUSR
 izip
 ja
+jeffknupp
 json
 JSON
 kcg
@@ -1207,6 +1213,7 @@ obranch
 ocols
 oct
 odata
+oddbird
 odg
 odict
 odv
@@ -1238,6 +1245,7 @@ orangered
 ord
 OrderedDict
 orfilter
+org
 orow
 OrRd
 os
@@ -1251,6 +1259,7 @@ otype
 outl
 ovalue
 pacakges
+pacosta
 pagerefs
 palegoldenrod
 palegreen
@@ -1327,6 +1336,8 @@ pluggy
 plugin
 plugins
 PLUGINS
+pmacosta
+pmasdev
 pmisc
 Pmisc
 PMISC
@@ -1359,6 +1370,7 @@ pre
 prec
 PREC
 prepended
+preso
 prev
 prf
 printf
@@ -1710,6 +1722,7 @@ srclines
 sshippable
 ssid
 ssign
+stackoverflow
 sTaiRcAsE
 STAIRcase
 starargs
@@ -1804,6 +1817,7 @@ TestWaveform
 teto
 tex
 texinfo
+Texinfo
 textwrap
 TextWrapper
 tfuncs
@@ -1975,6 +1989,8 @@ wheader
 whitelist
 whitesmoke
 whitespace
+wiki
+wikipedia
 win32
 winnorm
 wint
@@ -1988,6 +2004,7 @@ wround
 wsindent
 wsregexp
 wvalue
+www
 xaxes
 xaxis
 xbb
