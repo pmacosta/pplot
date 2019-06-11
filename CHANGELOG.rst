@@ -5,6 +5,8 @@
 Changelog
 =========
 
+* 1.0.5 [2019-06-11]: Fixed ReadTheDocs build
+
 * 1.1.4 [2019-03-22]: Documentation and dependencies update
 
 * 1.1.3 [2019-03-16]: Adopted lightweight package management framework

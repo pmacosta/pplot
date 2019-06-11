@@ -10,7 +10,7 @@ import os
 ###
 # Global variables
 ###
-VERSION_INFO = (1, 1, 4, "final", 0)
+VERSION_INFO = (1, 1, 5, "final", 0)
 SUPPORTED_INTERPS = ["2.7", "3.5", "3.6", "3.7"]
 COPYRIGHT_START = 2013
 PKG_DESC = (
@@ -116,7 +116,7 @@ PKG_LONG_DESC = os.linesep.join(
     ]
 )
 PKG_PIPELINE_ID = 8
-PKG_SUBMODULES = [
+PKG_DOC_SUBMODULES = [
     "basic_source",
     "constants",
     "csv_source",
