@@ -8,6 +8,6 @@ sphinxcontrib-inlinesyntaxhighlight>=0.2
 sphinx_rtd_theme>=0.4.3
 pmisc>=1.5.8
 pexdoc>=1.1.4
-peng>=1.0.9
+peng>=1.0.11
 pcsv>=1.0.8
 sphinxcontrib-shellcheck>=1.0.8

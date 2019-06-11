@@ -10,3 +10,4 @@ virtualenv>=16.4.3
 pytest-pmisc>=1.0.7
 pydocstyle>=3.0.0
 imageio>=2.5.0
+mock>=2.0.0

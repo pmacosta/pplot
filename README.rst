@@ -51,6 +51,7 @@ Description
 .. _Funcsigs: https://pypi.org/project/funcsigs
 .. _Imageio: http://imageio.github.io
 .. _Matplotlib: https://matplotlib.org
+.. _Mock: https://docs.python.org/3/library/unittest.mock.html
 .. _Numpy: http://www.numpy.org
 .. _Pcsv: https://pcsv.readthedocs.org
 .. _Peng: https://peng.readthedocs.org
@@ -328,11 +329,13 @@ Contributing
     * `Matplotlib`_ (Python 2.x: 2.2.4 or newer, Python 3.x: 3.0.3 or
       newer)
 
+    * `Mock`_ (Python 2.x only, 2.0.0 or newer)
+
     * `Numpy`_ (1.16.2 or newer)
 
     * `Pcsv`_ (1.0.8 or newer)
 
-    * `Peng`_ (1.0.9 or newer)
+    * `Peng`_ (1.0.11 or newer)
 
     * `Pexdoc`_ (1.1.4 or newer)
 
